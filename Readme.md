@@ -22,9 +22,9 @@
     <br />
     <!-- <a href="https_placeholder">View Demo</a> -->
     ·
-    <a href="[https://github.com/dettinjo/portfolio_frontend/issues/new?labels=bug&template=bug-report---.md](https://github.com/dettinjo/portfolio_frontend/issues/new?labels=bug&template=bug-report---.md)">Report Bug</a>
+    <a href="[https://github.com/dettinjo/portfolio_portfolio-photography/issues/new?labels=bug&template=bug-report---.md](https://github.com/dettinjo/portfolio_portfolio-photography/issues/new?labels=bug&template=bug-report---.md)">Report Bug</a>
     ·
-    <a href="[https://github.com/dettinjo/portfolio_frontend/issues/new?labels=enhancement&template=feature-request---.md](https://github.com/dettinjo/portfolio_frontend/issues/new?labels=enhancement&template=feature-request---.md)">Request Feature</a>
+    <a href="[https://github.com/dettinjo/portfolio_portfolio-photography/issues/new?labels=enhancement&template=feature-request---.md](https://github.com/dettinjo/portfolio_portfolio-photography/issues/new?labels=enhancement&template=feature-request---.md)">Request Feature</a>
   </p>
 </div>
 
@@ -44,7 +44,7 @@
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#backend-setup-strapi">Backend Setup (Strapi)</a></li>
-        <li><a href="#frontend-setup-nextjs">Frontend Setup (Next.js)</a></li>
+        <li><a href="#portfolio-photography-setup-nextjs">portfolio-photography Setup (Next.js)</a></li>
       </ul>
     </li>
     <li><a href="#roadmap">Roadmap</a></li>
@@ -61,7 +61,7 @@
 
 This repository contains a full-stack personal photography portfolio. It is designed to showcase photo albums dynamically while providing a secure portal for clients to log in, review private galleries, and approve images for publication.
 
-All content, from photo albums to testimonials, is managed through a flexible Strapi Headless CMS, allowing for easy updates without redeploying the frontend.
+All content, from photo albums to testimonials, is managed through a flexible Strapi Headless CMS, allowing for easy updates without redeploying the portfolio-photography.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -93,7 +93,7 @@ This project is built with a modern, decoupled architecture using the latest ind
 <!-- GETTING STARTED -->
 ## Getting Started
 
-To get a local copy up and running, you will need to set up both the backend (Strapi) and the frontend (Next.js) services.
+To get a local copy up and running, you will need to set up both the backend (Strapi) and the portfolio-photography (Next.js) services.
 
 ### Prerequisites
 
@@ -106,7 +106,7 @@ Ensure you have the following software installed on your machine.
 
 ### Backend Setup (Strapi)
 
-The backend must be running first, as the frontend depends on its API. These instructions assume you are running them from the `/backend` directory of the original project.
+The backend must be running first, as the portfolio-photography depends on its API. These instructions assume you are running them from the `/backend` directory of the original project.
 
 1.  Navigate into the `backend` directory.
     ```sh
@@ -126,7 +126,7 @@ The backend must be running first, as the frontend depends on its API. These ins
     ```
 5.  **Admin Setup & Permissions:** Navigate to `http://localhost:1337/admin` to create your administrator account. Then, go to **Settings > Roles > Public** and grant `find`, `findOne`, and `create` permissions for the **Album**, **Testimonial**, and **users-permissions** content types.
 
-### Frontend Setup (Next.js)
+### portfolio-photography Setup (Next.js)
 
 These instructions should be run from the root directory of this codebase.
 
@@ -158,7 +158,7 @@ These instructions should be run from the root directory of this codebase.
 - [ ] Add a blog/articles section managed from Strapi
 - [ ] Integrate a payment processor for print sales
 
-See the [open issues](https://github.com/dettinjo/portfolio_frontend/issues) for a full list of proposed features (and known issues).
+See the [open issues](https://github.com/dettinjo/portfolio_portfolio-photography/issues) for a full list of proposed features (and known issues).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -172,7 +172,7 @@ Distributed under the MIT License. See the `LICENSE` file for more information.
 <!-- CONTACT -->
 ## Contact
 
-Project Link: [https://github.com/dettinjo/portfolio_frontend](https://github.com/dettinjo/portfolio_frontend)
+Project Link: [https://github.com/dettinjo/portfolio_portfolio-photography](https://github.com/dettinjo/portfolio_portfolio-photography)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -190,11 +190,11 @@ This project was made possible by these incredible tools and libraries.
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
-[issues-shield]: [https://img.shields.io/github/issues/dettinjo/portfolio_frontend.svg?style=for-the-badge](https://img.shields.io/github/issues/dettinjo/portfolio_frontend.svg?style=for-the-badge)
-[issues-url]: [https://github.com/dettinjo/portfolio_frontend/issues](https://github.com/dettinjo/portfolio_frontend/issues)
-[license-shield]: [https://img.shields.io/github/license/dettinjo/portfolio_frontend.svg?style=for-the-badge](https://img.shields.io/github/license/dettinjo/portfolio_frontend.svg?style=for-the-badge)
-[license-url]: [https://github.com/dettinjo/portfolio_frontend/blob/main/LICENSE](https://github.com/dettinjo/portfolio_frontend/blob/main/LICENSE)
-[product-screenshot]: public/images/avatar.png
+[issues-shield]: [https://img.shields.io/github/issues/dettinjo/portfolio_portfolio-photography.svg?style=for-the-badge](https://img.shields.io/github/issues/dettinjo/portfolio_portfolio-photography.svg?style=for-the-badge)
+[issues-url]: [https://github.com/dettinjo/portfolio_portfolio-photography/issues](https://github.com/dettinjo/portfolio_portfolio-photography/issues)
+[license-shield]: [https://img.shields.io/github/license/dettinjo/portfolio_portfolio-photography.svg?style=for-the-badge](https://img.shields.io/github/license/dettinjo/portfolio_portfolio-photography.svg?style=for-the-badge)
+[license-url]: [https://github.com/dettinjo/portfolio_portfolio-photography/blob/main/LICENSE](https://github.com/dettinjo/portfolio_portfolio-photography/blob/main/LICENSE)
+[product-screenshot]: src/res/screenshots/
 [Next.js]: [https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white](https://img.shields.io/badge/next.js-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)
 [Next-url]: [https://nextjs.org/](https://nextjs.org/)
 [React.js]: [https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
