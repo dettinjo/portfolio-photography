@@ -6,7 +6,6 @@ import { Heart } from "lucide-react";
 
 export function Footer() {
   const t = useTranslations("Footer");
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
 
   return (
     <footer className="border-t">
@@ -19,13 +18,13 @@ export function Footer() {
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground">
           <a
-            href={`https://${rootDomain}/imprint`}
+            href={`/imprint`}
             className="transition-colors hover:text-foreground"
           >
             {t("imprint")}
           </a>
           <a
-            href={`https://${rootDomain}/privacy_policy`}
+            href={`/privacy_policy`}
             className="transition-colors hover:text-foreground"
           >
             {t("privacy")}

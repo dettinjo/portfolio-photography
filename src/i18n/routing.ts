@@ -1,11 +1,15 @@
-import {defineRouting} from 'next-intl/routing';
- 
+// src/i18n/routing.ts
+import { defineRouting } from "next-intl/routing";
+
 export const routing = defineRouting({
-  locales: ['en', 'de'] as const,
-  defaultLocale: 'en',
-  
-  // CRITICAL: We tell next-intl to NEVER touch the URL. Our middleware handles it all.
-  localePrefix: 'never'
+  locales: ["en", "de"] as const,
+  defaultLocale: "en",
+
+  // --- THIS IS THE FIX (PART 1) ---
+  // Change 'never' to 'as-needed'.
+  // This will show the prefix for 'de' (e.g., /de/slug)
+  // but not for the default 'en' (e.g., /slug).
+  localePrefix: "as-needed",
 });
 
 export type Locale = (typeof routing.locales)[number];

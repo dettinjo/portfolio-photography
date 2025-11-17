@@ -1,24 +1,11 @@
 import { getTranslations } from "next-intl/server";
-import { Metadata } from "next"; // 1. Metadaten-Typ importieren
+import { Metadata } from "next";
 
-// 2. Diese Funktion für dynamische Metadaten hinzufügen
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("ImprintPage");
 
   return {
     title: t("title"),
-    icons: [
-      {
-        media: "(prefers-color-scheme: light)",
-        url: "/favicon-imprint-light.svg",
-        href: "/favicon-imprint-light.svg",
-      },
-      {
-        media: "(prefers-color-scheme: dark)",
-        url: "/favicon-imprint-dark.svg",
-        href: "/favicon-imprint-dark.svg",
-      },
-    ],
   };
 }
 
@@ -33,12 +20,11 @@ export default async function Imprintage() {
     email: process.env.NEXT_PUBLIC_EMAIL_ADDRESS || "",
   };
 
-  // 2. Build the content arrays by calling `t()` for each line and passing the values
   const section1Content = [
     t("section1_content.name", values),
     t("section1_content.street", values),
     t("section1_content.city", values),
-    t("section1_content.country"), // This line has no variable
+    t("section1_content.country"),
   ];
 
   const section2Content = [

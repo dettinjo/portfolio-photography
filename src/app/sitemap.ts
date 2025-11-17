@@ -1,39 +1,74 @@
 // src/app/sitemap.ts
-import { MetadataRoute } from 'next';
-import { fetchAllProjectSlugs, fetchAllAlbumSlugs } from '@/lib/strapi'; // Your actual API functions
+import { MetadataRoute } from "next";
+// --- THIS IS THE FIX (PART 6) ---
+// We import fetchAlbums to get localization data, not just slugs
+import { fetchAlbums } from "@/lib/strapi";
+import { routing } from "@/i18n/routing";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const softwareDomain = process.env.NEXT_PUBLIC_SOFTWARE_DOMAIN;
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN;
+  const baseUrl = `https://${photographyDomain}`;
+  const { locales, defaultLocale } = routing;
 
-  // --- FETCH DYNAMIC SLUGS ---
-  const projectSlugs = await fetchAllProjectSlugs();
-  const albumSlugs = await fetchAllAlbumSlugs();
+  // Helper to create a localized URL
+  const getUrl = (slug: string, locale: string) => {
+    const path = slug ? `/${slug}` : "";
+    if (locale === defaultLocale) {
+      return `${baseUrl}${path}`;
+    }
+    return `${baseUrl}/${locale}${path}`;
+  };
 
-  // --- MAP SLUGS TO SITEMAP ENTRIES ---
-  const softwareProjectPages = projectSlugs.map(({ slug }) => ({
-    url: `https://${softwareDomain}/${slug}`,
-    lastModified: new Date(),
-  }));
+  const sitemapEntries: MetadataRoute.Sitemap = [];
 
-  const photographyAlbumPages = albumSlugs.map(({ slug }) => ({
-    url: `https://${photographyDomain}/${slug}`,
-    lastModified: new Date(),
-  }));
+  // 1. Static Pages (Home, Imprint, Privacy Policy)
+  const staticPages = ["", "imprint", "privacy_policy"];
+  staticPages.forEach((slug) => {
+    const alternates: Record<string, string> = {};
+    locales.forEach((locale) => {
+      alternates[locale] = getUrl(slug, locale);
+    });
 
-  // --- DEFINE STATIC AND TOP-LEVEL PAGES ---
-  const routes = [
-    { url: `https://${rootDomain}`, priority: 1.0 },
-    { url: `https://${softwareDomain}`, priority: 0.9 },
-    { url: `https://${photographyDomain}`, priority: 0.9 },
-    { url: `https://${rootDomain}/imprint`, priority: 0.5 },
-    { url: `https://${rootDomain}/privacy_policy`, priority: 0.5 },
-  ];
+    // Add an entry for *each* locale version of the static page
+    locales.forEach((locale) => {
+      sitemapEntries.push({
+        url: getUrl(slug, locale),
+        lastModified: new Date(),
+        alternates: {
+          languages: alternates,
+        },
+      });
+    });
+  });
 
-  return [
-    ...routes,
-    ...softwareProjectPages,
-    ...photographyAlbumPages,
-  ];
+  // 2. Dynamic Album Pages
+  // Fetch *all* albums from the default locale, populating localizations
+  const defaultLocaleAlbums = await fetchAlbums(defaultLocale);
+
+  defaultLocaleAlbums.forEach((album) => {
+    const alternates: Record<string, string> = {};
+
+    // Add default locale
+    alternates[defaultLocale] = getUrl(album.slug, defaultLocale);
+
+    // Add other locales
+    album.localizations?.forEach((loc) => {
+      alternates[loc.locale] = getUrl(loc.slug, loc.locale);
+    });
+
+    // Add an entry for *each* locale version of the album
+    locales.forEach((locale) => {
+      if (alternates[locale]) {
+        sitemapEntries.push({
+          url: alternates[locale],
+          lastModified: new Date(), // Or use album.updatedAt if available
+          alternates: {
+            languages: alternates,
+          },
+        });
+      }
+    });
+  });
+
+  return sitemapEntries;
 }

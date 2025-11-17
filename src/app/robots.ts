@@ -1,23 +1,27 @@
-import { MetadataRoute } from 'next';
+// src/app/robots.ts
+import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  // Read domain names from environment variables
-  const rootDomain = process.env.NEXT_PUBLIC_ROOT_DOMAIN || '';
-  const softwareDomain = process.env.NEXT_PUBLIC_SOFTWARE_DOMAIN || '';
-  const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN || '';
+  const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN || "";
 
   return {
     rules: [
       {
-        userAgent: '*',
-        allow: '/',
-        disallow: '/photography/leave-a-review/',
+        userAgent: "*",
+        allow: "/",
+        // --- THIS IS THE FIX (PART 7) ---
+        // Disallow all utility, auth, and approval paths
+        disallow: [
+          "/approve/",
+          "/connect/",
+          "/dashboard/",
+          "/leave-a-review/",
+          "/login/",
+          "/register/",
+        ],
       },
     ],
-    sitemap: [
-      `https://${rootDomain}/sitemap.xml`,
-      `https://${softwareDomain}/sitemap.xml`,
-      `https://${photographyDomain}/sitemap.xml`,
-    ],
+    // The sitemap is on the main domain
+    sitemap: [`https://${photographyDomain}/sitemap.xml`],
   };
 }

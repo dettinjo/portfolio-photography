@@ -1,7 +1,7 @@
 // portfolio-frontend/src/app/[locale]/photography/leave-a-review/page.tsx
 import { getTranslations } from "next-intl/server";
 import { Metadata } from "next";
-import { LeaveReviewForm } from "@/components/sections/photography/LeaveReviewForm";
+import { LeaveReviewForm } from "@/components/sections/LeaveReviewForm";
 
 // --- THIS IS THE DEFINITIVE FIX (Part 1): Define the correct Props type ---
 type Props = {

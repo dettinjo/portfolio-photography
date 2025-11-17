@@ -1,3 +1,4 @@
+// src/app/[locale]/[slug]/page.tsx
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Metadata } from "next";
@@ -8,12 +9,13 @@ import {
 } from "@/lib/strapi";
 import { getTranslations } from "next-intl/server";
 import { WithContext, ImageGallery, BreadcrumbList } from "schema-dts";
+import { routing } from "@/i18n/routing"; // <-- IMPORT ROUTING CONFIG
 
 const STRAPI_URL =
   process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
 
 type Props = {
-  params: { slug: string; locale: string };
+  params: Promise<{ slug: string; locale: string }>;
 };
 
 // Generate static pages at build time
@@ -45,17 +47,24 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const coverImageUrl = getStrapiMedia(coverImage?.url);
   const description = t("description", { title: title, name: firstName });
 
+  // --- THIS IS THE FIX (PART 4) ---
+  // Build URLs using paths instead of subdomains
+  const baseUrl = `https://${photographyDomain}`;
   const languages: Record<string, string> = {};
-  if (photographyDomain) {
-    languages[locale] = `https://${
-      locale === "de" ? "de." : ""
-    }${photographyDomain}/${slug}`;
-    localizations?.forEach((loc) => {
-      languages[loc.locale] = `https://${
-        loc.locale === "de" ? "de." : ""
-      }${photographyDomain}/${loc.slug}`;
-    });
-  }
+
+  // Set current locale's URL
+  languages[locale] =
+    locale === routing.defaultLocale
+      ? `${baseUrl}/${slug}`
+      : `${baseUrl}/${locale}/${slug}`;
+
+  // Set alternate locale URLs
+  localizations?.forEach((loc) => {
+    languages[loc.locale] =
+      loc.locale === routing.defaultLocale
+        ? `${baseUrl}/${loc.slug}`
+        : `${baseUrl}/${loc.locale}/${loc.slug}`;
+  });
 
   return {
     title: title,
@@ -68,10 +77,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         : [],
     },
     alternates: {
-      canonical: photographyDomain
-        ? `https://${locale === "de" ? "de." : ""}${photographyDomain}/${slug}`
-        : undefined,
-      languages: languages,
+      canonical: languages[locale], // The canonical URL is this page's URL
+      languages: languages, // The path-based languages object
     },
   };
 }
@@ -101,6 +108,12 @@ export default async function AlbumDetailPage({ params }: Props) {
     })),
   };
 
+  // --- THIS IS THE FIX (PART 5) ---
+  // Make Breadcrumb home URL locale-aware
+  const homeUrl = `https://${photographyDomain}${
+    locale === routing.defaultLocale ? "" : `/${locale}`
+  }`;
+
   const breadcrumbJsonLd: WithContext<BreadcrumbList> = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
@@ -108,8 +121,8 @@ export default async function AlbumDetailPage({ params }: Props) {
       {
         "@type": "ListItem",
         position: 1,
-        name: "Home",
-        item: `https://${photographyDomain}`,
+        name: "Home", // NOTE: This name should also be translated
+        item: homeUrl, // Use the new dynamic homeUrl
       },
       {
         "@type": "ListItem",

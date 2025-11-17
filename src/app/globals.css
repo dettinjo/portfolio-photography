@@ -85,11 +85,3 @@
     content: none !important;
   }
 }
-
-[class^="devicon-"] path,
-[class^="devicon-"] polygon,
-[class^="devicon-"] rect,
-[class^="devicon-"] circle,
-[class^="devicon-"] line {
-  fill: currentColor !important;
-}

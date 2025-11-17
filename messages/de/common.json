@@ -10,14 +10,6 @@
     "imprint": "Impressum",
     "privacy": "Datenschutz"
   },
-  "HomePage": {
-    "code": "Code",
-    "photos": "Fotos"
-  },
-  "HomePageSEO": {
-    "title": "{name} - Software & Fotografie",
-    "description": "Der zentrale Portfolio-Hub von {name}, der professionelle Arbeiten in der Softwareentwicklung und Fotografie präsentiert."
-  },
   "GalleryLightbox": {
     "dialogTitle": "{prefix} - Bild {index}",
     "imageAlt": "{prefix} - Bild {index}",

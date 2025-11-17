@@ -1,5 +1,5 @@
+// src/app/layout.tsx
 import "./globals.css";
-import "devicon/devicon.min.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import { cn } from "@/lib/utils";
@@ -15,15 +15,7 @@ export const metadata: Metadata = {
     template: "%s",
     default: "Personal Portfolio",
   },
-  description: "A personal portfolio showcasing software and photography.",
-  alternates: {
-    canonical: `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`,
-    languages: {
-      en: `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`,
-      de: `https://de.${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`,
-      "x-default": `https://${process.env.NEXT_PUBLIC_ROOT_DOMAIN}`,
-    },
-  },
+  description: "A personal portfolio showcasing photography.",
 };
 
 export default function RootLayout({

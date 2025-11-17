@@ -2,7 +2,7 @@
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
-import { ApprovalInterface } from "@/components/sections/photography/ApprovalInterface";
+import { ApprovalInterface } from "@/components/sections/ApprovalInterface";
 import type { Album } from "@/lib/strapi";
 
 const STRAPI_URL =
