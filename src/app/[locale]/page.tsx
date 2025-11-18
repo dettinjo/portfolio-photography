@@ -1,159 +1,140 @@
-// src/app/[locale]/[slug]/page.tsx
-import { notFound } from "next/navigation";
-import Image from "next/image";
-import { Metadata } from "next";
-import {
-  fetchAlbumBySlug,
-  fetchAllAlbumSlugs,
-  getStrapiMedia,
-} from "@/lib/strapi";
 import { getTranslations } from "next-intl/server";
-import { WithContext, ImageGallery, BreadcrumbList } from "schema-dts";
-import { routing } from "@/i18n/routing";
+import { PhotographyTabs } from "@/components/sections/PhotographyTabs";
+import { ProfileHeaderSection } from "@/components/sections/ProfileHeaderSection";
+import { fetchAlbums, fetchTestimonials } from "@/lib/strapi";
+import { WithContext, CollectionPage, Review } from "schema-dts";
+import { Metadata } from "next";
 
 const STRAPI_URL =
   process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
 
+// UPDATED: 'params' prop is now correctly typed as a Promise.
 type Props = {
-  params: Promise<{ slug: string; locale: string }>;
+  params: Promise<{ locale: string }>;
 };
 
-export async function generateStaticParams() {
-  const albums = await fetchAllAlbumSlugs();
-  return albums.map((album) => ({
-    slug: album.slug,
-  }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug, locale } = await params;
-  const album = await fetchAlbumBySlug(slug, locale);
-  if (!album) {
-    return { title: "Album Not Found" };
-  }
-
+  // UPDATED: Await the promise to get the locale.
+  const { locale } = await params;
   const t = await getTranslations({
-    locale: locale,
-    namespace: "photography.AlbumPageSEO",
+    locale,
+    namespace: "photography.PhotographyPageSEO",
   });
-
   const fullName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const firstName = fullName.split(" ")[0];
+  const siteTitle = t("siteName", { name: firstName });
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
 
-  const { title, coverImage, localizations } = album;
-  const coverImageUrl = getStrapiMedia(coverImage?.url);
-  const description = t("description", { title: title, name: firstName });
-
-  const baseUrl = `https://${photographyDomain}`;
-  const languages: Record<string, string> = {};
-
-  languages[locale] =
-    locale === routing.defaultLocale
-      ? `${baseUrl}/${slug}`
-      : `${baseUrl}/${locale}/${slug}`;
-
-  localizations?.forEach((loc) => {
-    languages[loc.locale] =
-      loc.locale === routing.defaultLocale
-        ? `${baseUrl}/${loc.slug}`
-        : `${baseUrl}/${loc.locale}/${loc.slug}`;
-  });
-
   return {
-    title: title,
-    description: description,
-    openGraph: {
-      title: title,
-      description: description,
-      images: coverImageUrl
-        ? [{ url: coverImageUrl, alt: `Cover image for the album ${title}` }]
-        : [],
-    },
+    title: siteTitle,
+    description: t("description"),
     alternates: {
-      canonical: languages[locale],
-      languages: languages,
+      canonical: `https://${photographyDomain}`,
+      languages: {
+        en: `https://${photographyDomain}`,
+        de: `https://de.${photographyDomain}`,
+        "x-default": `https://${photographyDomain}`,
+      },
+    },
+    openGraph: {
+      title: siteTitle,
+      description: t("description"),
+      url: `https://${photographyDomain}`,
+      siteName: siteTitle,
+      type: "website",
+      locale: locale,
     },
   };
 }
 
-// The main page component
-export default async function AlbumDetailPage({ params }: Props) {
-  const { slug, locale } = await params;
+// UPDATED: The component now takes 'Props' and awaits 'params'.
+export default async function PhotographyPage({ params }: Props) {
+  // UPDATED: Await the promise to get the locale.
+  const { locale } = await params;
 
-  const t = await getTranslations({ locale, namespace: "photography" });
-
-  const album = await fetchAlbumBySlug(slug, locale);
-
-  if (!album) {
-    notFound();
-  }
-
-  const { title, images } = album;
-
+  const t = await getTranslations("photography.PhotographyPage");
+  const rawAlbums = await fetchAlbums(locale);
+  const rawTestimonials = await fetchTestimonials(locale);
+  const profileName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
 
-  const imageGalleryJsonLd: WithContext<ImageGallery> = {
-    "@context": "https://schema.org",
-    "@type": "ImageGallery",
-    name: title,
-    image: images?.map((image) => ({
-      "@type": "ImageObject",
-      contentUrl: `${STRAPI_URL}${image.url}`,
-      name: image.alternativeText || `Photograph from the album ${title}`,
-    })),
-  };
+  const albums = rawAlbums
+    .filter((album) => album && album.slug)
+    .map((album) => ({
+      id: album.id,
+      slug: album.slug,
+      title: album.title,
+      coverImageUrl: album.coverImage?.url
+        ? `${STRAPI_URL}${album.coverImage.url}`
+        : "/placeholder.jpg",
+      images: (album.images || []).map((img) => `${STRAPI_URL}${img.url}`),
+    }));
 
-  const homeUrl = `https://${photographyDomain}${
-    locale === routing.defaultLocale ? "" : `/${locale}`
-  }`;
+  const testimonials = rawTestimonials
+    .filter((testimonial) => testimonial && testimonial.name)
+    .map((testimonial) => ({
+      name: testimonial.name,
+      quote: testimonial.quote,
+      role: testimonial.role,
+      avatar: testimonial.avatar?.url
+        ? `${STRAPI_URL}${testimonial.avatar.url}`
+        : null,
+      ratings: {
+        communication: testimonial.communication || 0,
+        creativity: testimonial.creativity || 0,
+        professionalism: testimonial.professionalism || 0,
+        value: testimonial.value || 0,
+      },
+    }));
 
-  const breadcrumbJsonLd: WithContext<BreadcrumbList> = {
+  const jsonLd: WithContext<CollectionPage> = {
     "@context": "https://schema.org",
-    "@type": "BreadcrumbList",
-    itemListElement: [
-      {
-        "@type": "ListItem",
-        position: 1,
-        name: t("PhotographyPage.tabs.feed"),
-        item: homeUrl,
-      },
-      {
-        "@type": "ListItem",
-        position: 2,
-        name: title,
-      },
-    ],
+    "@type": "CollectionPage",
+    name: `Photography by ${profileName}`,
+    url: `https://${photographyDomain}`,
+    review: testimonials.map((testimonial) => {
+      const ratingValues = Object.values(testimonial.ratings);
+      const averageRating =
+        ratingValues.reduce((sum, rating) => sum + rating, 0) /
+        ratingValues.length;
+      return {
+        "@type": "Review",
+        author: {
+          "@type": "Person",
+          name: testimonial.name,
+        },
+        reviewRating: {
+          "@type": "Rating",
+          ratingValue: averageRating.toFixed(1),
+          bestRating: "5",
+        },
+        reviewBody: testimonial.quote,
+      } as Review;
+    }),
   };
 
   return (
-    <article className="container mx-auto py-16 px-4 md:py-24">
+    <div className="container mx-auto max-w-5xl py-12 px-4 md:py-24">
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(imageGalleryJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
+      <ProfileHeaderSection
+        name={profileName}
+        bio={t("profileBio")}
+        avatarSrc={"/images/profile.webp"}
       />
-      <h1 className="text-4xl font-bold mb-12 text-center">{title}</h1>
 
-      <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-        {images?.map((image) => (
-          <div key={image.id} className="break-inside-avoid">
-            <Image
-              src={`${STRAPI_URL}${image.url}`}
-              alt={
-                image.alternativeText || `Photograph from the album ${title}`
-              }
-              width={image.width}
-              height={image.height}
-              className="rounded-xl w-full h-auto block border-2 border-foreground"
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-            />
-          </div>
-        ))}
-      </div>
-    </article>
+      <PhotographyTabs
+        albums={albums}
+        testimonials={testimonials}
+        translations={{
+          feed: t("tabs.feed"),
+          services: t("tabs.services"),
+          testimonials: t("tabs.testimonials"),
+          contact: t("tabs.contact"),
+        }}
+      />
+    </div>
   );
 }

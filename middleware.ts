@@ -1,10 +1,4 @@
 // middleware.ts
-
-// --- THIS IS THE FIX (PART 2) ---
-// This entire file is replaced with the standard next-intl middleware.
-// It will automatically read your 'routing.ts' config and handle
-// path-based locale detection and redirection.
-
 import createMiddleware from "next-intl/middleware";
 import { routing } from "./src/i18n/routing";
 
@@ -17,6 +11,11 @@ export default createMiddleware({
 });
 
 export const config = {
-  // Match all paths except for static assets and API routes
-  matcher: ["/((?!api|_next/static|_next/image|favicon).*)"],
+  // Match all paths except for:
+  // 1. /api (API routes)
+  // 2. /_next (Next.js internals)
+  // 3. /_vercel (Vercel internals)
+  // 4. /images (Your static images folder) <-- ADDED THIS
+  // 5. /favicon.ico, .svg, .png (Static files) <-- EXPANDED THIS
+  matcher: ["/((?!api|_next|_vercel|images|.*\\..*).*)"],
 };
