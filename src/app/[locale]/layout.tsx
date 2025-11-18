@@ -1,17 +1,27 @@
 // src/app/[locale]/layout.tsx
+import React from "react";
+import { notFound } from "next/navigation";
+import { Metadata } from "next";
+import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import {
   getMessages,
   getTranslations,
   setRequestLocale,
 } from "next-intl/server";
-import { routing, isValidLocale } from "@/i18n/routing";
-import { notFound } from "next/navigation";
-import React from "react";
-import { Metadata } from "next";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
+// Import global styles here since we are deleting the old root layout
+import "../globals.css";
+
+import { routing, isValidLocale } from "@/i18n/routing";
+import { cn } from "@/lib/utils";
+import { ThemeProvider } from "@/components/Theme-Provider";
 import { PhotographyHeader } from "@/components/layout/PhotographyHeader";
 import { Footer } from "@/components/layout/Footer";
+
+const inter = Inter({ subsets: ["latin"] });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -32,7 +42,6 @@ export async function generateMetadata({
   const firstName = fullName.split(" ")[0];
   const siteTitle = t("siteName", { name: firstName });
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
-
   const baseUrl = `https://${photographyDomain}`;
 
   const canonicalUrl =
@@ -43,6 +52,7 @@ export async function generateMetadata({
     languages[loc] =
       loc === routing.defaultLocale ? baseUrl : `${baseUrl}/${loc}`;
   });
+  // Add x-default for SEO best practices
   languages["x-default"] = languages[routing.defaultLocale];
 
   return {
@@ -66,13 +76,13 @@ export async function generateMetadata({
     icons: [
       {
         media: "(prefers-color-scheme: light)",
-        url: "/favicon-photography-light.svg",
-        href: "/favicon-photography-light.svg",
+        url: "/favicon-light.svg",
+        href: "/favicon-light.svg",
       },
       {
         media: "(prefers-color-scheme: dark)",
-        url: "/favicon-photography-dark.svg",
-        href: "/favicon-photography-dark.svg",
+        url: "/favicon-dark.svg",
+        href: "/favicon-dark.svg",
       },
     ],
   };
@@ -86,20 +96,39 @@ type Props = {
 export default async function LocaleLayout({ children, params }: Props) {
   const { locale } = await params;
 
+  // Validate the locale
   if (!isValidLocale(locale)) {
     notFound();
   }
+
+  // Enable static rendering for this locale
   setRequestLocale(locale);
 
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages}>
-      <div className="relative flex min-h-dvh flex-col bg-background">
-        <PhotographyHeader />
-        <main className="flex-1">{children}</main>
-        <Footer />
-      </div>
-    </NextIntlClientProvider>
+    <html lang={locale} suppressHydrationWarning>
+      <body
+        className={cn(
+          "min-h-screen bg-background font-sans antialiased",
+          inter.className
+        )}
+      >
+        <NextIntlClientProvider locale={locale} messages={messages}>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <div className="relative flex min-h-dvh flex-col bg-background">
+              {/* The Single Header for the entire app */}
+              <PhotographyHeader />
+
+              <main className="flex-1">{children}</main>
+
+              <Footer />
+            </div>
+            <Analytics />
+            <SpeedInsights />
+          </ThemeProvider>
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }
