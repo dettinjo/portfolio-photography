@@ -1,12 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import { PhotographyTabs } from "@/components/sections/PhotographyTabs";
 import { ProfileHeaderSection } from "@/components/sections/ProfileHeaderSection";
-import { fetchAlbums, fetchTestimonials } from "@/lib/strapi";
+import { fetchAlbums as fetchImmichAlbums } from "@/lib/immich";
+import { fetchTestimonials } from "@/lib/strapi";
 import { WithContext, CollectionPage, Review } from "schema-dts";
 import { Metadata } from "next";
-
-const STRAPI_URL =
-  process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
 
 // UPDATED: 'params' prop is now correctly typed as a Promise.
 type Props = {
@@ -53,7 +51,7 @@ export default async function PhotographyPage({ params }: Props) {
   const { locale } = await params;
 
   const t = await getTranslations("photography.PhotographyPage");
-  const rawAlbums = await fetchAlbums(locale);
+  const rawAlbums = await fetchImmichAlbums();
   const rawTestimonials = await fetchTestimonials(locale);
   const profileName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
@@ -64,10 +62,9 @@ export default async function PhotographyPage({ params }: Props) {
       id: album.id,
       slug: album.slug,
       title: album.title,
-      coverImageUrl: album.coverImage?.url
-        ? `${STRAPI_URL}${album.coverImage.url}`
-        : "/placeholder.jpg",
-      images: (album.images || []).map((img) => `${STRAPI_URL}${img.url}`),
+      // coverImage.url is a proxy path (/api/immich/…) — use as-is
+      coverImageUrl: album.coverImage?.url ?? "/placeholder.jpg",
+      images: (album.images || []).map((img) => img.url),
     }));
 
   const testimonials = rawTestimonials

@@ -5,14 +5,10 @@ import { Metadata } from "next";
 import {
   fetchAlbumBySlug,
   fetchAllAlbumSlugs,
-  getStrapiMedia,
-} from "@/lib/strapi";
+} from "@/lib/immich";
 import { getTranslations } from "next-intl/server";
 import { WithContext, ImageGallery, BreadcrumbList } from "schema-dts";
 import { routing } from "@/i18n/routing"; // <-- IMPORT ROUTING CONFIG
-
-const STRAPI_URL =
-  process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
 
 type Props = {
   params: Promise<{ slug: string; locale: string }>;
@@ -29,7 +25,7 @@ export async function generateStaticParams() {
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, locale } = await params;
-  const album = await fetchAlbumBySlug(slug, locale);
+  const album = await fetchAlbumBySlug(slug);
   if (!album) {
     return { title: "Album Not Found" };
   }
@@ -44,7 +40,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
 
   const { title, coverImage, localizations } = album;
-  const coverImageUrl = getStrapiMedia(coverImage?.url);
+  // coverImage.url is a proxy path (/api/immich/…) — make it absolute for OG tags
+  const coverImageUrl = coverImage?.url
+    ? `https://${photographyDomain}${coverImage.url}`
+    : null;
   const description = t("description", { title: title, name: firstName });
 
   // --- THIS IS THE FIX (PART 4) ---
@@ -86,7 +85,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // The main page component
 export default async function AlbumDetailPage({ params }: Props) {
   const { slug, locale } = await params;
-  const album = await fetchAlbumBySlug(slug, locale);
+  const album = await fetchAlbumBySlug(slug);
 
   if (!album) {
     notFound();
@@ -103,7 +102,8 @@ export default async function AlbumDetailPage({ params }: Props) {
     name: title,
     image: images?.map((image) => ({
       "@type": "ImageObject",
-      contentUrl: `${STRAPI_URL}${image.url}`,
+      // image.url is a proxy path — make it absolute for structured data
+      contentUrl: `https://${photographyDomain}${image.url}`,
       name: image.alternativeText || `Photograph from the album ${title}`,
     })),
   };
@@ -149,7 +149,7 @@ export default async function AlbumDetailPage({ params }: Props) {
         {images?.map((image) => (
           <div key={image.id} className="break-inside-avoid">
             <Image
-              src={`${STRAPI_URL}${image.url}`}
+              src={image.url}
               alt={
                 image.alternativeText || `Photograph from the album ${title}`
               }
