@@ -1,62 +1,67 @@
-// src/app/[locale]/photography/approve/[token]/page.tsx
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { ApprovalInterface } from "@/components/sections/ApprovalInterface";
-import type { Album } from "@/lib/strapi";
-
-const STRAPI_URL =
-  process.env.NEXT_PUBLIC_STRAPI_API_URL || "http://localhost:1337";
+import { fetchAlbumByToken } from "@/lib/payload";
+import { fetchAlbums } from "@/lib/nextcloud";
 
 export const dynamic = "force-dynamic";
 
-async function getAlbumByToken(token: string): Promise<Album | null> {
-  const url = `${STRAPI_URL}/api/albums/approve/${token}`;
-  try {
-    const response = await fetch(url, { cache: "no-store" });
-    if (!response.ok) {
-      return null;
-    }
-    const data = await response.json();
-    return (data.data as Album) || null;
-  } catch (error) {
-    console.error("Failed to fetch album by token:", error);
-    return null;
-  }
-}
-
-// --- THIS IS THE DEFINITIVE FIX (PART 1) ---
-// Define the correct Props type for the page, where params is a Promise.
 type Props = {
   params: Promise<{ token: string; locale: string }>;
 };
 
-// Update generateMetadata to await the params
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { token } = await params; // Await the promise here
+  const { token } = await params;
   const t = await getTranslations("photography.ApprovalPageSEO");
-  const album = await getAlbumByToken(token);
-  const title = album
-    ? t("title", { albumTitle: album.title })
-    : t("titleNotFound");
-
+  const album = await fetchAlbumByToken(token);
   return {
-    title,
-    robots: {
-      index: false,
-      follow: false,
-    },
+    title: album ? t("title", { albumTitle: album.title }) : t("titleNotFound"),
+    robots: { index: false, follow: false },
   };
 }
 
-// Update the main Page Component to use the correct Props type and await params
 export default async function AlbumApprovalPage({ params }: Props) {
-  const { token } = await params; // Await the promise here
-  const album = await getAlbumByToken(token);
+  const { token } = await params;
+  const album = await fetchAlbumByToken(token);
 
-  if (!album) {
-    notFound();
-  }
+  if (!album) notFound();
 
-  return <ApprovalInterface album={album} token={token} />;
+  // Pull images for this album from Nextcloud
+  const allAlbums = await fetchAlbums();
+  const ncAlbum = allAlbums.find((a) => a.slug === album.slug);
+  const images = (ncAlbum?.images ?? []).map((img, idx) => ({
+    id: img.id ?? idx + 1,
+    url: img.url,
+    // Extract the filename from the proxy URL's path param
+    filename: (() => {
+      try {
+        const raw = new URL(img.url, "http://x").searchParams.get("path") ?? img.url;
+        return decodeURIComponent(raw).split("/").pop() ?? img.url;
+      } catch {
+        return img.url;
+      }
+    })(),
+    alternativeText: img.alternativeText,
+    width: img.width,
+    height: img.height,
+  }));
+
+  return (
+    <ApprovalInterface
+      album={{
+        slug: album.slug,
+        title: album.title,
+        clientName: album.clientName,
+        approvalStatus: album.approvalStatus,
+        existingSelections: album.selections ?? [],
+        selectionMin: album.selectionMin ?? 0,
+        selectionMax: album.selectionMax ?? 0,
+        allowDownloads: album.allowDownloads ?? false,
+        approvalTerms: album.approvalTerms,
+      }}
+      images={images}
+      token={token}
+    />
+  );
 }

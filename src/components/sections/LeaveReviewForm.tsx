@@ -7,6 +7,7 @@ import {
   useGoogleReCaptcha,
 } from "react-google-recaptcha-v3";
 import { useSearchParams } from "next/navigation";
+import { submitReview } from "@/lib/payload";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,7 +22,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Star, CheckCircle2, Edit, Send } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { RatingStars } from "./RatingStars";
-import { useTranslations, useLocale } from "next-intl";
+import { useTranslations } from "next-intl";
 import { TestimonialFormFields } from "./TestimonialFormFields";
 import { cn } from "@/lib/utils";
 
@@ -112,10 +113,9 @@ export const PreviewCard = ({
 
 const ReviewFormContents = () => {
   const t = useTranslations("photography.LeaveReviewPage");
-  const locale = useLocale();
-  const { executeRecaptcha } = useGoogleReCaptcha();
+const { executeRecaptcha } = useGoogleReCaptcha();
   const searchParams = useSearchParams();
-  const albumId = searchParams.get("albumId");
+  const albumSlug = searchParams.get("albumSlug") ?? searchParams.get("albumSlug") ?? undefined;
   const prefilledName = searchParams.get("clientName");
   const prefilledEvent = searchParams.get("eventName");
 
@@ -161,42 +161,38 @@ const ReviewFormContents = () => {
       return;
     }
     setSubmissionStatus("submitting");
-    const recaptchaToken = await executeRecaptcha("testimonialSubmit");
+    await executeRecaptcha("testimonialSubmit"); // verify bot-check (token not forwarded)
 
     const finalName =
       authorName.trim() === "" ? t("form.anonymousName") : authorName.trim();
 
-    const submissionFormData = new FormData();
-    submissionFormData.append(
-      "data",
-      JSON.stringify({
-        name: finalName,
-        event: eventValue,
-        quote,
-        ...ratings,
-        albumId: albumId ? parseInt(albumId) : null,
-      })
-    );
-
+    // Convert photo file to base64 data URL if provided
+    let avatarBase64: string | undefined;
     if (photoFile) {
-      submissionFormData.append("avatar", photoFile, photoFile.name);
+      avatarBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(photoFile);
+      });
     }
 
-    submissionFormData.append("recaptcha", recaptchaToken);
+    const result = await submitReview({
+      name: finalName,
+      role: eventValue,
+      quote,
+      albumSlug,
+      avatarBase64,
+      communication: ratings.communication,
+      creativity: ratings.creativity,
+      professionalism: ratings.professionalism,
+      value: ratings.value,
+    });
 
-    try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_STRAPI_API_URL}/api/testimonials?locale=${locale}`,
-        {
-          method: "POST",
-          body: submissionFormData,
-        }
-      );
-      if (!response.ok) throw new Error("Submission failed");
+    if (result.ok) {
       setStep(3);
       setSubmissionStatus("success");
-    } catch (error) {
-      console.error("Submission error:", error);
+    } else {
+      console.error("Submission error:", result.error);
       setSubmissionStatus("error");
     }
   }, [
@@ -206,8 +202,7 @@ const ReviewFormContents = () => {
     quote,
     ratings,
     photoFile,
-    locale,
-    albumId,
+    albumSlug,
     t,
   ]);
 
@@ -217,7 +212,7 @@ const ReviewFormContents = () => {
         <CheckCircle2 className="h-16 w-16 text-green-500 mx-auto mb-4" />
         <h1 className="text-3xl font-bold">{t("success.title")}</h1>
         <p className="text-muted-foreground mt-2">
-          {albumId ? t("success.messageAlbum") : t("success.message")}
+          {albumSlug ? t("success.messageAlbum") : t("success.message")}
         </p>
       </div>
     );
@@ -240,7 +235,7 @@ const ReviewFormContents = () => {
             <div className="text-center mb-6">
               <CardTitle className="text-3xl">{t("title")}</CardTitle>
               <CardDescription className="mt-1">
-                {albumId ? t("subtitleAlbum") : t("subtitle")}
+                {albumSlug ? t("subtitleAlbum") : t("subtitle")}
               </CardDescription>
             </div>
             <form onSubmit={handlePreview} className="space-y-4">

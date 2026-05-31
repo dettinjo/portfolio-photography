@@ -2,7 +2,7 @@ import { getTranslations } from "next-intl/server";
 import { PhotographyTabs } from "@/components/sections/PhotographyTabs";
 import { ProfileHeaderSection } from "@/components/sections/ProfileHeaderSection";
 import { fetchAlbums } from "@/lib/nextcloud";
-import { fetchTestimonials } from "@/lib/strapi";
+import { fetchApprovedReviews } from "@/lib/payload";
 import { WithContext, CollectionPage, Review } from "schema-dts";
 import { Metadata } from "next";
 
@@ -48,11 +48,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // UPDATED: The component now takes 'Props' and awaits 'params'.
 export default async function PhotographyPage({ params }: Props) {
   // UPDATED: Await the promise to get the locale.
-  const { locale } = await params;
+  await params; // locale resolved by next-intl request context
 
   const t = await getTranslations("photography.PhotographyPage");
-  const rawAlbums = await fetchAlbums();
-  const rawTestimonials = await fetchTestimonials(locale).catch(() => []);
+  const [rawAlbums, rawReviews] = await Promise.all([
+    fetchAlbums(),
+    fetchApprovedReviews().catch(() => []),
+  ]);
   const profileName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
 
@@ -66,20 +68,19 @@ export default async function PhotographyPage({ params }: Props) {
       images: (album.images || []).map((img) => img.url),
     }));
 
-  const testimonials = rawTestimonials
-    .filter((testimonial) => testimonial && testimonial.name)
-    .map((testimonial) => ({
-      name: testimonial.name,
-      quote: testimonial.quote,
-      role: testimonial.role,
-      avatar: testimonial.avatar?.url ?? null,
-      ratings: {
-        communication: testimonial.communication || 0,
-        creativity: testimonial.creativity || 0,
-        professionalism: testimonial.professionalism || 0,
-        value: testimonial.value || 0,
-      },
-    }));
+  const cmsUrl = process.env.NEXT_PUBLIC_CMS_URL ?? "https://cms.joeldettinger.de";
+  const testimonials = rawReviews.map((r) => ({
+    name: r.name,
+    quote: r.quote,
+    role: r.role ?? "",
+    avatar: r.avatar?.url ? `${cmsUrl}${r.avatar.url}` : null,
+    ratings: {
+      communication: r.communication ?? 0,
+      creativity: r.creativity ?? 0,
+      professionalism: r.professionalism ?? 0,
+      value: r.value ?? 0,
+    },
+  }));
 
   const jsonLd: WithContext<CollectionPage> = {
     "@context": "https://schema.org",
