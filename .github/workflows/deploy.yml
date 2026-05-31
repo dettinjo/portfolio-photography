@@ -1,0 +1,22 @@
+name: Deploy to Coolify
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Coolify deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: 91.98.81.231
+          username: root
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          known_hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
+          script: |
+            curl -sf -X POST \
+              -H "Authorization: Bearer 10|qKIZ8pZJC1tMxifwObaAhyFBsOkd87o9ttS2gOvLb17cfc5a" \
+              "http://localhost:8000/api/v1/deploy?uuid=csk4kwoogkg0ccg0gs48wkog&force=false" \
+            | grep -o '"message":"[^"]*"'
