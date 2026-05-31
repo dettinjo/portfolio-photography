@@ -1,8 +1,15 @@
 "use client";
 
 import Image from "next/image";
-import { GalleryLightbox } from "@/components/GalleryLightbox";
+import dynamic from "next/dynamic";
+// import { GalleryLightbox } from "@/components/GalleryLightbox";
 import { Button } from "@/components/ui/button";
+
+const GalleryLightbox = dynamic(
+  () =>
+    import("@/components/GalleryLightbox").then((mod) => mod.GalleryLightbox),
+  { ssr: false }
+);
 import { ArrowUp, Images } from "lucide-react";
 import { useTranslations } from "next-intl"; // 1. Import translation hook
 import { motion } from "framer-motion"; // 2. Import motion for animations

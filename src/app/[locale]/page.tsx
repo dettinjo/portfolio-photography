@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { PhotographyTabs } from "@/components/sections/PhotographyTabs";
 import { ProfileHeaderSection } from "@/components/sections/ProfileHeaderSection";
-import { fetchAlbums as fetchImmichAlbums } from "@/lib/immich";
+import { fetchAlbums } from "@/lib/nextcloud";
 import { fetchTestimonials } from "@/lib/strapi";
 import { WithContext, CollectionPage, Review } from "schema-dts";
 import { Metadata } from "next";
@@ -51,8 +51,8 @@ export default async function PhotographyPage({ params }: Props) {
   const { locale } = await params;
 
   const t = await getTranslations("photography.PhotographyPage");
-  const rawAlbums = await fetchImmichAlbums();
-  const rawTestimonials = await fetchTestimonials(locale);
+  const rawAlbums = await fetchAlbums();
+  const rawTestimonials = await fetchTestimonials(locale).catch(() => []);
   const profileName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
 
@@ -62,7 +62,6 @@ export default async function PhotographyPage({ params }: Props) {
       id: album.id,
       slug: album.slug,
       title: album.title,
-      // coverImage.url is a proxy path (/api/immich/…) — use as-is
       coverImageUrl: album.coverImage?.url ?? "/placeholder.jpg",
       images: (album.images || []).map((img) => img.url),
     }));
@@ -73,9 +72,7 @@ export default async function PhotographyPage({ params }: Props) {
       name: testimonial.name,
       quote: testimonial.quote,
       role: testimonial.role,
-      avatar: testimonial.avatar?.url
-        ? `${STRAPI_URL}${testimonial.avatar.url}`
-        : null,
+      avatar: testimonial.avatar?.url ?? null,
       ratings: {
         communication: testimonial.communication || 0,
         creativity: testimonial.creativity || 0,

@@ -5,7 +5,7 @@ import { Metadata } from "next";
 import {
   fetchAlbumBySlug,
   fetchAllAlbumSlugs,
-} from "@/lib/immich";
+} from "@/lib/nextcloud";
 import { getTranslations } from "next-intl/server";
 import { WithContext, ImageGallery, BreadcrumbList } from "schema-dts";
 import { routing } from "@/i18n/routing"; // <-- IMPORT ROUTING CONFIG
@@ -39,30 +39,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const firstName = fullName.split(" ")[0];
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
 
-  const { title, coverImage, localizations } = album;
-  // coverImage.url is a proxy path (/api/immich/…) — make it absolute for OG tags
+  const { title, coverImage } = album;
   const coverImageUrl = coverImage?.url
     ? `https://${photographyDomain}${coverImage.url}`
     : null;
   const description = t("description", { title: title, name: firstName });
 
-  // --- THIS IS THE FIX (PART 4) ---
-  // Build URLs using paths instead of subdomains
   const baseUrl = `https://${photographyDomain}`;
   const languages: Record<string, string> = {};
-
-  // Set current locale's URL
-  languages[locale] =
-    locale === routing.defaultLocale
-      ? `${baseUrl}/${slug}`
-      : `${baseUrl}/${locale}/${slug}`;
-
-  // Set alternate locale URLs
-  localizations?.forEach((loc) => {
-    languages[loc.locale] =
-      loc.locale === routing.defaultLocale
-        ? `${baseUrl}/${loc.slug}`
-        : `${baseUrl}/${loc.locale}/${loc.slug}`;
+  routing.locales.forEach((loc) => {
+    languages[loc] =
+      loc === routing.defaultLocale
+        ? `${baseUrl}/${slug}`
+        : `${baseUrl}/${loc}/${slug}`;
   });
 
   return {
@@ -76,7 +65,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         : [],
     },
     alternates: {
-      canonical: languages[locale], // The canonical URL is this page's URL
+      canonical: languages[locale],
       languages: languages, // The path-based languages object
     },
   };

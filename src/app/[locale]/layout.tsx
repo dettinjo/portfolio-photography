@@ -21,7 +21,7 @@ import { ThemeProvider } from "@/components/Theme-Provider";
 import { PhotographyHeader } from "@/components/layout/PhotographyHeader";
 import { Footer } from "@/components/layout/Footer";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -111,7 +111,7 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          inter.className
+          inter.variable
         )}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>

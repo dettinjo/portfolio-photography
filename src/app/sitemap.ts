@@ -1,8 +1,6 @@
 // src/app/sitemap.ts
 import { MetadataRoute } from "next";
-// --- THIS IS THE FIX (PART 6) ---
-// We import fetchAlbums to get localization data, not just slugs
-import { fetchAlbums } from "@/lib/strapi";
+import { fetchAlbums } from "@/lib/nextcloud";
 import { routing } from "@/i18n/routing";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -42,31 +40,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   // 2. Dynamic Album Pages
-  // Fetch *all* albums from the default locale, populating localizations
-  const defaultLocaleAlbums = await fetchAlbums(defaultLocale);
+  const albums = await fetchAlbums();
 
-  defaultLocaleAlbums.forEach((album) => {
+  albums.forEach((album) => {
     const alternates: Record<string, string> = {};
-
-    // Add default locale
-    alternates[defaultLocale] = getUrl(album.slug, defaultLocale);
-
-    // Add other locales
-    album.localizations?.forEach((loc) => {
-      alternates[loc.locale] = getUrl(loc.slug, loc.locale);
+    locales.forEach((locale) => {
+      alternates[locale] = getUrl(album.slug, locale);
     });
 
-    // Add an entry for *each* locale version of the album
     locales.forEach((locale) => {
-      if (alternates[locale]) {
-        sitemapEntries.push({
-          url: alternates[locale],
-          lastModified: new Date(), // Or use album.updatedAt if available
-          alternates: {
-            languages: alternates,
-          },
-        });
-      }
+      sitemapEntries.push({
+        url: alternates[locale],
+        lastModified: new Date(),
+        alternates: { languages: alternates },
+      });
     });
   });
 
