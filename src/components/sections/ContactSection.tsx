@@ -21,19 +21,19 @@ export function ContactSection() {
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmissionStatus("submitting");
-    const formData = new FormData(event.currentTarget);
+    const form = event.currentTarget;
+    const body = {
+      name: (form.elements.namedItem("name") as HTMLInputElement).value,
+      email: (form.elements.namedItem("email") as HTMLInputElement).value,
+      message: (form.elements.namedItem("message") as HTMLTextAreaElement).value,
+    };
 
     try {
-      const response = await fetch(
-        `https://formspree.io/f/${process.env.NEXT_PUBLIC_FORMSPREE_ID}`,
-        {
-          method: "POST",
-          body: formData,
-          headers: {
-            Accept: "application/json",
-          },
-        }
-      );
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
 
       if (response.ok) {
         setSubmissionStatus("success");
