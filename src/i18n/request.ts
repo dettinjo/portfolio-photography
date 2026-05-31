@@ -1,19 +1,10 @@
-import { cookies, headers } from "next/headers";
 import { getRequestConfig } from "next-intl/server";
 import { isValidLocale, routing } from "./routing";
 
-export default getRequestConfig(async () => {
-  // 1. Determine locale (this logic is correct)
-  let locale = (await cookies()).get("NEXT_LOCALE")?.value;
-  if (!locale) {
-    const acceptLanguage = (await headers()).get("accept-language");
-    if (acceptLanguage) {
-      const primaryLanguage = acceptLanguage.split(",")[0].split("-")[0];
-      if (isValidLocale(primaryLanguage)) {
-        locale = primaryLanguage;
-      }
-    }
-  }
+export default getRequestConfig(async ({ requestLocale }) => {
+  // requestLocale is provided by next-intl from the [locale] route segment.
+  // Fall back to the default locale if the segment is missing or invalid.
+  let locale = await requestLocale;
   if (!locale || !isValidLocale(locale)) {
     locale = routing.defaultLocale;
   }
