@@ -1,17 +1,11 @@
-// Server-side Payload client — uses getPayload() directly (no HTTP round-trip).
-// Safe to import only from Server Components and API route handlers.
-// Client components should call the REST API at /api/* instead.
-import 'server-only'
-import { getPayload } from 'payload'
-import configPromise from '@payload-config'
-import { cache } from 'react'
+// HTTP client for the Payload CMS REST API.
+// The photography frontend communicates with the CMS over HTTP — it does NOT
+// import Payload packages directly (that would require a DB at build time).
 
-export const getPayloadClient = cache(async () => {
-  return getPayload({ config: configPromise })
-})
+const CMS_URL = process.env.NEXT_PUBLIC_CMS_URL ?? 'https://cms.joeldettinger.de'
 
 // --------------------------------------------------------------------------
-// Types (kept identical to the old REST-client types for zero page changes)
+// Types
 // --------------------------------------------------------------------------
 
 export interface PayloadAlbum {
@@ -45,79 +39,51 @@ export interface PayloadReview {
 // Albums
 // --------------------------------------------------------------------------
 
+/** Fetch an album by its approval token (public, no auth). */
 export async function fetchAlbumByToken(token: string): Promise<PayloadAlbum | null> {
-  const payload = await getPayloadClient()
-  const result = await payload.find({
-    collection: 'albums',
-    where: { approvalToken: { equals: token } },
-    limit: 1,
-    select: {
-      slug: true,
-      title: true,
-      clientName: true,
-      approvalStatus: true,
-      selections: true,
-      selectionMin: true,
-      selectionMax: true,
-      allowDownloads: true,
-      approvalTerms: true,
-    },
-  })
-  return (result.docs[0] as unknown as PayloadAlbum) ?? null
+  try {
+    const res = await fetch(`${CMS_URL}/api/albums/by-token/${token}`, {
+      cache: 'no-store',
+      signal: AbortSignal.timeout(8000),
+    })
+    if (!res.ok) return null
+    return res.json()
+  } catch {
+    return null
+  }
 }
 
 // --------------------------------------------------------------------------
 // Approval
 // --------------------------------------------------------------------------
 
-export async function submitSelections(data: {
+export interface SubmitSelectionsPayload {
   token: string
   selections: Array<{ filename: string; comment?: string }>
   publicationConsent: boolean
-}): Promise<{ ok: boolean; error?: string }> {
-  const payload = await getPayloadClient()
-  const result = await payload.find({
-    collection: 'albums',
-    where: { approvalToken: { equals: data.token } },
-    limit: 1,
-  })
-  const album = result.docs[0]
-  if (!album) return { ok: false, error: 'Invalid token' }
-  if (album.approvalStatus === 'approved') return { ok: false, error: 'Album already approved' }
+}
 
-  const count = data.selections.length
-  if (album.selectionMin && count < album.selectionMin)
-    return { ok: false, error: `Please select at least ${album.selectionMin} images` }
-  if (album.selectionMax && count > album.selectionMax)
-    return { ok: false, error: `Please select at most ${album.selectionMax} images` }
-
-  await payload.update({
-    collection: 'albums',
-    id: album.id,
-    data: {
-      selections: data.selections.map((s) => ({ filename: s.filename, comment: s.comment ?? '' })),
-      approvalStatus: 'submitted',
-    },
-  })
-  return { ok: true }
+export async function submitSelections(data: SubmitSelectionsPayload): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const res = await fetch(`${CMS_URL}/api/approve`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data),
+      signal: AbortSignal.timeout(10000),
+    })
+    const json = await res.json().catch(() => ({}))
+    if (!res.ok) return { ok: false, error: (json as { error?: string }).error ?? 'Submission failed' }
+    return { ok: true }
+  } catch {
+    return { ok: false, error: 'Could not reach CMS. Please try again.' }
+  }
 }
 
 // --------------------------------------------------------------------------
 // Reviews / Testimonials
 // --------------------------------------------------------------------------
 
-export async function fetchApprovedReviews(): Promise<PayloadReview[]> {
-  const payload = await getPayloadClient()
-  const result = await payload.find({
-    collection: 'reviews',
-    where: { approved: { equals: true } },
-    depth: 1,
-    limit: 50,
-  })
-  return result.docs as unknown as PayloadReview[]
-}
-
-export async function submitReview(data: {
+export interface SubmitReviewPayload {
   albumSlug?: string
   name: string
   role?: string
@@ -127,37 +93,89 @@ export async function submitReview(data: {
   creativity: number
   professionalism: number
   value: number
-}): Promise<{ ok: boolean; error?: string }> {
-  const payload = await getPayloadClient()
+}
 
-  // Resolve album ID from slug
-  let albumId: number | undefined
-  if (data.albumSlug) {
-    const albumResult = await payload.find({
-      collection: 'albums',
-      where: { slug: { equals: data.albumSlug } },
-      limit: 1,
-    })
-    albumId = albumResult.docs[0]?.id as number | undefined
+/** Fetch approved reviews for the testimonials section.
+ *  Returns [] if the CMS is unreachable — page still renders without reviews. */
+export async function fetchApprovedReviews(): Promise<PayloadReview[]> {
+  try {
+    const res = await fetch(
+      `${CMS_URL}/api/reviews?where[approved][equals]=true&depth=1&limit=50`,
+      { next: { revalidate: 300 }, signal: AbortSignal.timeout(5000) },
+    )
+    if (!res.ok) return []
+    const data = await res.json()
+    return (data as { docs?: PayloadReview[] }).docs ?? []
+  } catch {
+    return []
+  }
+}
+
+export async function submitReview(data: SubmitReviewPayload): Promise<{ ok: boolean; error?: string }> {
+  // If there's a base64 avatar, upload it first as a media item
+  let avatarId: number | undefined
+
+  if (data.avatarBase64) {
+    try {
+      const blob = await (await fetch(data.avatarBase64)).blob()
+      const form = new FormData()
+      form.append('file', blob, 'avatar.jpg')
+      form.append('alt', data.name)
+      const mediaRes = await fetch(`${CMS_URL}/api/media`, {
+        method: 'POST',
+        body: form,
+        signal: AbortSignal.timeout(15000),
+      })
+      if (mediaRes.ok) {
+        const mediaJson = await mediaRes.json() as { doc?: { id: number } }
+        avatarId = mediaJson.doc?.id
+      }
+    } catch {
+      // Avatar upload failure is non-fatal
+    }
   }
 
+  // Find album ID from slug if provided
+  let albumId: number | undefined
+  if (data.albumSlug) {
+    try {
+      const albumRes = await fetch(
+        `${CMS_URL}/api/albums?where[slug][equals]=${encodeURIComponent(data.albumSlug)}&limit=1`,
+        { signal: AbortSignal.timeout(5000) },
+      )
+      if (albumRes.ok) {
+        const albumData = await albumRes.json() as { docs?: { id: number }[] }
+        albumId = albumData.docs?.[0]?.id
+      }
+    } catch {
+      // Album lookup failure is non-fatal
+    }
+  }
+
+  const body: Record<string, unknown> = {
+    name: data.name,
+    role: data.role,
+    quote: data.quote,
+    communication: data.communication,
+    creativity: data.creativity,
+    professionalism: data.professionalism,
+    value: data.value,
+    approved: false,
+  }
+  if (avatarId) body.avatar = avatarId
+  if (albumId) body.album = albumId
+
   try {
-    await payload.create({
-      collection: 'reviews',
-      data: {
-        name: data.name,
-        role: data.role,
-        quote: data.quote,
-        communication: data.communication,
-        creativity: data.creativity,
-        professionalism: data.professionalism,
-        value: data.value,
-        approved: false,
-        ...(albumId && { album: albumId }),
-      },
+    const res = await fetch(`${CMS_URL}/api/reviews`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10000),
     })
+    const json = await res.json().catch(() => ({})) as { errors?: Array<{ message: string }> }
+    if (!res.ok) return { ok: false, error: json.errors?.[0]?.message ?? 'Submission failed' }
     return { ok: true }
-  } catch (err) {
-    return { ok: false, error: err instanceof Error ? err.message : 'Submission failed' }
+  } catch {
+    return { ok: false, error: 'Could not reach CMS. Please try again.' }
   }
 }
