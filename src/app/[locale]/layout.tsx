@@ -20,6 +20,7 @@ import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/Theme-Provider";
 import { PhotographyHeader } from "@/components/layout/PhotographyHeader";
 import { Footer } from "@/components/layout/Footer";
+import { AuthProvider } from "@/context/AuthContext";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 
@@ -116,16 +117,18 @@ export default async function LocaleLayout({ children, params }: Props) {
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-            <div className="relative flex min-h-dvh flex-col bg-background">
-              {/* The Single Header for the entire app */}
-              <PhotographyHeader />
+            <AuthProvider>
+              <div className="relative flex min-h-dvh flex-col bg-background">
+                {/* The Single Header for the entire app */}
+                <PhotographyHeader />
 
-              <main className="flex-1">{children}</main>
+                <main className="flex-1">{children}</main>
 
-              <Footer />
-            </div>
-            <Analytics />
-            <SpeedInsights />
+                <Footer />
+              </div>
+              <Analytics />
+              <SpeedInsights />
+            </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>
       </body>

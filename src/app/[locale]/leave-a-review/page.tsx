@@ -1,4 +1,5 @@
 // portfolio-frontend/src/app/[locale]/photography/leave-a-review/page.tsx
+import { Suspense } from "react";
 import { getTranslations } from "next-intl/server";
 import { Metadata } from "next";
 import { LeaveReviewForm } from "@/components/sections/LeaveReviewForm";
@@ -33,5 +34,9 @@ export default function LeaveReviewPage() {
     return null;
   }
 
-  return <LeaveReviewForm siteKey={siteKey} />;
+  return (
+    <Suspense>
+      <LeaveReviewForm siteKey={siteKey} />
+    </Suspense>
+  );
 }

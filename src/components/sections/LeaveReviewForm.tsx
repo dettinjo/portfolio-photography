@@ -7,7 +7,13 @@ import {
   useGoogleReCaptcha,
 } from "react-google-recaptcha-v3";
 import { useSearchParams } from "next/navigation";
-import { submitReview } from "@/lib/payload";
+// submitReview lives on the server — call /api/reviews instead
+async function submitReview(data: Record<string, unknown>) {
+  const res = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) return { ok: false, error: json.error ?? 'Submission failed' }
+  return { ok: true }
+}
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";

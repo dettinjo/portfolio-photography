@@ -2,7 +2,13 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { submitSelections } from "@/lib/payload";
+// submitSelections lives on the server — call /api/selections instead
+async function submitSelections(data: Record<string, unknown>) {
+  const res = await fetch('/api/selections', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+  const json = await res.json().catch(() => ({}))
+  if (!res.ok) return { ok: false, error: json.error ?? 'Submission failed' }
+  return { ok: true }
+}
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
