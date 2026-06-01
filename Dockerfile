@@ -3,6 +3,9 @@ FROM node:20-alpine AS base
 FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
+# Force development mode so devDependencies are installed regardless of
+# what NODE_ENV Coolify injects as a build arg
+ENV NODE_ENV=development
 COPY package.json package-lock.json* ./
 RUN npm install --legacy-peer-deps
 
