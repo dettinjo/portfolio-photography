@@ -1,9 +1,24 @@
-Dockerfile
-.dockerignore
-node_modules
-npm-debug.log
-README.md
-ReadMe.md
+# Build artifacts
 .next
+node_modules
+npm-debug.log*
+
+# Git / CI
 .git
 .github
+
+# Local env files — never bake secrets into the image
+.env
+.env.*
+!.env.example
+
+# Docker meta
+Dockerfile
+.dockerignore
+
+# Docs
+README.md
+ReadMe.md
+
+# Large local media that should never go into a build context
+public/media

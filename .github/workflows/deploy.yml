@@ -1,22 +1,45 @@
-name: Deploy to Coolify
+name: Build & Deploy
 
 on:
   push:
     branches: [main]
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write        # needed to push to ghcr.io
+
     steps:
-      - name: Trigger Coolify deploy
-        uses: appleboy/ssh-action@v1.0.3
+      - uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to ghcr.io
+        uses: docker/login-action@v3
         with:
-          host: 91.98.81.231
-          username: root
-          key: ${{ secrets.DEPLOY_SSH_KEY }}
-          known_hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
-          script: |
-            curl -sf -X POST \
-              -H "Authorization: Bearer 10|qKIZ8pZJC1tMxifwObaAhyFBsOkd87o9ttS2gOvLb17cfc5a" \
-              "http://localhost:8000/api/v1/deploy?uuid=csk4kwoogkg0ccg0gs48wkog&force=false" \
-            | grep -o '"message":"[^"]*"'
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/${{ github.repository }}:latest
+          build-args: |
+            NEXT_PUBLIC_FULL_NAME=Joel Dettinger
+            NEXT_PUBLIC_LINKEDIN_USERNAME=joeldettinger
+            NEXT_PUBLIC_INSTAGRAM_USERNAME=joeldettinger
+            NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN=photosby.joeldettinger.de
+            NEXT_PUBLIC_CMS_URL=https://cms.joeldettinger.de
+            NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Trigger Coolify deploy
+        run: |
+          curl -fsSL "${{ secrets.COOLIFY_WEBHOOK_URL }}"
