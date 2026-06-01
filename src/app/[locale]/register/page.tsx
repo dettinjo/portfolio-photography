@@ -25,25 +25,38 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const { login } = useAuth();
   const router = useRouter();
-  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
+  const cmsUrl =
+    ""; // Payload is embedded — REST API is at the same origin
 
   const handleEmailRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
-      const res = await fetch(`${strapiUrl}/api/auth/local/register`, {
+      // Payload's user creation endpoint (admin must allow public create access on Users collection)
+      const res = await fetch(`${cmsUrl}/api/users`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, email, password }),
+        body: JSON.stringify({ name: username, email, password }),
       });
 
       const data = await res.json();
-      if (data.error) {
-        throw new Error(data.error.message || t("registrationFailed"));
+      if (!res.ok) {
+        throw new Error(data.errors?.[0]?.message || t("registrationFailed"));
       }
 
-      login(data.jwt, data.user);
+      // Auto-login after registration
+      const loginRes = await fetch(`${cmsUrl}/api/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+      const loginData = await loginRes.json();
+      if (!loginRes.ok || !loginData.token) {
+        throw new Error(t("registrationFailed"));
+      }
+
+      login(loginData.token, { id: loginData.user.id, email: loginData.user.email, name: loginData.user.name });
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("registrationFailed"));

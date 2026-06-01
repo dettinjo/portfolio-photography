@@ -1,0 +1,70 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-payload}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-portfolio_photography}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-payload}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - coolify
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_FULL_NAME: ${NEXT_PUBLIC_FULL_NAME}
+        NEXT_PUBLIC_EMAIL_ADDRESS: ${NEXT_PUBLIC_EMAIL_ADDRESS}
+        NEXT_PUBLIC_PHONE_NUMBER: ${NEXT_PUBLIC_PHONE_NUMBER}
+        NEXT_PUBLIC_STREET_ADDRESS: ${NEXT_PUBLIC_STREET_ADDRESS}
+        NEXT_PUBLIC_CITY_ADDRESS: ${NEXT_PUBLIC_CITY_ADDRESS}
+        NEXT_PUBLIC_INSTAGRAM_USERNAME: ${NEXT_PUBLIC_INSTAGRAM_USERNAME}
+        NEXT_PUBLIC_LINKEDIN_USERNAME: ${NEXT_PUBLIC_LINKEDIN_USERNAME}
+        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
+        PAYLOAD_SECRET: ${PAYLOAD_SECRET}
+    image: my-portfolio-photography
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    environment:
+      - NODE_ENV=production
+      - POSTGRES_URL=postgres://${POSTGRES_USER:-payload}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-portfolio_photography}
+      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
+      - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - NEXTCLOUD_URL=${NEXTCLOUD_URL}
+      - NEXTCLOUD_USER=${NEXTCLOUD_USER}
+      - NEXTCLOUD_PASSWORD=${NEXTCLOUD_PASSWORD}
+    volumes:
+      - /mnt/storagebox/portfolio-media/photography:/app/public/media
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - coolify
+
+volumes:
+  postgres_data:
+
+networks:
+  coolify:
+    external: true

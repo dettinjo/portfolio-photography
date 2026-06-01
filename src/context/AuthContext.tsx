@@ -10,10 +10,13 @@ import {
 } from "react";
 import { useRouter } from "@/i18n/navigation";
 
+// Payload is embedded — REST API is always at the same origin
+const CMS_URL = "";
+
 interface AuthUser {
-  id: number;
-  username: string;
+  id: number | string;
   email: string;
+  name?: string;
 }
 
 interface AuthContextType {
@@ -33,28 +36,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    // This effect runs once on component mount to check for a stored session
     const storedToken = localStorage.getItem("jwt");
-    if (storedToken) {
-      fetch(`${process.env.NEXT_PUBLIC_STRAPI_API_URL}/api/users/me`, {
-        headers: {
-          Authorization: `Bearer ${storedToken}`,
-        },
-      })
-        .then(async (res) => {
-          if (res.ok) {
-            const userData = await res.json();
-            setUser(userData);
-            setJwt(storedToken);
-          } else {
-            // Token is invalid, clear it
-            localStorage.removeItem("jwt");
-          }
-        })
-        .finally(() => setLoading(false));
-    } else {
+    if (!storedToken) {
       setLoading(false);
+      return;
     }
+
+    // Validate token against Payload's /api/users/me endpoint
+    fetch(`${CMS_URL}/api/users/me`, {
+      headers: { Authorization: `JWT ${storedToken}` },
+    })
+      .then(async (res) => {
+        if (res.ok) {
+          const data = await res.json();
+          setUser({ id: data.id, email: data.email, name: data.name });
+          setJwt(storedToken);
+        } else {
+          localStorage.removeItem("jwt");
+        }
+      })
+      .catch(() => localStorage.removeItem("jwt"))
+      .finally(() => setLoading(false));
   }, []);
 
   const login = (token: string, userData: AuthUser) => {
@@ -67,18 +69,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem("jwt");
     setJwt(null);
     setUser(null);
-    router.push("/login"); // Redirect to login page on logout
+    router.push("/login");
   };
 
-  const value = { user, jwt, loading, login, logout };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={{ user, jwt, loading, login, logout }}>
+      {children}
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth() {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth must be used within an AuthProvider");
+  return ctx;
 }

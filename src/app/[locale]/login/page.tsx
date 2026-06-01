@@ -3,7 +3,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { useRouter, Link } from "@/i18n/navigation"; // Use Link from next-intl
+import { useRouter, Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -14,36 +14,38 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Separator } from "@/components/ui/separator";
-import { useTranslations, useLocale } from "next-intl"; // Import the hook
+import { useTranslations } from "next-intl";
+
+// Payload CMS is embedded — REST API is always at the same origin
+const CMS_URL = "";
 
 export default function LoginPage() {
-  const t = useTranslations("Auth.LoginPage"); // Initialize translations
+  const t = useTranslations("Auth.LoginPage");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const { login } = useAuth();
   const router = useRouter();
-  const strapiUrl = process.env.NEXT_PUBLIC_STRAPI_API_URL;
-  const locale = useLocale();
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
     try {
-      const res = await fetch(`${strapiUrl}/api/auth/local`, {
+      // Payload's local auth endpoint
+      const res = await fetch(`${CMS_URL}/api/users/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ identifier: email, password }),
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
-      if (data.error) {
-        throw new Error(data.error.message || t("loginFailed"));
+
+      if (!res.ok || !data.token) {
+        throw new Error(data.errors?.[0]?.message || t("loginFailed"));
       }
 
-      login(data.jwt, data.user);
+      login(data.token, { id: data.user.id, email: data.user.email, name: data.user.name });
       router.push("/dashboard");
     } catch (err) {
       setError(err instanceof Error ? err.message : t("loginFailed"));
@@ -84,23 +86,12 @@ export default function LoginPage() {
               {t("submitButton")}
             </Button>
           </form>
-          <Separator className="my-6" />
-          <div className="space-y-4">
-            <Button variant="outline" className="w-full" asChild>
-              <a href={`${strapiUrl}/api/connect/google?locale=${locale}`}>
-                {t("googleButton")}
-              </a>
-            </Button>
-            <p className="text-center text-sm text-muted-foreground">
-              {t("noAccount")}{" "}
-              <Link
-                href="/register"
-                className="underline hover:text-foreground"
-              >
-                {t("registerLink")}
-              </Link>
-            </p>
-          </div>
+          <p className="mt-4 text-center text-sm text-muted-foreground">
+            {t("noAccount")}{" "}
+            <Link href="/register" className="underline hover:text-foreground">
+              {t("registerLink")}
+            </Link>
+          </p>
         </CardContent>
       </Card>
     </div>
