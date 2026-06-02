@@ -39,6 +39,7 @@ export default buildConfig({
       connectionString: process.env.POSTGRES_URL,
       connectionTimeoutMillis: 5000,
     },
+    push: true, // auto-sync schema to DB on startup (no manual migrations needed)
   }),
   email: nodemailerAdapter({
     defaultFromAddress: process.env.SMTP_FROM ?? 'photosby@joeldettinger.de',
