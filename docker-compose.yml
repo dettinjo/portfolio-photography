@@ -1,5 +1,8 @@
 services:
-  postgres:
+  # Service is named "pg-photography" (not the generic "postgres") to avoid
+  # a Docker DNS collision with Coolify's own "coolify-db" container, which
+  # registers the alias "postgres" on the shared coolify network.
+  pg-photography:
     image: postgres:17-alpine
     container_name: portfolio-photography-postgres
     restart: unless-stopped
@@ -26,20 +29,33 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NODE_ENV=development
-      - POSTGRES_URL=postgres://${POSTGRES_USER:-payload}:${POSTGRES_PASSWORD:-password}@postgres:5432/${POSTGRES_DB:-portfolio_photography}
-      - PAYLOAD_FORCE_DRIZZLE_PUSH=true
+      - NODE_ENV=production
+      - POSTGRES_URL=postgres://${POSTGRES_USER:-payload}:${POSTGRES_PASSWORD:-password}@pg-photography:5432/${POSTGRES_DB:-portfolio_photography}
       - SMTP_HOST=${SMTP_HOST}
       - SMTP_PORT=${SMTP_PORT}
       - SMTP_USER=${SMTP_USER}
       - SMTP_PASS=${SMTP_PASS}
+      - SMTP_FROM=${SMTP_FROM}
+      - ADMIN_EMAIL=${ADMIN_EMAIL}
+      - NEXTCLOUD_URL=${NEXTCLOUD_URL}
+      - NEXTCLOUD_USER=${NEXTCLOUD_USER}
+      - NEXTCLOUD_PASSWORD=${NEXTCLOUD_PASSWORD}
+      - NEXT_PUBLIC_FULL_NAME=${NEXT_PUBLIC_FULL_NAME}
+      - NEXT_PUBLIC_INSTAGRAM_USERNAME=${NEXT_PUBLIC_INSTAGRAM_USERNAME}
+      - NEXT_PUBLIC_LINKEDIN_USERNAME=${NEXT_PUBLIC_LINKEDIN_USERNAME}
+      - NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN=${NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN}
+      - IMAGE_CACHE_DIR=/app/cache
+      - PAYLOAD_SECRET=${PAYLOAD_SECRET}
     volumes:
-      - ./public/media:/app/public/media
+      - media:/app/public/media
+      - webp-cache:/app/cache
     depends_on:
-      postgres:
+      pg-photography:
         condition: service_healthy
     env_file:
       - .env.local
 
 volumes:
   postgres_data:
+  media:
+  webp-cache:
