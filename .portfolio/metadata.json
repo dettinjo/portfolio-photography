@@ -1,0 +1,10 @@
+{
+  "title": "Photography Portfolio & Client Portal",
+  "projectType": "Full-Stack Web Application",
+  "developedAt": "2025-11-17T00:00:00+00:00",
+  "weight": 4,
+  "publishLink": true,
+  "liveUrl": "https://photos.joeldettinger.de",
+  "repoUrl": "https://github.com/dettinjo/portfolio-photography",
+  "tags": ["Next.js", "TypeScript", "Strapi", "Tailwind CSS", "Rest API", "Full-Stack", "Docker"]
+}
