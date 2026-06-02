@@ -48,9 +48,8 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           known_hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
           script: |
-            # Pull latest image from GHCR and retag as the local name Coolify uses
+            # Pull latest image from GHCR
             docker pull ghcr.io/dettinjo/portfolio-photography:latest
-            docker tag ghcr.io/dettinjo/portfolio-photography:latest my-portfolio-photography:latest
             # Trigger Coolify to redeploy (Coolify manages containers, volumes, Traefik)
             curl -s -X GET \
               "http://localhost:8000/api/v1/deploy?uuid=csk4kwoogkg0ccg0gs48wkog&force=false" \
