@@ -1,5 +1,5 @@
 services:
-  postgres:
+  pg-photography:
     image: postgres:17-alpine
     restart: unless-stopped
     environment:
@@ -17,20 +17,7 @@ services:
       - coolify
 
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      args:
-        NEXT_PUBLIC_FULL_NAME: ${NEXT_PUBLIC_FULL_NAME}
-        NEXT_PUBLIC_EMAIL_ADDRESS: ${NEXT_PUBLIC_EMAIL_ADDRESS}
-        NEXT_PUBLIC_PHONE_NUMBER: ${NEXT_PUBLIC_PHONE_NUMBER}
-        NEXT_PUBLIC_STREET_ADDRESS: ${NEXT_PUBLIC_STREET_ADDRESS}
-        NEXT_PUBLIC_CITY_ADDRESS: ${NEXT_PUBLIC_CITY_ADDRESS}
-        NEXT_PUBLIC_INSTAGRAM_USERNAME: ${NEXT_PUBLIC_INSTAGRAM_USERNAME}
-        NEXT_PUBLIC_LINKEDIN_USERNAME: ${NEXT_PUBLIC_LINKEDIN_USERNAME}
-        NEXT_PUBLIC_SERVER_URL: ${NEXT_PUBLIC_SERVER_URL}
-        PAYLOAD_SECRET: ${PAYLOAD_SECRET}
-    image: my-portfolio-photography
+    image: ghcr.io/dettinjo/portfolio-photography:latest
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -42,7 +29,7 @@ services:
       start_period: 30s
     environment:
       - NODE_ENV=production
-      - POSTGRES_URL=postgres://${POSTGRES_USER:-payload}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-portfolio_photography}
+      - POSTGRES_URL=postgres://${POSTGRES_USER:-payload}:${POSTGRES_PASSWORD}@pg-photography:5432/${POSTGRES_DB:-portfolio_photography}
       - PAYLOAD_SECRET=${PAYLOAD_SECRET}
       - NEXT_PUBLIC_SERVER_URL=${NEXT_PUBLIC_SERVER_URL}
       - SMTP_HOST=${SMTP_HOST}
@@ -57,7 +44,7 @@ services:
     volumes:
       - /mnt/storagebox/portfolio-media/photography:/app/public/media
     depends_on:
-      postgres:
+      pg-photography:
         condition: service_healthy
     networks:
       - coolify
