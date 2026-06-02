@@ -14,7 +14,23 @@ const nextConfig: NextConfig = {
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "placehold.co", pathname: "/**" },
+      { protocol: "https", hostname: "cms.joeldettinger.de", pathname: "/**" },
     ],
+  },
+  async redirects() {
+    return [
+      // /admin and /admin/* → Payload CMS admin panel
+      {
+        source: "/admin",
+        destination: "https://cms.joeldettinger.de/admin",
+        permanent: false,
+      },
+      {
+        source: "/admin/:path*",
+        destination: "https://cms.joeldettinger.de/admin/:path*",
+        permanent: false,
+      },
+    ];
   },
   async headers() {
     return [

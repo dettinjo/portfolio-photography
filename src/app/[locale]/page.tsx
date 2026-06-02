@@ -6,6 +6,10 @@ import { fetchApprovedReviews } from "@/lib/payload";
 import { WithContext, CollectionPage, Review } from "schema-dts";
 import { Metadata } from "next";
 
+// Albums come from Nextcloud at runtime — credentials are not available at
+// Docker build time, so pre-rendering would always produce an empty list.
+export const dynamic = "force-dynamic";
+
 // UPDATED: 'params' prop is now correctly typed as a Promise.
 type Props = {
   params: Promise<{ locale: string }>;
