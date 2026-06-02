@@ -40,7 +40,7 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
-      - name: Trigger Coolify deploy via SSH
+      - name: Trigger Coolify deploy
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 91.98.81.231
@@ -48,7 +48,6 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           known_hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
           script: |
-            docker pull ghcr.io/dettinjo/portfolio-photography:latest
             curl -sf -X POST \
               -H "Authorization: Bearer 10|qKIZ8pZJC1tMxifwObaAhyFBsOkd87o9ttS2gOvLb17cfc5a" \
               "http://localhost:8000/api/v1/deploy?uuid=csk4kwoogkg0ccg0gs48wkog&force=false"
