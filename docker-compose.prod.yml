@@ -19,8 +19,6 @@ services:
   app:
     image: ghcr.io/dettinjo/portfolio-photography:latest
     restart: unless-stopped
-    ports:
-      - "3000:3000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
