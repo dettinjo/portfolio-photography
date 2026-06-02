@@ -12,6 +12,11 @@ const bundleAnalyzer = withBundleAnalyzer({
 /** @type {import('next').NextConfig} */
 const nextConfig: NextConfig = {
   output: "standalone",
+  // drizzle-kit is dynamically imported at runtime by @payloadcms/db-postgres
+  // when push:true is set. It is not auto-traced, so we force-include it.
+  outputFileTracingIncludes: {
+    "**/*": ["./node_modules/drizzle-kit/**", "./node_modules/esbuild/**"],
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "placehold.co", pathname: "/**" },
