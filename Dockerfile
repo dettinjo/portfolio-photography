@@ -50,8 +50,8 @@ RUN addgroup --system --gid 1001 nodejs \
 
 COPY --from=builder /app/public ./public
 
-RUN mkdir -p .next public/media \
- && chown -R nextjs:nodejs .next public/media
+RUN mkdir -p .next public/media cache \
+ && chown -R nextjs:nodejs .next public/media cache
 
 # The standalone output bundles everything needed to run the server.
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./

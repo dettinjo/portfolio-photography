@@ -38,8 +38,9 @@ function davUrl(relPath: string): string {
   return `${NEXTCLOUD_URL}/remote.php/dav/files/${NEXTCLOUD_USER}/${encoded}`;
 }
 
-export function proxyUrl(ncRelPath: string): string {
-  return `/api/nextcloud/photo?path=${encodeURIComponent(ncRelPath)}`;
+export function proxyUrl(ncRelPath: string, width?: number): string {
+  const w = width ? `&w=${width}` : "";
+  return `/api/nextcloud/photo?path=${encodeURIComponent(ncRelPath)}${w}`;
 }
 
 export function slugify(name: string): string {
@@ -137,7 +138,8 @@ export async function fetchAlbums(): Promise<Album[]> {
       slug: slugify(folderName),
       title: folderName,
       coverImage: {
-        url: coverPath ? proxyUrl(coverPath) : "/placeholder.jpg",
+        // 800px is enough for the grid thumbnail (≤33vw on desktop)
+        url: coverPath ? proxyUrl(coverPath, 800) : "/placeholder.jpg",
         alternativeText: `Cover photo for ${folderName}`,
         width: 800,
         height: 533,
@@ -145,10 +147,11 @@ export async function fetchAlbums(): Promise<Album[]> {
       },
       images: images.map((imgPath, idx) => ({
         id: idx + 1,
-        url: proxyUrl(imgPath),
+        // 1920px for full-screen lightbox; cached separately from the 800px thumbnail
+        url: proxyUrl(imgPath, 1920),
         alternativeText: null,
-        width: 1200,
-        height: 800,
+        width: 1920,
+        height: 1280,
         size: null,
       })),
       localizations: [],
