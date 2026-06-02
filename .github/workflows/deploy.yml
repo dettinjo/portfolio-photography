@@ -37,7 +37,8 @@ jobs:
             NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN=photosby.joeldettinger.de
             NEXT_PUBLIC_CMS_URL=https://cms.joeldettinger.de
             NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }}
-          no-cache: true
+          cache-from: type=gha,scope=photography
+          cache-to: type=gha,mode=max,scope=photography
 
       - name: Trigger Coolify deploy
         uses: appleboy/ssh-action@v1.0.3
