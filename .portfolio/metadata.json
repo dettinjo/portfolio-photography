@@ -6,5 +6,16 @@
   "publishLink": true,
   "liveUrl": "https://photos.joeldettinger.de",
   "repoUrl": "https://github.com/dettinjo/portfolio-photography",
-  "tags": ["Next.js", "TypeScript", "Strapi", "Tailwind CSS", "Rest API", "Full-Stack", "Docker"]
+  "tags": [
+    "Next.js",
+    "TypeScript",
+    "Strapi",
+    "Tailwind CSS",
+    "Rest API",
+    "Full-Stack",
+    "Docker"
+  ],
+  "titleDe": "Fotografie-Portfolio & Kundenportal",
+  "descriptionDe": "Ein modernes, headless Fotografie-Portfolio mit Next.js, Internationalisierung und einem sicheren Kunden-Dashboard zur Bildfreigabe.",
+  "projectTypeDe": "Full-Stack Web-Anwendung"
 }
