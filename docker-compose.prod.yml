@@ -46,6 +46,23 @@ services:
         condition: service_healthy
     networks:
       - coolify
+    labels:
+      - "coolify.managed=true"
+      - "traefik.enable=true"
+      - "traefik.http.middlewares.gzip.compress=true"
+      - "traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https"
+      - "traefik.http.routers.http-0-csk4kwoogkg0ccg0gs48wkog.entryPoints=http"
+      - "traefik.http.routers.http-0-csk4kwoogkg0ccg0gs48wkog.middlewares=redirect-to-https"
+      - "traefik.http.routers.http-0-csk4kwoogkg0ccg0gs48wkog.rule=Host(`photosby.joeldettinger.de`) && PathPrefix(`/`)"
+      - "traefik.http.routers.http-0-csk4kwoogkg0ccg0gs48wkog.service=http-0-csk4kwoogkg0ccg0gs48wkog"
+      - "traefik.http.routers.https-0-csk4kwoogkg0ccg0gs48wkog.entryPoints=https"
+      - "traefik.http.routers.https-0-csk4kwoogkg0ccg0gs48wkog.middlewares=gzip"
+      - "traefik.http.routers.https-0-csk4kwoogkg0ccg0gs48wkog.rule=Host(`photosby.joeldettinger.de`) && PathPrefix(`/`)"
+      - "traefik.http.routers.https-0-csk4kwoogkg0ccg0gs48wkog.service=https-0-csk4kwoogkg0ccg0gs48wkog"
+      - "traefik.http.routers.https-0-csk4kwoogkg0ccg0gs48wkog.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.https-0-csk4kwoogkg0ccg0gs48wkog.tls=true"
+      - "traefik.http.services.http-0-csk4kwoogkg0ccg0gs48wkog.loadbalancer.server.port=3000"
+      - "traefik.http.services.https-0-csk4kwoogkg0ccg0gs48wkog.loadbalancer.server.port=3000"
 
 volumes:
   postgres_data:
