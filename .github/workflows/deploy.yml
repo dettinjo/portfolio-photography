@@ -40,7 +40,7 @@ jobs:
           cache-from: type=gha,scope=photography
           cache-to: type=gha,mode=max,scope=photography
 
-      - name: Trigger Coolify deploy
+      - name: Deploy to server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: 91.98.81.231
@@ -48,6 +48,9 @@ jobs:
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           known_hosts: ${{ secrets.DEPLOY_KNOWN_HOSTS }}
           script: |
-            curl -sf -X POST \
-              -H "Authorization: Bearer 10|qKIZ8pZJC1tMxifwObaAhyFBsOkd87o9ttS2gOvLb17cfc5a" \
-              "http://localhost:8000/api/v1/deploy?uuid=csk4kwoogkg0ccg0gs48wkog&force=false"
+            # Pull latest image and retag for local compose reference
+            docker pull ghcr.io/dettinjo/portfolio-photography:latest
+            docker tag ghcr.io/dettinjo/portfolio-photography:latest my-portfolio-photography
+            # Deploy using stable compose file (not Coolify ephemeral artifacts)
+            cd /data/coolify/applications/csk4kwoogkg0ccg0gs48wkog
+            docker compose -p csk4kwoogkg0ccg0gs48wkog -f docker-compose.prod.yml up -d --no-build
