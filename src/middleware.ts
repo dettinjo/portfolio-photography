@@ -4,6 +4,6 @@ import { routing } from "./i18n/routing";
 export default createMiddleware(routing);
 
 export const config = {
-  // Exclude: _next internals, api routes, static files, and /admin (handled by next.config redirects)
+  // Exclude: _next, api, Payload admin, and static files
   matcher: ["/((?!_next|api|admin|.*\\..*).*)"],
 };

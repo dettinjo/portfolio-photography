@@ -1,6 +1,7 @@
 import { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import withBundleAnalyzer from "@next/bundle-analyzer";
+import { withPayload } from "@payloadcms/next/withPayload";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
@@ -19,17 +20,7 @@ const nextConfig: NextConfig = {
   },
   async redirects() {
     return [
-      // /admin and /admin/* → Payload CMS admin panel
-      {
-        source: "/admin",
-        destination: "https://cms.joeldettinger.de/admin",
-        permanent: false,
-      },
-      {
-        source: "/admin/:path*",
-        destination: "https://cms.joeldettinger.de/admin/:path*",
-        permanent: false,
-      },
+      // no external redirect needed — /admin is served by Payload embedded in this app
     ];
   },
   async headers() {
@@ -68,4 +59,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default bundleAnalyzer(withNextIntl(nextConfig));
+export default withPayload(bundleAnalyzer(withNextIntl(nextConfig)));
