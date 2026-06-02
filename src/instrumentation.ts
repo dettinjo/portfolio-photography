@@ -6,9 +6,8 @@ export async function register() {
     try {
       const { getPayload } = await import('payload')
       const configPromise = await import('@payload-config')
-      const payload = await getPayload({ config: configPromise.default })
-      // db.connect may not exist on all adapters; getPayload already connects
-      await payload.db.connect?.({ payload })
+      // getPayload() connects to the DB and runs push:true schema sync internally
+      await getPayload({ config: configPromise.default })
       console.log('[instrumentation] Payload DB connected and schema synced')
     } catch (err) {
       console.error('[instrumentation] Payload init failed:', err)
