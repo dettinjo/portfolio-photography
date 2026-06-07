@@ -15,29 +15,19 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import {
-  Mail,
-  Box,
-  Crown,
-  Lightbulb,
-  Check,
-  Clock,
-  Image as ImageIcon,
-  Wand2,
-  MapPin,
-  Zap,
-} from "lucide-react";
+import * as Icons from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
+import packagesConfig from "@/config/packages.json";
 
 export function ServicesSection() {
   const t = useTranslations("photography.ServicesSection");
   const tCalculator = useTranslations("photography.ServicesSection.calculator");
 
-  const yourEmail = "your-photo-email@example.com";
+  const yourEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || packagesConfig.contactEmail;
 
-  const [hours, setHours] = useState(1);
-  const [images, setImages] = useState(10);
+  const [hours, setHours] = useState(packagesConfig.calculator.hours.min);
+  const [images, setImages] = useState(10); // sensible starting default
   const [retouchLevel, setRetouchLevel] = useState(1);
   const [distance, setDistance] = useState("");
   const [addExpress, setAddExpress] = useState(false);
@@ -52,33 +42,31 @@ export function ServicesSection() {
   );
 
   const calculatedPrice = useMemo(() => {
-    const sessionFee = 40;
-    const hourlyRate = 55;
-    let pricePerImage = 4;
-    if (retouchLevel === 2) pricePerImage = 8;
-    if (retouchLevel === 3) pricePerImage = 15;
+    const { sessionFee, hourlyRate, pricePerImage, travelRate, expressMultiplier } = packagesConfig.calculator;
+    let imgPrice = pricePerImage.basic;
+    if (retouchLevel === 2) imgPrice = pricePerImage.advanced;
+    if (retouchLevel === 3) imgPrice = pricePerImage.pro;
+
     const numDistance = parseInt(distance, 10) || 0;
     let subtotal =
       sessionFee +
       hours * hourlyRate +
-      images * pricePerImage +
-      numDistance * 0.5;
-    if (addExpress) subtotal *= 1.2;
+      images * imgPrice +
+      numDistance * travelRate;
+    if (addExpress) subtotal *= expressMultiplier;
     return Math.round(subtotal);
   }, [hours, images, retouchLevel, distance, addExpress]);
 
-  const packages = [
-    {
-      type: "standard",
-      icon: <Box className="h-8 w-8 text-background" />,
-      price: "120",
-    },
-    {
-      type: "advanced",
-      icon: <Crown className="h-8 w-8 text-background" />,
-      price: "380",
-    },
-  ];
+  const packages = useMemo(() => {
+    return packagesConfig.packages.map((pkg) => {
+      const IconComponent = (Icons as unknown as Record<string, React.ComponentType<{ className?: string }>>)[pkg.icon] || Icons.HelpCircle;
+      return {
+        type: pkg.type,
+        icon: <IconComponent className="h-8 w-8 text-background" />,
+        price: String(pkg.price),
+      };
+    });
+  }, []);
 
   const individualMailto = useMemo(() => {
     const subject = t("mail.subject");
@@ -130,7 +118,6 @@ export function ServicesSection() {
               visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
             }}
           >
-            {/* --- HOVER SCALE EFFECT ADDED --- */}
             <Card className="flex flex-col h-full bg-foreground text-background border-transparent transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-background/20 dark:hover:shadow-black/30">
               <CardHeader className="p-6">
                 <div className="flex items-center gap-4">
@@ -148,7 +135,7 @@ export function ServicesSection() {
                 <ul className="space-y-4">
                   {t.raw(`${pkg.type}.items`).map((item: string) => (
                     <li key={item} className="flex items-start gap-3">
-                      <Check className="h-4 w-4 flex-shrink-0 text-green-400 mt-1" />
+                      <Icons.Check className="h-4 w-4 flex-shrink-0 text-green-400 mt-1" />
                       <span className="text-background/80">{item}</span>
                     </li>
                   ))}
@@ -175,7 +162,7 @@ export function ServicesSection() {
                       t(`${pkg.type}.subject`)
                     )}`}
                   >
-                    <Mail className="mr-2 h-4 w-4" /> {t("button")}
+                    <Icons.Mail className="mr-2 h-4 w-4" /> {t("button")}
                   </a>
                 </Button>
               </CardFooter>
@@ -189,11 +176,10 @@ export function ServicesSection() {
             visible: { opacity: 1, y: 0, transition: { duration: 0.5 } },
           }}
         >
-          {/* --- HOVER SCALE EFFECT ADDED --- */}
           <Card className="flex flex-col bg-foreground text-background border-transparent shadow-lg shadow-foreground/20 h-full transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-background/20 dark:hover:shadow-black/30">
             <CardHeader className="p-6">
               <div className="flex items-center gap-4">
-                <Lightbulb className="h-8 w-8 text-background" />
+                <Icons.Lightbulb className="h-8 w-8 text-background" />
                 <CardTitle className="text-2xl font-bold text-background">
                   {t("individual.title")}
                 </CardTitle>
@@ -208,7 +194,7 @@ export function ServicesSection() {
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <Label htmlFor="hours" className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" /> {tCalculator("duration")}
+                      <Icons.Clock className="h-4 w-4" /> {tCalculator("duration")}
                     </Label>
                     <span className="font-semibold">
                       {hours} {tCalculator("hours")}
@@ -218,16 +204,16 @@ export function ServicesSection() {
                     id="hours"
                     value={[hours]}
                     onValueChange={([val]) => setHours(val)}
-                    min={1}
-                    max={8}
-                    step={1}
+                    min={packagesConfig.calculator.hours.min}
+                    max={packagesConfig.calculator.hours.max}
+                    step={packagesConfig.calculator.hours.step}
                     className="[&>span:first-child]:bg-background/20 [&>span>span]:bg-background"
                   />
                 </div>
                 <div className="space-y-2">
                   <div className="flex justify-between items-center text-sm">
                     <Label htmlFor="images" className="flex items-center gap-2">
-                      <ImageIcon className="h-4 w-4" /> {tCalculator("images")}
+                      <Icons.Image className="h-4 w-4" /> {tCalculator("images")}
                     </Label>
                     <span className="font-semibold">{images}</span>
                   </div>
@@ -235,9 +221,9 @@ export function ServicesSection() {
                     id="images"
                     value={[images]}
                     onValueChange={([val]) => setImages(val)}
-                    min={5}
-                    max={50}
-                    step={1}
+                    min={packagesConfig.calculator.images.min}
+                    max={packagesConfig.calculator.images.max}
+                    step={packagesConfig.calculator.images.step}
                     className="[&>span:first-child]:bg-background/20 [&>span>span]:bg-background"
                   />
                 </div>
@@ -247,7 +233,7 @@ export function ServicesSection() {
                       htmlFor="retouching"
                       className="flex items-center gap-2"
                     >
-                      <Wand2 className="h-4 w-4" /> {tCalculator("retouching")}
+                      <Icons.Wand2 className="h-4 w-4" /> {tCalculator("retouching")}
                     </Label>
                     <span className="font-semibold">
                       {retouchLevels[retouchLevel - 1]}
@@ -268,7 +254,7 @@ export function ServicesSection() {
                     htmlFor="distance"
                     className="flex items-center gap-2 text-sm"
                   >
-                    <MapPin className="h-4 w-4" /> {tCalculator("travel")}
+                    <Icons.MapPin className="h-4 w-4" /> {tCalculator("travel")}
                   </Label>
                   <Input
                     id="distance"
@@ -281,7 +267,7 @@ export function ServicesSection() {
                 </div>
                 <div className="flex items-center justify-between">
                   <Label htmlFor="express" className="flex items-center gap-2">
-                    <Zap className="h-4 w-4" /> {tCalculator("express")}
+                    <Icons.Zap className="h-4 w-4" /> {tCalculator("express")}
                   </Label>
                   <Switch
                     id="express"
@@ -309,7 +295,7 @@ export function ServicesSection() {
               </div>
               <Button asChild className="w-full" variant="inverted">
                 <a href={individualMailto}>
-                  <Mail className="mr-2 h-4 w-4" /> {t("buttonIndividual")}
+                  <Icons.Mail className="mr-2 h-4 w-4" /> {t("buttonIndividual")}
                 </a>
               </Button>
             </CardFooter>
