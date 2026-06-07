@@ -21,6 +21,7 @@ export interface Album {
   images: Array<{
     id: number;
     url: string;
+    thumbnailUrl: string;
     alternativeText: string | null;
     width: number;
     height: number;
@@ -149,6 +150,7 @@ export async function fetchAlbums(): Promise<Album[]> {
         id: idx + 1,
         // 1920px for full-screen lightbox; cached separately from the 800px thumbnail
         url: proxyUrl(imgPath, 1920),
+        thumbnailUrl: proxyUrl(imgPath, 800),
         alternativeText: null,
         width: 1920,
         height: 1280,

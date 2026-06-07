@@ -6,6 +6,7 @@ import {
   fetchAlbumBySlug,
   fetchAllAlbumSlugs,
 } from "@/lib/nextcloud";
+import { GalleryLightbox } from "@/components/GalleryLightbox";
 import { getTranslations } from "next-intl/server";
 import { WithContext, ImageGallery, BreadcrumbList } from "schema-dts";
 import { routing } from "@/i18n/routing"; // <-- IMPORT ROUTING CONFIG
@@ -121,6 +122,11 @@ export default async function AlbumDetailPage({ params }: Props) {
     ],
   };
 
+  const lightboxAlbum = {
+    title: title,
+    images: images.map((img) => img.url),
+  };
+
   return (
     <article className="container mx-auto py-16 px-4 md:py-24">
       {/* ADDED: Script tags for JSON-LD structured data */}
@@ -135,18 +141,27 @@ export default async function AlbumDetailPage({ params }: Props) {
       <h1 className="text-4xl font-bold mb-12 text-center">{title}</h1>
 
       <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
-        {images?.map((image) => (
+        {images?.map((image, idx) => (
           <div key={image.id} className="break-inside-avoid">
-            <Image
-              src={image.url}
-              alt={
-                image.alternativeText || `Photograph from the album ${title}`
-              }
-              width={image.width}
-              height={image.height}
-              className="rounded-xl w-full h-auto block border-2 border-foreground"
-              sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-            />
+            <GalleryLightbox
+              allAlbums={[lightboxAlbum]}
+              startAlbumIndex={0}
+              startPhotoIndex={idx}
+            >
+              <div className="cursor-pointer">
+                <Image
+                  src={image.thumbnailUrl || image.url}
+                  alt={
+                    image.alternativeText || `Photograph from the album ${title}`
+                  }
+                  width={image.width}
+                  height={image.height}
+                  className="rounded-xl w-full h-auto block border-2 border-foreground hover:opacity-90 transition-opacity"
+                  sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                  unoptimized
+                />
+              </div>
+            </GalleryLightbox>
           </div>
         ))}
       </div>

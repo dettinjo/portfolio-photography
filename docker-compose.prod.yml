@@ -41,8 +41,10 @@ services:
       - NEXTCLOUD_PASSWORD=${NEXTCLOUD_PASSWORD}
       - UMAMI_INTERNAL_URL=${UMAMI_INTERNAL_URL}
       - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID}
+      - IMAGE_CACHE_DIR=/app/cache
     volumes:
       - /mnt/storagebox/portfolio-media/photography:/app/public/media
+      - webp-cache:/app/cache
     depends_on:
       pg-photography:
         condition: service_healthy
@@ -68,6 +70,7 @@ services:
 
 volumes:
   postgres_data:
+  webp-cache:
 
 networks:
   coolify:
