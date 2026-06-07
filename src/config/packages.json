@@ -1,0 +1,36 @@
+{
+  "contactEmail": "hello@joeldettinger.de",
+  "packages": [
+    {
+      "type": "standard",
+      "icon": "Box",
+      "price": 120
+    },
+    {
+      "type": "advanced",
+      "icon": "Crown",
+      "price": 380
+    }
+  ],
+  "calculator": {
+    "sessionFee": 40,
+    "hourlyRate": 55,
+    "pricePerImage": {
+      "basic": 4,
+      "advanced": 8,
+      "pro": 15
+    },
+    "travelRate": 0.5,
+    "expressMultiplier": 1.2,
+    "hours": {
+      "min": 1,
+      "max": 8,
+      "step": 1
+    },
+    "images": {
+      "min": 5,
+      "max": 50,
+      "step": 1
+    }
+  }
+}

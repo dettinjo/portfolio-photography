@@ -38,30 +38,24 @@ interface PhotographyTabsProps {
 }
 
 const TABS_STORAGE_KEY = "photography-active-tab";
+const SHOW_SERVICES = process.env.NEXT_PUBLIC_SHOW_SERVICES === "true";
 
 export function PhotographyTabs({
   albums,
   testimonials,
   translations,
 }: PhotographyTabsProps) {
-  // --- THIS IS THE FIX (Part 2): State Management ---
   // We use useState to manage the active tab. We start with a default.
   const [activeTab, setActiveTab] = useState("feed");
 
-  // --- THIS IS THE FIX (Part 3): Load Saved State ---
-  // This useEffect runs ONLY ONCE when the component mounts on the client.
-  // It checks localStorage for a saved tab and updates the state if found.
+  // Load Saved State on mount
   useEffect(() => {
     const savedTab = localStorage.getItem(TABS_STORAGE_KEY);
-    // You can add more validation here to ensure savedTab is one of the valid tab values
-    if (savedTab) {
+    if (savedTab && (savedTab !== "services" || SHOW_SERVICES)) {
       setActiveTab(savedTab);
     }
-  }, []); // The empty dependency array [] ensures this runs only once.
+  }, []);
 
-  // --- THIS IS THE FIX (Part 4): Handle State Changes ---
-  // This function is called whenever a new tab is clicked.
-  // It updates our React state AND saves the new tab to localStorage.
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     localStorage.setItem(TABS_STORAGE_KEY, value);
@@ -75,14 +69,16 @@ export function PhotographyTabs({
       className="sticky z-40 bg-background pt-4"
       style={{ top: "var(--header-offset, 56px)" }}
     >
-      {/* --- THIS IS THE FIX (Part 5): Control the Tabs Component --- */}
-      {/* We replace `defaultValue` with `value` and add `onValueChange`. */}
       <Tabs
         value={activeTab}
         onValueChange={handleTabChange}
         className="mt-8 md:mt-12"
       >
-        <TabsList className="grid w-full grid-cols-4 bg-transparent p-0 border-b">
+        <TabsList
+          className={`grid w-full bg-transparent p-0 border-b ${
+            SHOW_SERVICES ? "grid-cols-4" : "grid-cols-3"
+          }`}
+        >
           <TabsTrigger
             value="feed"
             className="flex-col items-center justify-center gap-2 p-4"
@@ -92,15 +88,17 @@ export function PhotographyTabs({
           >
             <Grid3x3 className="h-6 w-6" />
           </TabsTrigger>
-          <TabsTrigger
-            value="services"
-            className="flex-col items-center justify-center gap-2 p-4"
-            aria-label={translations.services}
-            data-umami-event="tab_clicked"
-            data-umami-event-tab="services"
-          >
-            <Briefcase className="h-6 w-6" />
-          </TabsTrigger>
+          {SHOW_SERVICES && (
+            <TabsTrigger
+              value="services"
+              className="flex-col items-center justify-center gap-2 p-4"
+              aria-label={translations.services}
+              data-umami-event="tab_clicked"
+              data-umami-event-tab="services"
+            >
+              <Briefcase className="h-6 w-6" />
+            </TabsTrigger>
+          )}
           <TabsTrigger
             value="testimonials"
             className="flex-col items-center justify-center gap-2 p-4"
@@ -123,9 +121,11 @@ export function PhotographyTabs({
         <TabsContent value="feed" className="mt-0">
           <PhotoGridSection albums={albums} />
         </TabsContent>
-        <TabsContent value="services" className="mt-8">
-          <ServicesSection />
-        </TabsContent>
+        {SHOW_SERVICES && (
+          <TabsContent value="services" className="mt-8">
+            <ServicesSection />
+          </TabsContent>
+        )}
         <TabsContent value="testimonials" className="mt-8">
           <TestimonialsSection testimonials={testimonials} />
         </TabsContent>
