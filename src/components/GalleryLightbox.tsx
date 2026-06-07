@@ -151,8 +151,31 @@ export function GalleryLightbox({
             sizes="100vw"
             className="object-contain"
             key={currentImage}
+            unoptimized
           />
         </div>
+
+        {/* Pre-load next and previous images to make sliding instantaneous */}
+        {currentPhotoIndex < currentAlbum.images.length - 1 && (
+          <Image
+            src={currentAlbum.images[currentPhotoIndex + 1]}
+            alt=""
+            width={1}
+            height={1}
+            className="hidden"
+            unoptimized
+          />
+        )}
+        {currentPhotoIndex > 0 && (
+          <Image
+            src={currentAlbum.images[currentPhotoIndex - 1]}
+            alt=""
+            width={1}
+            height={1}
+            className="hidden"
+            unoptimized
+          />
+        )}
 
         <Button
           variant="ghost"
