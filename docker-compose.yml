@@ -46,6 +46,8 @@ services:
       - NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN=${NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN}
       - IMAGE_CACHE_DIR=/app/cache
       - PAYLOAD_SECRET=${PAYLOAD_SECRET}
+      - UMAMI_INTERNAL_URL=${UMAMI_INTERNAL_URL}
+      - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID}
     volumes:
       - media:/app/public/media
       - webp-cache:/app/cache

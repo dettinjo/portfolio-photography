@@ -20,12 +20,16 @@ export function Footer() {
           <a
             href={`/imprint`}
             className="transition-colors hover:text-foreground"
+            data-umami-event="footer_link_clicked"
+            data-umami-event-page="imprint"
           >
             {t("imprint")}
           </a>
           <a
             href={`/privacy_policy`}
             className="transition-colors hover:text-foreground"
+            data-umami-event="footer_link_clicked"
+            data-umami-event-page="privacy_policy"
           >
             {t("privacy")}
           </a>

@@ -87,6 +87,8 @@ export function PhotographyTabs({
             value="feed"
             className="flex-col items-center justify-center gap-2 p-4"
             aria-label={translations.feed}
+            data-umami-event="tab_clicked"
+            data-umami-event-tab="feed"
           >
             <Grid3x3 className="h-6 w-6" />
           </TabsTrigger>
@@ -94,6 +96,8 @@ export function PhotographyTabs({
             value="services"
             className="flex-col items-center justify-center gap-2 p-4"
             aria-label={translations.services}
+            data-umami-event="tab_clicked"
+            data-umami-event-tab="services"
           >
             <Briefcase className="h-6 w-6" />
           </TabsTrigger>
@@ -101,6 +105,8 @@ export function PhotographyTabs({
             value="testimonials"
             className="flex-col items-center justify-center gap-2 p-4"
             aria-label={translations.testimonials}
+            data-umami-event="tab_clicked"
+            data-umami-event-tab="testimonials"
           >
             <Star className="h-6 w-6" />
           </TabsTrigger>
@@ -108,6 +114,8 @@ export function PhotographyTabs({
             value="contact"
             className="flex-col items-center justify-center gap-2 p-4"
             aria-label={translations.contact}
+            data-umami-event="tab_clicked"
+            data-umami-event-tab="contact"
           >
             <Mail className="h-6 w-6" />
           </TabsTrigger>
