@@ -68,6 +68,7 @@ export function ContactSection() {
                 href={`https://instagram.com/${process.env.NEXT_PUBLIC_INSTAGRAM_USERNAME}`}
                 target="_blank"
                 rel="noopener noreferrer"
+                data-umami-event="instagram_link_clicked"
               >
                 <Instagram className="mr-2 h-4 w-4" />@
                 {process.env.NEXT_PUBLIC_INSTAGRAM_USERNAME}
@@ -126,6 +127,7 @@ export function ContactSection() {
                 type="submit"
                 className="w-full"
                 disabled={submissionStatus === "submitting"}
+                data-umami-event="contact_form_submit"
               >
                 {submissionStatus === "submitting"
                   ? t("form_submitting")

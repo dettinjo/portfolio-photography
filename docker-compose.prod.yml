@@ -39,6 +39,8 @@ services:
       - NEXTCLOUD_URL=${NEXTCLOUD_URL}
       - NEXTCLOUD_USER=${NEXTCLOUD_USER}
       - NEXTCLOUD_PASSWORD=${NEXTCLOUD_PASSWORD}
+      - UMAMI_INTERNAL_URL=${UMAMI_INTERNAL_URL}
+      - UMAMI_WEBSITE_ID=${UMAMI_WEBSITE_ID}
     volumes:
       - /mnt/storagebox/portfolio-media/photography:/app/public/media
     depends_on:

@@ -1,5 +1,6 @@
 // src/app/[locale]/layout.tsx
 import React from "react";
+import Script from "next/script";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 import { Inter } from "next/font/google";
@@ -106,6 +107,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   const messages = await getMessages();
+  const umamiWebsiteId = process.env.UMAMI_WEBSITE_ID;
 
   return (
     <html lang={locale} suppressHydrationWarning>
@@ -128,6 +130,13 @@ export default async function LocaleLayout({ children, params }: Props) {
               </div>
               <Analytics />
               <SpeedInsights />
+              {umamiWebsiteId && (
+                <Script
+                  src="/api/sys-client"
+                  data-website-id={umamiWebsiteId}
+                  strategy="afterInteractive"
+                />
+              )}
             </AuthProvider>
           </ThemeProvider>
         </NextIntlClientProvider>

@@ -275,6 +275,7 @@ const { executeRecaptcha } = useGoogleReCaptcha();
                   type="submit"
                   className="w-full"
                   disabled={!isFormComplete}
+                  data-umami-event="review_form_preview_clicked"
                 >
                   {t("form.buttonPreview")}
                 </Button>
@@ -291,12 +292,13 @@ const { executeRecaptcha } = useGoogleReCaptcha();
           {/* --- DEFINITIVE FIX: Use 't' instead of 't_review' --- */}
           <PreviewCard testimonial={previewData} t={t} />
           <div className="mt-6 grid grid-cols-2 gap-4">
-            <Button variant="outline" onClick={() => setStep(1)}>
+            <Button variant="outline" onClick={() => setStep(1)} data-umami-event="review_form_edit_clicked">
               <Edit className="mr-2 h-4 w-4" /> {t("preview.buttonEdit")}
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={submissionStatus === "submitting"}
+              data-umami-event="review_form_submit_clicked"
             >
               {submissionStatus === "submitting" ? (
                 t("preview.buttonSubmitting")
