@@ -170,7 +170,6 @@ export async function fetchTestimonials(): Promise<Testimonial[]> {
 
 export async function fetchAuthenticatedAPI<T>(
   path: string,
-  _urlParamsObject = {},
   options: RequestInit = {},
   token: string
 ): Promise<T> {
