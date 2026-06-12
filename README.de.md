@@ -5,7 +5,7 @@
 Ein modernes, headless Fotografie-Portfolio, entwickelt mit Next.js und einem integrierten CMS. Das Portfolio richtet sich an professionelle Fotografen und bietet ein sicheres Kunden-Dashboard zur Bildfreigabe.
 
 <p align="center">
-  <img src="docs/docker.svg" alt="Docker" width="170" />
+  <img src="docs/nextjs.svg" alt="Nextjs" width="170" />
 </p>
 
 ### Kernfunktionen
