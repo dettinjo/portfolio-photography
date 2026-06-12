@@ -5,7 +5,7 @@
 A complete, production-grade photography portfolio and client management platform built with Next.js 14 and Strapi CMS. The platform serves a dual purpose: a public-facing photography portfolio with i18n support in English and German, and a password-protected client dashboard where photographers can share private photo galleries for client review and approval.
 
 <p align="center">
-  <img src="docs/docker.svg" alt="Docker" width="170" />
+  <img src="docs/nextjs.svg" alt="Nextjs" width="170" />
 </p>
 
 ### Key Features
