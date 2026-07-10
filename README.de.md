@@ -2,7 +2,7 @@
 
 # Fotografie-Portfolio
 
-Ein modernes, headless Fotografie-Portfolio, entwickelt mit Next.js und einem integrierten CMS. Das Portfolio richtet sich an professionelle Fotografen und bietet ein sicheres Kunden-Dashboard zur Bildfreigabe.
+Ein produktionsreifes Fotografie-Portfolio mit Next.js und Strapi, inklusive passwortgeschütztem Kunden-Dashboard für Bildfreigaben — vollständig zweisprachig (EN/DE).
 
 <p align="center">
   <img src="docs/nextjs.svg" alt="Nextjs" width="170" />
