@@ -2,7 +2,7 @@
 
 # Photography Portfolio & Client Portal
 
-A complete, production-grade photography portfolio and client management platform built with Next.js 14 and Strapi CMS. The platform serves a dual purpose: a public-facing photography portfolio with i18n support in English and German, and a password-protected client dashboard where photographers can share private photo galleries for client review and approval.
+A production-grade photography portfolio built with Next.js and Strapi, featuring a password-protected client dashboard for photo proofing and approvals, fully i18n (EN/DE).
 
 <p align="center">
   <img src="docs/nextjs.svg" alt="Nextjs" width="170" />
