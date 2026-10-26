@@ -2,7 +2,7 @@
 import React from "react";
 import Script from "next/script";
 import { notFound } from "next/navigation";
-import { Metadata } from "next";
+import { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import {
@@ -25,6 +25,13 @@ const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
 }
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
+    { media: "(prefers-color-scheme: dark)", color: "#18181b" },
+  ],
+};
 
 export async function generateMetadata({
   params,
@@ -72,6 +79,11 @@ export async function generateMetadata({
       type: "website",
       locale: locale,
     },
+    appleWebApp: {
+      capable: true,
+      title: siteTitle,
+      statusBarStyle: "black-translucent",
+    },
     icons: [
       {
         media: "(prefers-color-scheme: light)",
@@ -83,6 +95,7 @@ export async function generateMetadata({
         url: "/favicon-dark.svg",
         href: "/favicon-dark.svg",
       },
+      { rel: "apple-touch-icon", url: "/icons/apple-touch-icon.png" },
     ],
   };
 }
