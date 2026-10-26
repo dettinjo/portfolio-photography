@@ -2,8 +2,19 @@ import { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 import withBundleAnalyzer from "@next/bundle-analyzer";
 import { withPayload } from "@payloadcms/next/withPayload";
+import withSerwistInit from "@serwist/next";
+import { randomUUID } from "crypto";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
+
+// Service worker: built from src/app/sw.ts into public/sw.js (production only).
+const withSerwist = withSerwistInit({
+  swSrc: "src/app/sw.ts",
+  swDest: "public/sw.js",
+  // New revision per build so the precached offline page is refreshed
+  additionalPrecacheEntries: ["/offline", "/de/offline"].map((url) => ({ url, revision: randomUUID() })),
+  disable: process.env.NODE_ENV !== "production",
+});
 
 const bundleAnalyzer = withBundleAnalyzer({
   enabled: process.env.ANALYZE === "true",
@@ -64,4 +75,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withPayload(bundleAnalyzer(withNextIntl(nextConfig)));
+export default withPayload(bundleAnalyzer(withNextIntl(withSerwist(nextConfig))));

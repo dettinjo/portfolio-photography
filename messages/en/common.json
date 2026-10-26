@@ -69,5 +69,9 @@
     "section3_testimonials_content": "If you use our form to submit a testimonial, the data you provide (name, organisation/event, your review, ratings and optionally an uploaded photo) is stored in the content management system that runs on our own server, for the purpose of reviewing and publishing your feedback on our website. The processing is based on your consent (Art. 6(1)(a) GDPR), which you give by submitting the form. You can withdraw this consent at any time by contacting us, and your testimonial will be removed.",
     "section4_title": "3. Your Rights as a Data Subject",
     "section4_content": "Within the framework of the applicable legal provisions, you have the right at any time to free information about your stored personal data, its origin and recipients, and the purpose of the data processing, and, if applicable, a right to correction or deletion of this data."
+  },
+  "Offline": {
+    "title": "You're offline",
+    "message": "This page isn't available without a connection. Pages and photos you've already viewed still work — try again once you're back online."
   }
 }

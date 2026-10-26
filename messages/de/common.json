@@ -66,5 +66,9 @@
     "section3_testimonials_content": "Wenn Sie unser Formular zur Einreichung einer Bewertung nutzen, werden die von Ihnen bereitgestellten Daten (Name, Organisation/Event, Ihre Bewertung, Detailbewertungen und optional ein hochgeladenes Foto) im Content-Management-System auf unserem eigenen Server gespeichert. Dies geschieht zum Zweck der Prüfung und Veröffentlichung Ihres Feedbacks auf unserer Website. Die Verarbeitung erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die Sie durch das Absenden des Formulars erteilen. Sie können diese Einwilligung jederzeit widerrufen, indem Sie uns kontaktieren; Ihre Bewertung wird dann entfernt.",
     "section4_title": "3. Ihre Rechte als Betroffener",
     "section4_content": "Sie haben im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf unentgeltliche Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der Datenverarbeitung und ggf. ein Recht auf Berichtigung oder Löschung dieser Daten."
+  },
+  "Offline": {
+    "title": "Du bist offline",
+    "message": "Diese Seite ist ohne Verbindung nicht verfügbar. Bereits angesehene Seiten und Fotos funktionieren weiterhin – versuche es erneut, sobald du wieder online bist."
   }
 }

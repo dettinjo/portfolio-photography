@@ -471,7 +471,15 @@ restart interrupts, so persistent jobs added tables without benefit. AVIF is
 encoded at effort 0 (same size, ~30× faster: ~2.7 s per photo end to end).
 
 **1b** — dedicated read-only `portfolio-sync` Nextcloud user (sees the share as `Portfolio/`; `NEXTCLOUD_PORTFOLIO_PATH`, `NEXTCLOUD_WEBHOOK_PATH_PREFIX`), webhook registration for file events below `Lightroom/Portfolio`.
-**1c** — PWA shell (manifest, service worker, offline page).
+**1b ✅ done 2026-10-26** — production syncs as `portfolio-sync` (read-only share);
+seven Nextcloud webhooks (create/write/delete on `event.node.path`, rename/copy on
+source and target) filtered by path regex only — a `userIdFilter` silently disables
+webhooks for WebDAV uploads, because the app subscribes before the request is
+authenticated. Delivery is via Nextcloud cron (≤ 5 min) + 60 s debounce.
+**1c ✅ done 2026-10-26** — installable PWA: web manifest + icons (incl. maskable,
+Apple touch), Serwist service worker (app shell precache, photos cache-first, public
+pages network-first with offline fallback in en/de; admin, API and approval pages
+are never cached).
 
 - New collections (§11) with migrations; `Clients` auth separate from `Users`.
 - Nextcloud sync: webhook route, debounce, reconcile job, ingest pipeline (§5),
