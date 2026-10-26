@@ -42,8 +42,29 @@ export function photoRoot() {
   return resolvedRoot
 }
 
-/** True when the processed files of this photo version exist on disk. */
+/** True when the processed files of this photo version exist in the current root. */
 export const hasProcessedFiles = (fileId: number, version: string) => existsSync(photoDir(fileId, version))
+
+/**
+ * Where to read a photo version from: the current root first, then the other
+ * candidates — so photos keep being served while they are regenerated after
+ * the preferred location changes (e.g. the storage box became writable).
+ */
+export function findPhotoDir(fileId: number, version: string): string | null {
+  const roots = [photoRoot(), ...rootCandidates().filter((r) => r !== photoRoot())]
+  for (const root of roots) {
+    const dir = path.join(root, String(fileId), version)
+    if (existsSync(dir)) return dir
+  }
+  return null
+}
+
+/** Removes copies of a photo left in non-current roots. */
+async function removeFromOtherRoots(fileId: number) {
+  for (const root of rootCandidates().filter((r) => r !== photoRoot())) {
+    await rm(path.join(root, String(fileId)), { recursive: true, force: true }).catch(() => {})
+  }
+}
 
 export const photoDir = (fileId: number, version?: string) =>
   version ? path.join(photoRoot(), String(fileId), version) : path.join(photoRoot(), String(fileId))
@@ -161,10 +182,11 @@ export async function processPhoto(buffer: Buffer, fileId: number, version: stri
   }
 }
 
-/** Removes derivative folders of older versions of a photo. */
+/** Removes older versions of a photo, and copies left in other locations. */
 export async function removeOtherVersions(fileId: number, keepVersion: string) {
   const dir = photoDir(fileId)
   for (const entry of await readdir(dir).catch(() => [] as string[])) {
     if (entry !== keepVersion) await rm(path.join(dir, entry), { recursive: true, force: true })
   }
+  await removeFromOtherRoots(fileId)
 }

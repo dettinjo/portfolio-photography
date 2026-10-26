@@ -3,7 +3,7 @@
 // AVIF is served to browsers that accept it, WebP otherwise.
 import { type NextRequest } from 'next/server'
 import { readdir, readFile } from 'fs/promises'
-import { photoDir } from '@/lib/sync/process'
+import { findPhotoDir } from '@/lib/sync/process'
 
 type Params = { params: Promise<{ id: string; version: string; width: string }> }
 
@@ -13,7 +13,8 @@ export async function GET(req: NextRequest, { params }: Params) {
     return new Response('Not found', { status: 404 })
   }
 
-  const dir = photoDir(Number(id), version)
+  const dir = findPhotoDir(Number(id), version)
+  if (!dir) return new Response('Not found', { status: 404 })
   const available = (await readdir(dir).catch(() => [] as string[]))
     .filter((f) => f.endsWith('.webp'))
     .map((f) => Number(f.slice(0, -5)))
