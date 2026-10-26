@@ -22,6 +22,7 @@ import { CheckCircle, AlertCircle, Loader2, Download, Images } from "lucide-reac
 interface ImageItem {
   id: number;
   url: string;
+  thumbnailUrl: string;
   filename: string;
   alternativeText?: string | null;
   width: number;
@@ -94,7 +95,7 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
     if (result.ok) {
       setDone(true);
     } else {
-      setErrorMsg(result.error ?? t("error"));
+      setErrorMsg(result.error ?? t("error.submitMessage"));
       setSubmitting(false);
     }
   };
@@ -115,7 +116,7 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
         <h1 className="text-3xl font-bold">{album.title}</h1>
         {album.clientName && (
           <p className="mt-1 text-muted-foreground">
-            {t("greeting", { name: album.clientName })}
+            {t("greeting", { clientName: album.clientName })}
           </p>
         )}
         <p className="mt-2 text-sm text-muted-foreground">
@@ -126,7 +127,7 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
         </p>
         <div className="mt-3 flex items-center gap-2 text-sm font-medium">
           <Images className="h-4 w-4" />
-          <span>{t("selectedCount", { selected: selectedCount, total: images.length })}</span>
+          <span>{t("actionBar.counter", { selected: selectedCount, total: images.length })}</span>
           {validationMessage && (
             <span className="text-destructive ml-2">— {validationMessage}</span>
           )}
@@ -149,9 +150,10 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
                 }`}
               >
                 <Image
-                  src={img.url}
+                  src={img.thumbnailUrl}
                   alt={img.alternativeText ?? img.filename}
                   fill
+                  unoptimized
                   sizes="(max-width: 768px) 50vw, 25vw"
                   className="object-cover"
                 />
@@ -164,7 +166,7 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
 
               {isSelected && (
                 <Textarea
-                  placeholder={t("commentPlaceholder")}
+                  placeholder={t("imageCard.commentPlaceholder")}
                   value={comments[img.filename] ?? ""}
                   onChange={(e) =>
                     setComments((prev) => ({ ...prev, [img.filename]: e.target.value }))
@@ -187,11 +189,10 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
         })}
       </div>
 
-      {album.approvalTerms && (
-        <div className="mb-6 rounded-md border p-4 text-sm text-muted-foreground whitespace-pre-wrap">
-          {album.approvalTerms}
-        </div>
-      )}
+      <div className="mb-6 rounded-md border p-4 text-sm text-muted-foreground whitespace-pre-wrap">
+        <p className="mb-1 font-medium text-foreground">{t("terms.title")}</p>
+        {album.approvalTerms || t("terms.content")}
+      </div>
 
       {selectedCount > 0 && (
         <div className="flex items-start gap-3 mb-6">
@@ -201,7 +202,7 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
             onCheckedChange={(v) => setConsentGiven(Boolean(v))}
           />
           <Label htmlFor="consent" className="text-sm leading-snug cursor-pointer">
-            {t("consent")}
+            {t("terms.consentDescription")}
           </Label>
         </div>
       )}
@@ -209,7 +210,7 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
       {errorMsg && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>{t("errorTitle")}</AlertTitle>
+          <AlertTitle>{t("error.submitTitle")}</AlertTitle>
           <AlertDescription>{errorMsg}</AlertDescription>
         </Alert>
       )}
@@ -221,7 +222,11 @@ export function ApprovalInterface({ album, images, token }: ApprovalInterfacePro
         className="w-full md:w-auto"
       >
         {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {t("submit")} ({selectedCount})
+        {submitting
+          ? t("submitButton.loading")
+          : selectedCount > 0
+            ? t("submitButton.approveOnly", { count: selectedCount })
+            : t("submitButton.noApproval")}
       </Button>
     </div>
   );

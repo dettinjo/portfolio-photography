@@ -5,7 +5,20 @@
 const NEXTCLOUD_URL = process.env.NEXTCLOUD_URL ?? "https://cloud.joeldettinger.de";
 const NEXTCLOUD_USER = process.env.NEXTCLOUD_USER ?? "dettinjo";
 const NEXTCLOUD_PASSWORD = process.env.NEXTCLOUD_PASSWORD ?? "";
-const PORTFOLIO_DAV_PATH = `Lightroom/Portfolio`;
+
+/** Only files below this folder are ever exposed by the site. */
+export const PORTFOLIO_DAV_PATH = "Lightroom/Portfolio";
+
+export interface AlbumImage {
+  id: number;
+  url: string;
+  thumbnailUrl: string;
+  filename: string;
+  alternativeText: string | null;
+  width: number;
+  height: number;
+  size: null;
+}
 
 export interface Album {
   id: number;
@@ -18,15 +31,7 @@ export interface Album {
     height: number;
     size: null;
   };
-  images: Array<{
-    id: number;
-    url: string;
-    thumbnailUrl: string;
-    alternativeText: string | null;
-    width: number;
-    height: number;
-    size: null;
-  }>;
+  images: AlbumImage[];
   localizations: [];
 }
 
@@ -53,50 +58,74 @@ export function slugify(name: string): string {
     .replace(/-+/g, "-");
 }
 
-// Minimal WebDAV PROPFIND XML parser — extracts hrefs, collection flag, and content-type.
-// Handles any XML namespace prefix.
+// Minimal WebDAV PROPFIND XML parser. Handles any XML namespace prefix.
 interface DavEntry {
   href: string;
   isCollection: boolean;
   contentType: string;
+  fileId: number | null;
+  width: number | null;
+  height: number | null;
+  takenAt: number | null;
+}
+
+function tag(block: string, name: string): string | null {
+  const m = block.match(new RegExp(`<[^>]+:${name}[^>]*>([\\s\\S]*?)</[^>]+:${name}>`));
+  return m ? m[1].trim() : null;
+}
+
+function int(value: string | null | undefined): number | null {
+  const n = value ? parseInt(value, 10) : NaN;
+  return Number.isFinite(n) && n > 0 ? n : null;
 }
 
 function parsePropfind(xml: string): DavEntry[] {
   const entries: DavEntry[] = [];
-  // Each <...:response> block describes one resource
   const responseRe = /<[^>]+:response\b[^>]*>([\s\S]*?)<\/[^>]+:response>/g;
   let m: RegExpExecArray | null;
   while ((m = responseRe.exec(xml)) !== null) {
     const block = m[1];
-    const hrefM = block.match(/<[^>]+:href[^>]*>([^<]+)<\/[^>]+:href>/);
-    if (!hrefM) continue;
-    const href = decodeURIComponent(hrefM[1].trim());
-    const isCollection = /<[^>]+:collection\s*\/>/.test(block);
-    const ctM = block.match(/<[^>]+:getcontenttype[^>]*>([^<]+)<\/[^>]+:getcontenttype>/);
-    const contentType = ctM ? ctM[1].trim() : "";
-    entries.push({ href, isCollection, contentType });
+    const href = tag(block, "href");
+    if (!href) continue;
+    // Nextcloud photo metadata: <nc:metadata-photos-size><width>…</width><height>…</height>
+    const size = tag(block, "metadata-photos-size") ?? "";
+    entries.push({
+      href: decodeURIComponent(href),
+      isCollection: /<[^>]+:collection\s*\/>/.test(block),
+      contentType: tag(block, "getcontenttype") ?? "",
+      fileId: int(tag(block, "fileid")),
+      width: int(size.match(/<width>(\d+)<\/width>/)?.[1]),
+      height: int(size.match(/<height>(\d+)<\/height>/)?.[1]),
+      takenAt: int(tag(block, "metadata-photos-original_date_time")),
+    });
   }
   return entries;
 }
 
-async function propfind(relPath: string, depth = 1): Promise<DavEntry[]> {
-  const url = davUrl(relPath);
-  const res = await fetch(url, {
+const PROPFIND_BODY = `<?xml version="1.0"?>
+<d:propfind xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns" xmlns:nc="http://nextcloud.org/ns">
+  <d:prop>
+    <d:resourcetype/><d:getcontenttype/><oc:fileid/>
+    <nc:metadata-photos-size/><nc:metadata-photos-original_date_time/>
+  </d:prop>
+</d:propfind>`;
+
+async function propfind(relPath: string): Promise<DavEntry[]> {
+  const res = await fetch(davUrl(relPath), {
     method: "PROPFIND",
     headers: {
       Authorization: makeAuth(),
-      Depth: String(depth),
+      Depth: "1",
       "Content-Type": "application/xml",
     },
-    body: `<?xml version="1.0"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/><d:getcontenttype/></d:prop></d:propfind>`,
+    body: PROPFIND_BODY,
     next: { revalidate: 900 },
   });
   if (!res.ok) {
     console.error(`[nextcloud] PROPFIND ${relPath} failed: ${res.status} ${res.statusText}`);
     return [];
   }
-  const xml = await res.text();
-  return parsePropfind(xml);
+  return parsePropfind(await res.text());
 }
 
 // Extract the path relative to /remote.php/dav/files/<user>/ from a full DAV href
@@ -104,71 +133,85 @@ function extractFilePath(href: string): string {
   const prefix = `/remote.php/dav/files/${NEXTCLOUD_USER}/`;
   const idx = href.indexOf(prefix);
   if (idx === -1) return href;
-  return decodeURIComponent(href.slice(idx + prefix.length).replace(/\/$/, ""));
+  return href.slice(idx + prefix.length).replace(/\/$/, "");
 }
 
 const IMAGE_TYPES = new Set(["image/jpeg", "image/jpg", "image/png", "image/webp"]);
 
+// Used until Nextcloud has generated metadata for a newly added file.
+const FALLBACK_SIZE = { width: 1600, height: 2000 };
+
+interface AlbumFolder {
+  path: string;
+  name: string;
+  slug: string;
+}
+
+/** Album folders directly below the portfolio folder (one PROPFIND). */
+async function listAlbumFolders(): Promise<AlbumFolder[]> {
+  const entries = await propfind(PORTFOLIO_DAV_PATH);
+  return entries
+    .filter((e) => e.isCollection)
+    .map((e) => extractFilePath(e.href))
+    .filter((p) => p !== PORTFOLIO_DAV_PATH)
+    .map((path) => {
+      const name = path.split("/").filter(Boolean).pop() ?? path;
+      return { path, name, slug: slugify(name) };
+    })
+    .sort((a, b) => a.name.localeCompare(b.name));
+}
+
+async function loadAlbum(folder: AlbumFolder, index: number): Promise<Album> {
+  const contents = await propfind(folder.path);
+  const files = contents
+    .filter((e) => !e.isCollection && IMAGE_TYPES.has(e.contentType.split(";")[0].trim()))
+    .map((e) => ({ ...e, path: extractFilePath(e.href) }))
+    // Capture time first (Lightroom keeps EXIF), filename as a stable tiebreaker
+    .sort((a, b) => (a.takenAt ?? 0) - (b.takenAt ?? 0) || a.path.localeCompare(b.path));
+
+  const images: AlbumImage[] = files.map((f, idx) => ({
+    id: f.fileId ?? idx + 1,
+    // 1920px for full-screen lightbox; cached separately from the 800px thumbnail
+    url: proxyUrl(f.path, 1920),
+    thumbnailUrl: proxyUrl(f.path, 800),
+    filename: f.path.split("/").pop() ?? f.path,
+    alternativeText: null,
+    width: f.width ?? FALLBACK_SIZE.width,
+    height: f.height ?? FALLBACK_SIZE.height,
+    size: null,
+  }));
+
+  const cover = images[0];
+  return {
+    id: index + 1,
+    slug: folder.slug,
+    title: folder.name,
+    coverImage: {
+      url: cover ? cover.thumbnailUrl : "/placeholder.jpg",
+      alternativeText: `Cover photo for ${folder.name}`,
+      width: cover?.width ?? FALLBACK_SIZE.width,
+      height: cover?.height ?? FALLBACK_SIZE.height,
+      size: null,
+    },
+    images,
+    localizations: [],
+  };
+}
+
 export async function fetchAlbums(): Promise<Album[]> {
   if (!NEXTCLOUD_PASSWORD) return [];
-
-  const entries = await propfind(PORTFOLIO_DAV_PATH, 1);
-  const portfolioHref = `/remote.php/dav/files/${NEXTCLOUD_USER}/${PORTFOLIO_DAV_PATH}`;
-
-  const albumFolders = entries.filter(
-    (e) => e.isCollection && !e.href.replace(/\/$/, "").endsWith(PORTFOLIO_DAV_PATH) && e.href !== portfolioHref + "/"
-  );
-
-  const albums: Album[] = [];
-  for (let i = 0; i < albumFolders.length; i++) {
-    const folder = albumFolders[i];
-    const folderPath = extractFilePath(folder.href);
-    const folderName = folderPath.split("/").filter(Boolean).pop() ?? folderPath;
-
-    // Fetch album contents to find the cover image
-    const contents = await propfind(folderPath, 1);
-    const images = contents
-      .filter((e) => !e.isCollection && IMAGE_TYPES.has(e.contentType.split(";")[0].trim()))
-      .map((e) => extractFilePath(e.href))
-      .sort();
-
-    const coverPath = images[0] ?? null;
-
-    albums.push({
-      id: i + 1,
-      slug: slugify(folderName),
-      title: folderName,
-      coverImage: {
-        // 800px is enough for the grid thumbnail (≤33vw on desktop)
-        url: coverPath ? proxyUrl(coverPath, 800) : "/placeholder.jpg",
-        alternativeText: `Cover photo for ${folderName}`,
-        width: 800,
-        height: 533,
-        size: null,
-      },
-      images: images.map((imgPath, idx) => ({
-        id: idx + 1,
-        // 1920px for full-screen lightbox; cached separately from the 800px thumbnail
-        url: proxyUrl(imgPath, 1920),
-        thumbnailUrl: proxyUrl(imgPath, 800),
-        alternativeText: null,
-        width: 1920,
-        height: 1280,
-        size: null,
-      })),
-      localizations: [],
-    });
-  }
-
-  return albums;
+  const folders = await listAlbumFolders();
+  return Promise.all(folders.map((f, i) => loadAlbum(f, i)));
 }
 
 export async function fetchAlbumBySlug(slug: string): Promise<Album | null> {
-  const albums = await fetchAlbums();
-  return albums.find((a) => a.slug === slug) ?? null;
+  if (!NEXTCLOUD_PASSWORD) return null;
+  const folders = await listAlbumFolders();
+  const index = folders.findIndex((f) => f.slug === slug);
+  return index === -1 ? null : loadAlbum(folders[index], index);
 }
 
 export async function fetchAllAlbumSlugs(): Promise<{ slug: string }[]> {
-  const albums = await fetchAlbums();
-  return albums.map((a) => ({ slug: a.slug }));
+  if (!NEXTCLOUD_PASSWORD) return [];
+  return (await listAlbumFolders()).map((f) => ({ slug: f.slug }));
 }

@@ -2,7 +2,7 @@
 
 # Photography Portfolio & Client Portal
 
-A production-grade photography portfolio built with Next.js and Strapi, featuring a password-protected client dashboard for photo proofing and approvals, fully i18n (EN/DE).
+A production-grade photography portfolio built with Next.js and an embedded Payload CMS, with photos synced from Nextcloud and token-based client proofing — fully i18n (EN/DE).
 
 <p align="center">
   <img src="docs/nextjs.svg" alt="Nextjs" width="170" />
@@ -10,13 +10,13 @@ A production-grade photography portfolio built with Next.js and Strapi, featurin
 
 ### Key Features
 
-- **Headless CMS Architecture**: Strapi v5 powers all content — photo collections, client data, and gallery metadata — decoupled from the Next.js frontend for flexible content management.
-- **Client Proofing System**: Clients receive a unique access link to a private dashboard where they can review their gallery, mark favourite shots, and request edits — replacing expensive dedicated software.
-- **Internationalization (i18n)**: Full English and German language support using `next-intl`, with content managed directly in Strapi.
-- **Dynamic Gallery**: Masonry-layout galleries with lazy loading, lightbox viewer, and optimized image delivery via Next.js Image.
-- **Responsive & Animated**: Framer Motion page transitions and scroll animations provide a premium user experience across all devices.
-- **Dockerized Deployment**: Both the Next.js frontend and Strapi backend are containerized with Docker Compose for a consistent, one-command deployment via Coolify.
+- **Nextcloud as the photo source**: Lightroom exports dropped into a Nextcloud folder appear on the site automatically; photos are proxied, resized and cached as WebP so credentials never reach the browser.
+- **Embedded Payload CMS**: Payload 3 runs inside the Next.js app (admin at `/admin`) on PostgreSQL and manages client albums, approvals and reviews.
+- **Client Proofing**: Clients get a private approval link, select and comment on photos and grant publication consent — no account needed.
+- **Reviews**: Clients can leave a rated testimonial; it appears on the site once approved in the admin panel.
+- **Internationalization (i18n)**: English and German via `next-intl`.
+- **Dockerized Deployment**: One container plus PostgreSQL, built on GitHub Actions and deployed via Coolify; database migrations run automatically on startup.
 
 ### Technical Highlights
 
-The authentication system for the client portal is built on JWT tokens stored in HTTP-only cookies, ensuring secure, session-based access without exposing credentials. The Strapi content model separates public photography collections from private client galleries, using role-based access control to ensure clients only see their own content.
+All CMS access happens server-side through Payload's Local API. Album data is admin-only; clients reach their album solely through token-scoped endpoints that return the fields the approval UI needs. Public forms are protected by input validation, a honeypot and per-IP rate limiting, and the image proxy only serves images below the portfolio folder.

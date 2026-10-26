@@ -15,6 +15,10 @@ type Props = {
   params: Promise<{ slug: string; locale: string }>;
 };
 
+// Album contents come from Nextcloud; re-render at most every 15 minutes so
+// newly exported photos appear without a redeploy.
+export const revalidate = 900;
+
 // Generate static pages at build time
 export async function generateStaticParams() {
   const albums = await fetchAllAlbumSlugs();

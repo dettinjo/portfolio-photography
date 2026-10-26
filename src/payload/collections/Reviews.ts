@@ -8,9 +8,10 @@ export const Reviews: CollectionConfig = {
     defaultColumns: ['name', 'album', 'approved', 'createdAt'],
   },
   access: {
-    // Anyone can read approved reviews; unauthenticated users can create (submit).
-    read: () => true,
-    create: () => true,
+    // The public sees approved reviews only. Submissions go through
+    // /api/review-submissions (rate limited) which uses the Local API.
+    read: ({ req }) => (req.user ? true : { approved: { equals: true } }),
+    create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
   },

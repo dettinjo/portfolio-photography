@@ -24,28 +24,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
   const fullName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const firstName = fullName.split(" ")[0];
-  const siteTitle = t("siteName", { name: firstName });
-  const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
 
+  // Canonical URL, hreflang alternates and Open Graph come from the locale layout.
   return {
-    title: siteTitle,
+    title: { absolute: t("siteName", { name: firstName }) },
     description: t("description"),
-    alternates: {
-      canonical: `https://${photographyDomain}`,
-      languages: {
-        en: `https://${photographyDomain}`,
-        de: `https://de.${photographyDomain}`,
-        "x-default": `https://${photographyDomain}`,
-      },
-    },
-    openGraph: {
-      title: siteTitle,
-      description: t("description"),
-      url: `https://${photographyDomain}`,
-      siteName: siteTitle,
-      type: "website",
-      locale: locale,
-    },
   };
 }
 
@@ -57,7 +40,7 @@ export default async function PhotographyPage({ params }: Props) {
   const t = await getTranslations("photography.PhotographyPage");
   const [rawAlbums, rawReviews] = await Promise.all([
     fetchAlbums(),
-    fetchApprovedReviews().catch(() => []),
+    fetchApprovedReviews(),
   ]);
   const profileName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
@@ -72,12 +55,11 @@ export default async function PhotographyPage({ params }: Props) {
       images: (album.images || []).map((img) => img.url),
     }));
 
-  const cmsUrl = process.env.NEXT_PUBLIC_CMS_URL ?? "https://cms.joeldettinger.de";
   const testimonials = rawReviews.map((r) => ({
     name: r.name,
     quote: r.quote,
     role: r.role ?? "",
-    avatar: r.avatar?.url ? `${cmsUrl}${r.avatar.url}` : null,
+    avatar: r.avatarUrl,
     ratings: {
       communication: r.communication ?? 0,
       creativity: r.creativity ?? 0,

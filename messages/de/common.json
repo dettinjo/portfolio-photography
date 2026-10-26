@@ -55,58 +55,16 @@
     },
     "section3_title": "2. Datenerfassung auf dieser Website",
     "section3_hosting_title": "Hosting und Server-Log-Dateien",
-    "section3_hosting_content": "Unsere Website wird bei Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA, gehostet. Vercel erhebt bei jedem Zugriff auf die Website automatisch Informationen in sogenannten Server-Log-Dateien. Diese Daten werden nicht mit anderen Datenquellen zusammengeführt. Die Erfassung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.",
-    "section3_analytics_title": "Analyse durch Vercel Analytics & Speed Insights",
-    "section3_analytics_content": "Wir nutzen die Dienste Vercel Analytics und Speed Insights von unserem Hoster Vercel Inc. Diese Dienste sind datenschutzfreundlich konzipiert, erheben keine personenbezogenen Daten, die eine Identifizierung des Nutzers ermöglichen und verwenden keine Cookies. Die Rechtsgrundlage ist unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO) an der Analyse und Optimierung unserer Website.",
-    "section3_contact_title": "Kontaktformular via Formspree",
-    "section3_contact_content": "Wenn Sie unser Kontaktformular nutzen, werden Ihre Angaben zur Bearbeitung Ihrer Anfrage an den Dienstleister Formspree, Inc., 1201 Orange St, Ste 600, Wilmington, DE 19801, USA, übermittelt und dort verarbeitet. Die Verarbeitung dieser Daten erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO).",
-    "section3_recaptcha_title": "Spamschutz durch Google reCAPTCHA",
-    "section3_recaptcha_content": "Zum Schutz von Übermittlungsformularen auf dieser Seite nutzen wir den Dienst reCAPTCHA von Google LLC. Dieser Dienst stellt fest, ob eine Eingabe durch einen Menschen oder missbräuchlich durch eine automatisierte Verarbeitung erfolgt. Die Verarbeitung erfolgt auf Grundlage unseres berechtigten Interesses (Art. 6 Abs. 1 lit. f DSGVO) an der Vermeidung von Spam und Missbrauch. Zu diesem Zweck können Ihre IP-Adresse und weitere für den Dienst reCAPTCHA benötigte Daten an Google übertragen werden.",
+    "section3_hosting_content": "Diese Website läuft auf einem von der Hetzner Online GmbH, Gunzenhausen, Deutschland, gemieteten Server. Bei jedem Zugriff auf die Website erfasst der Webserver automatisch technische Informationen (z. B. IP-Adresse, Datum und Uhrzeit, aufgerufene Seite und Browsertyp) in Server-Log-Dateien. Diese Daten dienen ausschließlich dem Betrieb und der Sicherheit der Website und werden nicht mit anderen Datenquellen zusammengeführt. Rechtsgrundlage ist unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO) an einer sicheren und zuverlässigen Website. Portfolio-Fotos werden von unserem eigenen, selbst betriebenen Nextcloud-Server geladen; Ihr Browser verbindet sich dabei nie direkt mit diesem Server.",
+    "section3_analytics_title": "Datenschutzfreundliche Analyse mit Umami",
+    "section3_analytics_content": "Wir nutzen Umami, ein Open-Source-Analysewerkzeug, das wir selbst betreiben. Umami verwendet keine Cookies, speichert keine IP-Adressen und erstellt keine Nutzerprofile; es werden ausschließlich anonyme, zusammengefasste Nutzungsstatistiken (z. B. Seitenaufrufe und verweisende Websites) erfasst. Eine Weitergabe an Dritte findet nicht statt. Rechtsgrundlage ist unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO) an der Analyse und Verbesserung unserer Website.",
+    "section3_contact_title": "Kontaktformular",
+    "section3_contact_content": "Wenn Sie unser Kontaktformular nutzen, werden Ihr Name, Ihre E-Mail-Adresse und Ihre Nachricht über unseren E-Mail-Anbieter dogado GmbH, Dortmund, Deutschland, per E-Mail an uns übermittelt, und Sie erhalten eine automatische Bestätigungs-E-Mail. Wir verwenden diese Daten ausschließlich zur Beantwortung Ihrer Anfrage und löschen sie, sobald sie nicht mehr benötigt werden. Rechtsgrundlage ist Ihre Einwilligung (Art. 6 Abs. 1 lit. a DSGVO) sowie, sofern Ihre Anfrage eine Buchung betrifft, die Durchführung vorvertraglicher Maßnahmen (Art. 6 Abs. 1 lit. b DSGVO).",
+    "section3_spam_title": "Spamschutz",
+    "section3_spam_content": "Zum Schutz unserer Formulare vor automatisiertem Missbrauch verwenden wir ein verstecktes Formularfeld und begrenzen die Anzahl der Übermittlungen pro IP-Adresse. Dazu wird Ihre IP-Adresse nur vorübergehend im Arbeitsspeicher unseres Servers gehalten (höchstens eine Stunde) und nicht dauerhaft gespeichert. Es wird kein Drittanbieter eingesetzt. Rechtsgrundlage ist unser berechtigtes Interesse (Art. 6 Abs. 1 lit. f DSGVO) an der Vermeidung von Spam und Missbrauch.",
     "section3_testimonials_title": "Einreichung von Bewertungen/Testimonials",
-    "section3_testimonials_content": "Wenn Sie unser Formular zur Einreichung einer Bewertung nutzen, werden die von Ihnen bereitgestellten Daten (Name, Organisation/Event, Ihre Bewertung, Detailbewertungen und optional ein hochgeladenes Foto) an unser Backend-System (Strapi CMS) übermittelt und dort gespeichert. Dies geschieht zum Zweck der Prüfung und Veröffentlichung Ihres Feedbacks auf unserer Webseite. Die Verarbeitung dieser Daten erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die Sie durch das Absenden des Formulars erteilen. Sie können diese Einwilligung jederzeit widerrufen, indem Sie uns kontaktieren; Ihre Bewertung wird dann entfernt.",
+    "section3_testimonials_content": "Wenn Sie unser Formular zur Einreichung einer Bewertung nutzen, werden die von Ihnen bereitgestellten Daten (Name, Organisation/Event, Ihre Bewertung, Detailbewertungen und optional ein hochgeladenes Foto) im Content-Management-System auf unserem eigenen Server gespeichert. Dies geschieht zum Zweck der Prüfung und Veröffentlichung Ihres Feedbacks auf unserer Website. Die Verarbeitung erfolgt auf Grundlage Ihrer Einwilligung (Art. 6 Abs. 1 lit. a DSGVO), die Sie durch das Absenden des Formulars erteilen. Sie können diese Einwilligung jederzeit widerrufen, indem Sie uns kontaktieren; Ihre Bewertung wird dann entfernt.",
     "section4_title": "3. Ihre Rechte als Betroffener",
     "section4_content": "Sie haben im Rahmen der geltenden gesetzlichen Bestimmungen jederzeit das Recht auf unentgeltliche Auskunft über Ihre gespeicherten personenbezogenen Daten, deren Herkunft und Empfänger und den Zweck der Datenverarbeitung und ggf. ein Recht auf Berichtigung oder Löschung dieser Daten."
-  },
-  "Auth": {
-    "LoginPage": {
-      "title": "Anmelden",
-      "description": "Greifen Sie auf Ihre persönlichen Fotoalben zu.",
-      "emailLabel": "E-Mail",
-      "passwordLabel": "Passwort",
-      "submitButton": "Mit E-Mail anmelden",
-      "googleButton": "Mit Google anmelden",
-      "noAccount": "Haben Sie noch kein Konto?",
-      "registerLink": "Registrieren",
-      "loginFailed": "Anmeldung fehlgeschlagen. Bitte überprüfen Sie Ihre Anmeldedaten."
-    },
-    "RegisterPage": {
-      "title": "Registrieren",
-      "description": "Erstellen Sie Ihr Kundenkonto.",
-      "usernameLabel": "Benutzername",
-      "emailLabel": "E-Mail",
-      "passwordLabel": "Passwort",
-      "submitButton": "Konto erstellen",
-      "googleButton": "Mit Google registrieren",
-      "hasAccount": "Haben Sie bereits ein Konto?",
-      "loginLink": "Anmelden",
-      "registrationFailed": "Registrierung fehlgeschlagen. Bitte versuchen Sie es erneut."
-    },
-    "CallbackPage": {
-      "title": "Verbinde...",
-      "message": "Verbindung wird hergestellt, bitte warten..."
-    },
-    "DashboardPage": {
-      "title": "Dashboard",
-      "welcome": "Willkommen, {username}!",
-      "logout": "Abmelden",
-      "albumsTitle": "Ihre Alben",
-      "noAlbums": "Ihnen sind noch keine Alben zugewiesen.",
-      "loading": "Ihr Dashboard wird geladen...",
-      "albumStatus": "Status: {status}",
-      "status": {
-        "unknown": "Ausstehend"
-      },
-      "viewAlbum": "Album ansehen"
-    }
   }
 }

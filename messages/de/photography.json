@@ -167,6 +167,11 @@
   },
   "ApprovalPage": {
     "greeting": "Hallo {clientName}, bitte wähle die Fotos aus, deren Veröffentlichung in meinem Portfolio du zustimmst.",
+    "instructions": "Tippe auf ein Bild, um es auszuwählen. Ausgewählte Bilder kannst du kommentieren.",
+    "selectionRange": "Bitte wähle zwischen {min} und {max} Bildern aus.",
+    "selectionMin": "Bitte wähle mindestens {count} Bilder aus.",
+    "selectionMax": "Bitte wähle höchstens {count} Bilder aus.",
+    "download": "Herunterladen",
     "actionBar": {
       "counter": "{selected} / {total} Bilder ausgewählt",
       "selectAll": "Alle auswählen",
