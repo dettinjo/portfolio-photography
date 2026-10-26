@@ -3,6 +3,7 @@ name: Build & Deploy
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   build-and-deploy:
@@ -35,8 +36,6 @@ jobs:
             NEXT_PUBLIC_LINKEDIN_USERNAME=joeldettinger
             NEXT_PUBLIC_INSTAGRAM_USERNAME=joeldettinger
             NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN=photosby.joeldettinger.de
-            NEXT_PUBLIC_CMS_URL=https://cms.joeldettinger.de
-            NEXT_PUBLIC_RECAPTCHA_SITE_KEY=${{ secrets.NEXT_PUBLIC_RECAPTCHA_SITE_KEY }}
           cache-from: type=gha,scope=photography
           cache-to: type=gha,mode=max,scope=photography
 
@@ -51,9 +50,14 @@ jobs:
           script: |
             # Pull latest image from GHCR
             docker pull ghcr.io/dettinjo/portfolio-photography:latest
-            # Trigger Coolify to redeploy (Coolify manages containers, volumes, Traefik)
-            curl -s -X GET \
-              "http://localhost:8000/api/v1/deploy?uuid=csk4kwoogkg0ccg0gs48wkog&force=false" \
+            # Trigger Coolify to redeploy (Coolify manages containers, volumes, Traefik).
+            # Coolify's API only listens with TLS on the Tailscale address and needs
+            # its hostname for SNI, so pin that hostname to the address.
+            set -e
+            COOLIFY=hetzner-server.tailfd0b90.ts.net
+            curl -sk --fail-with-body --max-time 60 \
+              --resolve "$COOLIFY:8000:100.64.112.4" \
+              -X POST "https://$COOLIFY:8000/api/v1/deploy?uuid=csk4kwoogkg0ccg0gs48wkog&force=false" \
               -H "Authorization: Bearer $COOLIFY_TOKEN"
         env:
           COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
