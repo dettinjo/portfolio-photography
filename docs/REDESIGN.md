@@ -1,6 +1,6 @@
 # Redesign Plan — Photography Portfolio & Client Platform
 
-Status: **draft for review** · Date: 2026-10-26
+Status: **decisions recorded** · Date: 2026-10-26 (decisions §14 added the same day)
 
 This document is the reference for the redesign of `photosby.joeldettinger.de`. It records
 what the current codebase does (and where it breaks), the decisions taken, the target
@@ -192,11 +192,26 @@ Lightroom metadata drives the site:
 | Purpose | Processing | Storage / delivery |
 |---|---|---|
 | Portfolio | EXIF read, auto-orient, sRGB, strip GPS; AVIF + WebP at 480/960/1600/2400; thumbhash + dominant colour | Site storage; public, immutable cache headers |
-| Preview | ~2048 px WebP; optional watermark / client-name overlay; original filename kept | Signed, expiring URLs scoped to project or share link |
-| Final | Original **mirrored** to storage box; web-size set for social; ZIP built async | Signed download URLs in the portal; purged after gallery expiry |
+| Preview | ~2048 px WebP; subtle watermark (see below); original filename kept | Signed, expiring URLs scoped to project or share link |
+| Final | Original **mirrored** to storage box; web-size set for social; ZIP built async; never watermarked | Signed download URLs in the portal; online 12 months, then purged (see below) |
 
 Finals are mirrored rather than streamed from home so delivery does not depend on the
 home server's uptime or upload bandwidth.
+
+**Preview watermark (decision D4).** Every proofing/sneak-peek derivative carries a
+subtle, semi-transparent text overlay in a corner — the **client's name** by default,
+overridable per project in admin. It is burned in at ingest, so the un-watermarked preview
+never exists on the site. Finals are never watermarked.
+
+**Final gallery lifetime (decision D5).** Finals stay online for **12 months** from
+delivery. Clients get reminder emails 30 and 7 days before expiry; the admin can extend a
+gallery. On expiry the mirrored originals, web-size set and ZIP are deleted from the
+storage box; the project, picks, comments and reviews remain. The originals still exist in
+`Clients/<project>/2 Final/`, so re-ingesting restores a gallery.
+
+Storage estimate: a wedding (~500 finals × ~15 MB + ZIP) ≈ 15 GB, a portrait/event
+≈ 1–3 GB. The 1 TB storage box (926 GB free on 2026-10-26) holds roughly 50–60 weddings
+within one 12-month window.
 
 ### 5.5 Credentials
 
@@ -228,6 +243,10 @@ home server's uptime or upload bandwidth.
   what you receive, turnaround, and a small "from €…". The calculator becomes
   **Plan your shoot** — a short stepper (what, when, where, size, budget range) that
   creates an `Inquiry`.
+- **Focused launch (decision D1)**: start with the 2–3 genres that have strong published
+  series, plus a "Something else? Ask me" path in Plan your shoot. **Rule enforced by the
+  site:** an offering (and its genre chip) is only shown when its genre has at least one
+  published series. New genres appear automatically once a series is published.
 - **Viewer**: one shared fullscreen component for portfolio, proofing and delivery.
 - **SEO**: OG image per photo and series, `ImageGallery` / `ImageObject` JSON-LD with real
   dimensions, consistent `/<locale>` hreflang, sitemap from Payload.
@@ -267,7 +286,9 @@ Stages advance from admin actions **and** from Nextcloud events (first file in
     change; round limit from the offering.
   - *Delivery*: originals + web-size, async ZIP, expiry date, guest share.
 - **Messages**: one thread per project, showing linked photo comments inline.
-- **Documents**: proposal / confirmation (accepted with timestamp), later invoices.
+- **Documents**: proposal / confirmation (accepted with timestamp), Stripe receipts,
+  uploaded invoice PDFs.
+- **Payments**: see §7.5.
 - **Feedback**: see §8.
 
 ### 7.4 Lightroom round trip
@@ -275,6 +296,33 @@ Stages advance from admin actions **and** from Nextcloud events (first file in
 On submission the site writes `Clients/<project>/_from-client/selection.txt` (filenames
 ready for the Lightroom Library filter + comments) and a CSV with ratings/labels. It syncs
 to the Mac automatically.
+
+### 7.5 Payments — Stripe (decision D2)
+
+Payments run through **Stripe Checkout**, created server-side by the site; card data never
+touches our server.
+
+| Payment | Trigger | Effect when paid |
+|---|---|---|
+| Deposit | Client accepts the proposal | Project → **Booked**; date is held |
+| Balance | Before delivery (default) or after shoot, per project | Final downloads unlock |
+| Extra images | Client picks more than the offering's quota | Extra picks confirmed |
+| Add-ons | Client adds e.g. express delivery, prints | Add-on line confirmed on the project |
+
+- Amounts come from the project's quote lines (seeded from the offering, editable in
+  admin); the server always recomputes prices, the client never sends an amount.
+- Payment methods are enabled in the Stripe Dashboard (cards, Apple/Google Pay, SEPA,
+  PayPal as available) — no code change needed to add one.
+- `POST /api/stripe/webhook` verifies the signature and handles
+  `checkout.session.completed`, `checkout.session.async_payment_succeeded` /
+  `…_failed` (SEPA settles later) and `charge.refunded`. Events are processed
+  idempotently by Stripe event ID and written to `Payments` and `Activity`.
+- Refunds are made in the Stripe Dashboard; the webhook syncs them.
+- Stripe sends receipts. **Legal invoices stay outside the site** (accounting tool) and
+  are uploaded to the project's Documents; Stripe Invoicing can be evaluated later.
+- Delivery gating ("finals unlock after balance") is a per-project switch, on by default.
+- Keys (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, publishable key) live in Infisical and
+  Coolify env; development uses Stripe test mode and the Stripe CLI for webhooks.
 
 ---
 
@@ -325,11 +373,12 @@ to the Mac automatically.
 | `Photos` | source {ncFileId, path, etag, purpose}, versions[], width, height, exif, thumbhash, colour, focal point, alt/caption (localized), tags, rating, visibility (public/unlisted/private), publishConsent, series, gallery |
 | `Series` | slug, title, story (rich text, localized), cover, genre, order, draft, linked reviews |
 | `Genres` | slug, name |
-| `Offerings` | genre, hero photos, includes, deliverables, quota, extra-image price, revision rounds, duration, from-price, add-ons |
+| `Offerings` | genre, hero photos, includes, deliverables, quota, extra-image price, revision rounds, duration, from-price, deposit (amount or %), add-ons |
 | `Inquiries` | answers, contact, locale, source, status |
 | `Clients` (auth) | name, email, locale, projects |
-| `Projects` | clients[], offering, date, location, stage, ncFolder, quote lines, deposit status, questionnaire, internal notes |
-| `Galleries` | project, kind (sneak-peek/proofing/final), rules (min/max, downloads, watermark, expiry), share links |
+| `Projects` | clients[], offering, date, location, stage, ncFolder, quote lines, payment status (deposit/balance), delivery gating, watermark text, questionnaire, internal notes |
+| `Galleries` | project, kind (sneak-peek/proofing/final), rules (min/max, downloads), deliveredAt, expiresAt (+12 months), share links |
+| `Payments` | project, kind (deposit/balance/extras/add-on), amount, currency, status, Stripe session / payment intent IDs, refunded amount |
 | `Selections` | gallery, photo, picker, state |
 | `Comments` | target (project/gallery/photo), x/y?, author, parent, resolved |
 | `Reviews` | project, ratings, quote, chosen photo, visibility, approved |
@@ -342,7 +391,8 @@ to the Mac automatically.
 
 ## 12. Technical decisions
 
-- **Keep** Next.js 15, Payload 3, Postgres, next-intl (en/de; es optional).
+- **Keep** Next.js 15, Payload 3, Postgres, next-intl — **English and German only**
+  (decision D3).
 - Payload **migrations** instead of `push: true`.
 - **Tailwind 4 only**; remove Tailwind 3 / autoprefixer config.
 - **Payload Jobs Queue** for ingest, ZIPs, reminders, notifications.
@@ -350,8 +400,8 @@ to the Mac automatically.
 - **React Email** bilingual templates; all user content escaped.
 - **ALTCHA** (self-hosted proof-of-work) + honeypot + rate limiting replace reCAPTCHA.
 - **Umami** only; drop Vercel analytics.
-- **Optional later**: Stripe deposit links; Google Calendar / Cal.com availability and
-  consultation booking.
+- **Stripe** (`stripe` Node SDK, Checkout Sessions + webhooks) for all payments (§7.5).
+- **Optional later**: Google Calendar / Cal.com availability and consultation booking.
 
 ---
 
@@ -391,31 +441,46 @@ per §5.3.
 - `Clients/<project>/` folder creation; preview ingest → proofing gallery.
 - Proofing v2 (picks, compare, filters, quota, multiple pickers), region comments,
   `selection.txt` write-back, Activity feed, email notifications.
+- Preview watermark (client name) in the ingest pipeline.
+- Stripe: proposal acceptance → deposit Checkout, webhook, `Payments`, Booked stage.
 
 ### Phase 4 — Delivery & feedback
-- Versions and revision approvals; final mirroring, signed downloads, async ZIP, expiry.
+- Versions and revision approvals; final mirroring, signed downloads, async ZIP.
+- 12-month expiry with 30/7-day reminders, admin extend, purge job.
+- Stripe: balance (with delivery gating), extra images above quota, add-ons, refunds sync.
 - Staged feedback and review flow with per-photo consent.
 - Web Push; `/studio` with share target and phone upload to Nextcloud.
 
 ### Phase 5 — Extras
-- Offline galleries, payments, calendar availability, statistics, Spanish.
+- Offline galleries, calendar availability, statistics, Stripe Invoicing evaluation.
 
 ---
 
-## 14. Open questions
+## 14. Decisions
 
-1. Which genres/offerings should `/sessions` present at launch?
-2. Payments (deposits) in scope, or quotes and confirmations only?
-3. Languages: en/de only, or add es?
-4. Watermark on proofing previews: none, subtle name overlay, or configurable per project?
-5. Default gallery expiry for final deliveries (e.g. 6 or 12 months)?
+| # | Question | Decision |
+|---|---|---|
+| D0 | Keep Nextcloud? | Yes — Nextcloud is the Lightroom drop zone for portfolio, previews and finals; the site ingests and serves (§5) |
+| D1 | Genres at launch | Focused launch with 2–3 strong genres + "Something else?"; offerings only shown when their genre has a published series (§6) |
+| D2 | Payments | Stripe integrated: deposit, balance, extra images, add-ons via Checkout + webhooks; invoices stay external (§7.5) |
+| D3 | Languages | English and German only |
+| D4 | Preview watermark | Subtle corner overlay with the client's name on all previews; never on finals (§5.4) |
+| D5 | Final gallery lifetime | 12 months online, reminders at 30/7 days, admin can extend, then purge (§5.4) |
+
+### Still needed (content, not architecture)
+
+1. **The launch genres with starting price, deposit and inclusions** — entered as
+   `Offerings` in admin; needed before Phase 2 goes live.
+2. **VAT status** (small business under §19 UStG or VAT-registered) — decides how prices,
+   proposals and Stripe line items show tax; needed before Phase 3 payments go live.
 
 ## 15. Risks
 
 | Risk | Mitigation |
 |---|---|
 | Webhook latency / loss | Debounce + 15-min reconcile; optional Nextcloud webhook worker |
-| Storage box space for mirrored finals | Expiry purge; per-project size shown in admin |
+| Storage box space for mirrored finals | 12-month purge; per-project size shown in admin |
+| Payment state drifting from Stripe | Signed, idempotent webhooks; nightly reconcile of open Checkout sessions |
 | iOS PWA limits (no share target, push only when installed) | Picker fallback; email remains the primary notification |
 | Schema migration from `push: true` | Snapshot DB, generate baseline migration before Phase 1 |
 | Client photo consent | Per-photo consent required before a client image can be public |
