@@ -11,7 +11,7 @@ const NEXTCLOUD_PASSWORD = process.env.NEXTCLOUD_PASSWORD ?? "";
  * account's files root — for a dedicated user with the folder shared to it,
  * that is the share's name (e.g. "Portfolio").
  */
-export const PORTFOLIO_DAV_PATH = (process.env.NEXTCLOUD_PORTFOLIO_PATH ?? "Lightroom/Portfolio").replace(
+export const PORTFOLIO_DAV_PATH = (process.env.NEXTCLOUD_PORTFOLIO_PATH || "Lightroom/Portfolio").replace(
   /^\/+|\/+$/g,
   "",
 );
@@ -22,7 +22,7 @@ export const PORTFOLIO_DAV_PATH = (process.env.NEXTCLOUD_PORTFOLIO_PATH ?? "Ligh
  * account's view when the folder is shared to a dedicated user.
  */
 const WEBHOOK_PATH_PREFIX = (
-  process.env.NEXTCLOUD_WEBHOOK_PATH_PREFIX ?? `/${NEXTCLOUD_USER}/files/${PORTFOLIO_DAV_PATH}`
+  process.env.NEXTCLOUD_WEBHOOK_PATH_PREFIX || `/${NEXTCLOUD_USER}/files/${PORTFOLIO_DAV_PATH}`
 ).replace(/\/+$/, "");
 
 export const nextcloudConfigured = () => Boolean(NEXTCLOUD_PASSWORD);
