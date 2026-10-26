@@ -60,4 +60,4 @@ jobs:
               -X POST "https://$COOLIFY:8000/api/v1/deploy?uuid=csk4kwoogkg0ccg0gs48wkog&force=false" \
               -H "Authorization: Bearer $COOLIFY_TOKEN"
         env:
-          COOLIFY_TOKEN: ${{ secrets.COOLIFY_TOKEN }}
+          COOLIFY_TOKEN: ${{ secrets.COOLIFY_API_TOKEN }}
