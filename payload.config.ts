@@ -13,6 +13,7 @@ import { Genres } from './src/payload/collections/Genres'
 import { Series } from './src/payload/collections/Series'
 import { Photos } from './src/payload/collections/Photos'
 import { SyncStatus } from './src/payload/globals/SyncStatus'
+import { smtpOptions } from './src/lib/mailer'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -72,15 +73,7 @@ export default buildConfig({
   email: nodemailerAdapter({
     defaultFromAddress: process.env.SMTP_FROM ?? 'photosby@joeldettinger.de',
     defaultFromName: 'Joel Dettinger Photography',
-    transportOptions: {
-      host: process.env.SMTP_HOST ?? 'web207.dogado.net',
-      port: Number(process.env.SMTP_PORT ?? 465),
-      secure: true,
-      auth: {
-        user: process.env.SMTP_USER ?? 'admin@joeldettinger.de',
-        pass: process.env.SMTP_PASS,
-      },
-    },
+    transportOptions: smtpOptions,
   }),
   sharp,
   cors: [portfolioUrl, 'http://localhost:3000'],

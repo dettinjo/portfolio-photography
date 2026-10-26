@@ -1,18 +1,7 @@
-import nodemailer from 'nodemailer'
 import { escapeHtml as e, singleLine } from './security'
+import { ADMIN_TO as ADMIN, MAIL_FROM, transporter } from './mailer'
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST ?? 'web207.dogado.net',
-  port: Number(process.env.SMTP_PORT ?? 465),
-  secure: true, // SSL on port 465
-  auth: {
-    user: process.env.SMTP_USER ?? 'admin@joeldettinger.de',
-    pass: process.env.SMTP_PASS ?? '',
-  },
-})
-
-const FROM = `"Joel Dettinger Photography" <${process.env.SMTP_FROM ?? 'photosby@joeldettinger.de'}>`
-const ADMIN = process.env.ADMIN_EMAIL ?? 'admin@joeldettinger.de'
+const FROM = `"Joel Dettinger Photography" <${MAIL_FROM}>`
 const PORTFOLIO_URL = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN
   ? `https://${process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN}`
   : 'https://photosby.joeldettinger.de'
