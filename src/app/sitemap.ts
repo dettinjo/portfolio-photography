@@ -1,6 +1,9 @@
 // src/app/sitemap.ts
 import { MetadataRoute } from "next";
-import { fetchAlbums } from "@/lib/nextcloud";
+import { getPublishedSeries } from "@/lib/portfolio";
+
+// Series live in the database, which is not available at build time.
+export const dynamic = "force-dynamic";
 import { routing } from "@/i18n/routing";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -40,7 +43,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   });
 
   // 2. Dynamic Album Pages
-  const albums = await fetchAlbums();
+  const albums = await getPublishedSeries("en");
 
   albums.forEach((album) => {
     const alternates: Record<string, string> = {};

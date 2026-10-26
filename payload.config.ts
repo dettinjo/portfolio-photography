@@ -9,6 +9,10 @@ import { Users } from './src/payload/collections/Users'
 import { Albums } from './src/payload/collections/Albums'
 import { Reviews } from './src/payload/collections/Reviews'
 import { Media } from './src/payload/collections/Media'
+import { Genres } from './src/payload/collections/Genres'
+import { Series } from './src/payload/collections/Series'
+import { Photos } from './src/payload/collections/Photos'
+import { SyncStatus } from './src/payload/globals/SyncStatus'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -39,7 +43,16 @@ export default buildConfig({
   routes: {
     admin: '/admin',
   },
-  collections: [Users, Albums, Reviews, Media],
+  collections: [Series, Photos, Genres, Albums, Reviews, Media, Users],
+  globals: [SyncStatus],
+  localization: {
+    locales: [
+      { label: 'English', code: 'en' },
+      { label: 'Deutsch', code: 'de' },
+    ],
+    defaultLocale: 'en',
+    fallback: true,
+  },
   editor: lexicalEditor(),
   secret: secret ?? 'dev-only-insecure-secret',
   typescript: {

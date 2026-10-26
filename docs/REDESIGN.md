@@ -457,6 +457,22 @@ the package is ESM (`"type": "module"`) so the Payload CLI works.
 reveals no tokens or emails, the build is clean.
 
 ### Phase 1 — Foundation
+
+**1a ✅ done 2026-10-26** — `Series`, `Photos`, `Genres` collections, `sync-status`
+global, en/de localization; Nextcloud sync (startup + 15-min reconcile, webhook
+endpoint with per-folder debounce, file-id identity, re-export versions, soft
+delete, rename handling); processing to AVIF + WebP (480/960/1600/2400, capped at
+the original), blur placeholder, dominant colour, EXIF/IPTC/XMP metadata without
+GPS; public pages, sitemap and approval page read from Payload; the old
+per-request Nextcloud proxy is gone.
+Deviation from §12: instead of the Payload Jobs Queue the sync runs as an
+in-process serial queue — one container, and the reconcile repairs anything a
+restart interrupts, so persistent jobs added tables without benefit. AVIF is
+encoded at effort 0 (same size, ~30× faster: ~2.7 s per photo end to end).
+
+**1b** — register the Nextcloud webhook, dedicated `portfolio-sync` user.
+**1c** — PWA shell (manifest, service worker, offline page).
+
 - New collections (§11) with migrations; `Clients` auth separate from `Users`.
 - Nextcloud sync: webhook route, debounce, reconcile job, ingest pipeline (§5),
   `portfolio-sync` user, sync status view.
