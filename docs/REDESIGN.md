@@ -247,6 +247,29 @@ within one 12-month window.
   series, plus a "Something else? Ask me" path in Plan your shoot. **Rule enforced by the
   site:** an offering (and its genre chip) is only shown when its genre has at least one
   published series. New genres appear automatically once a series is published.
+
+#### Launch offerings
+
+Prices are derived from the existing calculator rates (session €40, €55/h, €4 / €8 / €15
+per image by retouch level, €0.50/km, express ×1.2) with a small bundle discount, and keep
+the current Standard (€120) and Advanced (€380) price points. All values are `Offerings`
+records, editable in admin.
+
+| Offering | For | Includes | From | Extra image | Revisions | Deposit | Delivery |
+|---|---|---|---|---|---|---|---|
+| **Portraits** | people, couples, personal branding | 1 h, 1 location, consultation, proofing of all previews, **10** edited images (basic retouch) | **€120** | €8 | 1 round | 30 % | 7 days |
+| **Events & Motorsport** | live events, races, corporate events | up to 3 h coverage, sneak peek (10 images within 48 h), **30** edited images | **€290** | €6 | 1 round | 30 % | 7 days |
+| **Cars & Brands** | automotive, products, brand content | up to 3 h, up to 2 locations, **30** edited images (advanced retouch), web & social usage licence | **€380** | €12 | 2 rounds | 50 % | 10 days |
+
+Add-ons (all offerings): express delivery within 48 h (+20 %), extra hour (€55), travel
+(€0.50/km).
+
+Prepared but hidden by the series rule: **Weddings** (price set once a wedding series is
+published). **Landscapes** stay portfolio-only and are not sold as a session.
+
+At launch only *Events & Motorsport* is visible (backed by *Formula 1*). Publishing one
+portrait series and one cars/brands series before the Phase 2 release makes all three
+appear.
 - **Viewer**: one shared fullscreen component for portfolio, proofing and delivery.
 - **SEO**: OG image per photo and series, `ImageGallery` / `ImageObject` JSON-LD with real
   dimensions, consistent `/<locale>` hreflang, sitemap from Payload.
@@ -318,6 +341,10 @@ touches our server.
   `…_failed` (SEPA settles later) and `charge.refunded`. Events are processed
   idempotently by Stripe event ID and written to `Payments` and `Activity`.
 - Refunds are made in the Stripe Dashboard; the webhook syncs them.
+- **No VAT is charged (decision D6).** Prices are final amounts; Stripe sessions carry no
+  tax lines. A `taxMode` setting (`none` · `smallBusinessNote` · `vat` + rate) in the
+  `Profile` global keeps this switchable without code changes; `smallBusinessNote` adds the
+  §19 UStG notice to proposals.
 - Stripe sends receipts. **Legal invoices stay outside the site** (accounting tool) and
   are uploaded to the project's Documents; Stripe Invoicing can be evaluated later.
 - Delivery gating ("finals unlock after balance") is a per-project switch, on by default.
@@ -385,7 +412,7 @@ touches our server.
 | `Feedback` | project, moment, answers (private) |
 | `Activity` | actor, verb, target, project |
 | `PushSubscriptions` | owner, endpoint, keys |
-| Globals `Profile`, `About`, `FAQ`, `SyncSettings` | bio, socials, contact, Nextcloud paths |
+| Globals `Profile`, `About`, `FAQ`, `SyncSettings` | bio, socials, contact, tax mode, Nextcloud paths |
 
 ---
 
@@ -461,18 +488,17 @@ per §5.3.
 | # | Question | Decision |
 |---|---|---|
 | D0 | Keep Nextcloud? | Yes — Nextcloud is the Lightroom drop zone for portfolio, previews and finals; the site ingests and serves (§5) |
-| D1 | Genres at launch | Focused launch with 2–3 strong genres + "Something else?"; offerings only shown when their genre has a published series (§6) |
+| D1 | Genres at launch | Portraits · Events & Motorsport · Cars & Brands (+ "Something else?"); weddings prepared but hidden; offerings only shown when their genre has a published series (§6) |
 | D2 | Payments | Stripe integrated: deposit, balance, extra images, add-ons via Checkout + webhooks; invoices stay external (§7.5) |
 | D3 | Languages | English and German only |
 | D4 | Preview watermark | Subtle corner overlay with the client's name on all previews; never on finals (§5.4) |
 | D5 | Final gallery lifetime | 12 months online, reminders at 30/7 days, admin can extend, then purge (§5.4) |
+| D6 | Tax | No VAT charged; prices are final; `taxMode` setting keeps it switchable (§7.5) |
 
-### Still needed (content, not architecture)
+### Still needed before Phase 2 goes live (content)
 
-1. **The launch genres with starting price, deposit and inclusions** — entered as
-   `Offerings` in admin; needed before Phase 2 goes live.
-2. **VAT status** (small business under §19 UStG or VAT-registered) — decides how prices,
-   proposals and Stripe line items show tax; needed before Phase 3 payments go live.
+- One published portrait series and one cars/brands series, so all three launch offerings
+  are visible.
 
 ## 15. Risks
 
