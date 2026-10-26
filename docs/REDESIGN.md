@@ -470,7 +470,7 @@ in-process serial queue — one container, and the reconcile repairs anything a
 restart interrupts, so persistent jobs added tables without benefit. AVIF is
 encoded at effort 0 (same size, ~30× faster: ~2.7 s per photo end to end).
 
-**1b** — register the Nextcloud webhook, dedicated `portfolio-sync` user.
+**1b** — dedicated read-only `portfolio-sync` Nextcloud user (sees the share as `Portfolio/`; `NEXTCLOUD_PORTFOLIO_PATH`, `NEXTCLOUD_WEBHOOK_PATH_PREFIX`), webhook registration for file events below `Lightroom/Portfolio`.
 **1c** — PWA shell (manifest, service worker, offline page).
 
 - New collections (§11) with migrations; `Clients` auth separate from `Users`.

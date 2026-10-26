@@ -6,8 +6,24 @@ const NEXTCLOUD_URL = process.env.NEXTCLOUD_URL ?? "https://cloud.joeldettinger.
 const NEXTCLOUD_USER = process.env.NEXTCLOUD_USER ?? "dettinjo";
 const NEXTCLOUD_PASSWORD = process.env.NEXTCLOUD_PASSWORD ?? "";
 
-/** Only files below this folder are ever read by the site. */
-export const PORTFOLIO_DAV_PATH = "Lightroom/Portfolio";
+/**
+ * Only files below this folder are ever read by the site. Relative to the sync
+ * account's files root — for a dedicated user with the folder shared to it,
+ * that is the share's name (e.g. "Portfolio").
+ */
+export const PORTFOLIO_DAV_PATH = (process.env.NEXTCLOUD_PORTFOLIO_PATH ?? "Lightroom/Portfolio").replace(
+  /^\/+|\/+$/g,
+  "",
+);
+
+/**
+ * Webhook events report paths in the folder owner's namespace
+ * ("/<owner>/files/Lightroom/Portfolio/…"), which differs from the sync
+ * account's view when the folder is shared to a dedicated user.
+ */
+const WEBHOOK_PATH_PREFIX = (
+  process.env.NEXTCLOUD_WEBHOOK_PATH_PREFIX ?? `/${NEXTCLOUD_USER}/files/${PORTFOLIO_DAV_PATH}`
+).replace(/\/+$/, "");
 
 export const nextcloudConfigured = () => Boolean(NEXTCLOUD_PASSWORD);
 
@@ -37,7 +53,7 @@ export function slugify(name: string): string {
   return name
     .toLowerCase()
     .normalize("NFKD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[\u0300-\u036f]/g, "")
     .replace(/[^a-z0-9\s-]/g, "")
     .trim()
     .replace(/\s+/g, "-")
@@ -122,8 +138,12 @@ export async function downloadFile(relPath: string): Promise<Buffer> {
   return Buffer.from(await res.arrayBuffer());
 }
 
-/** Turns an absolute Nextcloud node path ("/<user>/files/…") into a relative one. */
-export function nodePathToRelative(nodePath: string): string | null {
-  const prefix = `/${NEXTCLOUD_USER}/files/`;
-  return nodePath.startsWith(prefix) ? nodePath.slice(prefix.length).replace(/\/$/, "") : null;
+/**
+ * Maps a webhook node path to the sync account's view of the portfolio:
+ * "" for the portfolio folder itself, "<series>/…" below it, null outside.
+ */
+export function webhookPathBelowPortfolio(nodePath: string): string | null {
+  const path = nodePath.replace(/\/+$/, "");
+  if (path === WEBHOOK_PATH_PREFIX) return "";
+  return path.startsWith(`${WEBHOOK_PATH_PREFIX}/`) ? path.slice(WEBHOOK_PATH_PREFIX.length + 1) : null;
 }

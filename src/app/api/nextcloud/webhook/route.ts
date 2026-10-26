@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { getPayloadClient } from '@/lib/payload'
-import { PORTFOLIO_DAV_PATH, nodePathToRelative } from '@/lib/nextcloud'
+import { PORTFOLIO_DAV_PATH, webhookPathBelowPortfolio } from '@/lib/nextcloud'
 import { recordWebhook, scheduleFolderSync, scheduleReconcile } from '@/lib/sync'
 
 const SECRET = process.env.NEXTCLOUD_WEBHOOK_SECRET ?? ''
@@ -22,9 +22,8 @@ interface WebhookBody {
 
 /** Maps a node path to the series folder it belongs to, or "root" for the portfolio folder itself. */
 function affectedFolder(nodePath: string | undefined): string | 'root' | null {
-  const rel = nodePath ? nodePathToRelative(nodePath) : null
-  if (!rel || (rel !== PORTFOLIO_DAV_PATH && !rel.startsWith(`${PORTFOLIO_DAV_PATH}/`))) return null
-  const below = rel.slice(PORTFOLIO_DAV_PATH.length + 1)
+  const below = nodePath ? webhookPathBelowPortfolio(nodePath) : null
+  if (below === null) return null
   if (!below) return 'root'
   return `${PORTFOLIO_DAV_PATH}/${below.split('/')[0]}`
 }
