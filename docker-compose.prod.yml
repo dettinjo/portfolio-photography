@@ -19,6 +19,11 @@ services:
   app:
     image: ghcr.io/dettinjo/portfolio-photography:latest
     restart: unless-stopped
+    # The storage box is mounted on the host via CIFS as uid/gid 1000 with
+    # group-writable directories (homelab ansible role "storagebox"); the app
+    # runs as uid 1001, so it needs group 1000 to write uploads and photos.
+    group_add:
+      - "1000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
