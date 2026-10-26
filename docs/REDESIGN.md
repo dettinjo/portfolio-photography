@@ -434,7 +434,16 @@ touches our server.
 
 ## 13. Roadmap
 
-### Phase 0 — Make it work, make it safe
+### Phase 0 — Make it work, make it safe ✅ done 2026-10-26
+
+Also delivered beyond the original list: the image proxy now serves only images
+below `Lightroom/Portfolio/` (it previously proxied any file in the Nextcloud
+account); production database migrations replace `push` (which Payload never
+runs in production — the `media` table was missing live), applied by a startup
+runner that never crash-loops the site; approval-page translations fixed; the
+privacy policy corrected (Hetzner, self-hosted Umami, no reCAPTCHA/Formspree);
+the package is ESM (`"type": "module"`) so the Payload CLI works.
+
 - Replace `src/lib/payload.ts` HTTP calls with the Local API; remove `NEXT_PUBLIC_CMS_URL`.
 - Remove the shadowing `/api/reviews` route (or move custom logic under another path).
 - Restrict `Albums` read; only `/api/albums/by-token/[token]` exposes the approval subset.

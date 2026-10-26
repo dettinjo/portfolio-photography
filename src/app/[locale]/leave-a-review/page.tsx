@@ -25,18 +25,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function LeaveReviewPage() {
-  const siteKey = process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY;
-
-  if (!siteKey) {
-    console.error(
-      "FATAL: NEXT_PUBLIC_RECAPTCHA_SITE_KEY is not set in environment variables."
-    );
-    return null;
-  }
-
   return (
     <Suspense>
-      <LeaveReviewForm siteKey={siteKey} />
+      <LeaveReviewForm />
     </Suspense>
   );
 }

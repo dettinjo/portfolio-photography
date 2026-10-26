@@ -10,9 +10,9 @@ export const Albums: CollectionConfig = {
     description: 'Each album must have a slug matching the Nextcloud folder name under Lightroom/Portfolio/',
   },
   access: {
-    // Public read is intentionally unrestricted — the approval token acts as the secret.
-    // The custom by-token endpoint only exposes fields needed for the approval UI.
-    read: () => true,
+    // Admin only. Clients reach their album through the token-scoped endpoints
+    // (src/lib/payload.ts), which return only the fields the approval UI needs.
+    read: ({ req }) => Boolean(req.user),
     create: ({ req }) => Boolean(req.user),
     update: ({ req }) => Boolean(req.user),
     delete: ({ req }) => Boolean(req.user),
@@ -103,6 +103,12 @@ export const Albums: CollectionConfig = {
     },
     { name: 'selectionMin', type: 'number', admin: { description: 'Minimum images client must select (0 = no minimum).' } },
     { name: 'selectionMax', type: 'number', admin: { description: 'Maximum images client may select (0 = no limit).' } },
+    {
+      name: 'publicationConsent',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { readOnly: true, description: 'Set by the client on submission: may selected images be published?' },
+    },
     { name: 'allowDownloads', type: 'checkbox', defaultValue: false },
     {
       name: 'approvalTerms',

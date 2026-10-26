@@ -58,58 +58,16 @@
     },
     "section3_title": "2. Data Collection on This Website",
     "section3_hosting_title": "Hosting and Server Log Files",
-    "section3_hosting_content": "Our website is hosted by Vercel Inc., 340 S Lemon Ave #4133, Walnut, CA 91789, USA. Vercel automatically collects information in server log files each time the website is accessed. This data is not merged with other data sources. The basis for this data processing is Art. 6(1)(f) GDPR.",
-    "section3_analytics_title": "Analytics by Vercel Analytics & Speed Insights",
-    "section3_analytics_content": "We use the services Vercel Analytics and Speed Insights from our host, Vercel Inc. These services are designed to be privacy-friendly, do not collect personal data that would allow for user identification, and do not use cookies. The legal basis is our legitimate interest (Art. 6(1)(f) GDPR) in the analysis and optimization of our website.",
-    "section3_contact_title": "Contact Form via Formspree",
-    "section3_contact_content": "When you use our contact form, your provided information is transmitted to and processed by the service provider Formspree, Inc., 1201 Orange St, Ste 600, Wilmington, DE 19801, USA, to handle your request. The processing of this data is based on your consent (Art. 6(1)(a) GDPR).",
-    "section3_recaptcha_title": "Spam Protection via Google reCAPTCHA",
-    "section3_recaptcha_content": "To protect submission forms on this site, we use the reCAPTCHA service provided by Google LLC. This service determines whether a given submission was made by a human or by an automated process. This processing is based on our legitimate interest (Art. 6(1)(f) GDPR) in preventing spam and abuse. For this purpose, your IP address and other data required by the reCAPTCHA service may be transferred to Google.",
+    "section3_hosting_content": "This website runs on a server rented from Hetzner Online GmbH, Gunzenhausen, Germany. Each time the website is accessed, the web server automatically records technical information (such as IP address, date and time, requested page and browser type) in server log files. This data is used only to operate and secure the website and is not merged with other data sources. The legal basis is our legitimate interest (Art. 6(1)(f) GDPR) in a secure and reliable website. Portfolio photos are loaded from our own self-hosted Nextcloud server; your browser never connects to it directly.",
+    "section3_analytics_title": "Privacy-Friendly Analytics with Umami",
+    "section3_analytics_content": "We use Umami, an open-source analytics tool that we host ourselves. Umami does not use cookies, does not store IP addresses and does not create user profiles; it only records anonymous, aggregated usage statistics (such as page views and referring websites). No data is passed on to third parties. The legal basis is our legitimate interest (Art. 6(1)(f) GDPR) in analysing and improving our website.",
+    "section3_contact_title": "Contact Form",
+    "section3_contact_content": "When you use our contact form, your name, email address and message are sent to us by email via our email provider dogado GmbH, Dortmund, Germany, and you receive an automatic confirmation email. We use this data only to answer your request and delete it once it is no longer needed. The legal basis is your consent (Art. 6(1)(a) GDPR) and, where your request concerns a booking, the performance of pre-contractual measures (Art. 6(1)(b) GDPR).",
+    "section3_spam_title": "Spam Protection",
+    "section3_spam_content": "To protect our forms against automated abuse, we use a hidden form field and limit the number of submissions per IP address. For this purpose your IP address is held only temporarily in the working memory of our server (for at most one hour) and is not stored permanently. No third-party service is involved. The legal basis is our legitimate interest (Art. 6(1)(f) GDPR) in preventing spam and abuse.",
     "section3_testimonials_title": "Submission of Testimonials/Reviews",
-    "section3_testimonials_content": "If you use our form to submit a testimonial, the data you provide (name, organization/event, your review, ratings, and optionally an uploaded photo) will be transmitted to and stored in our backend system (Strapi CMS) for the purpose of reviewing and publishing your feedback on our website. This data is processed based on your consent (Art. 6(1)(a) GDPR), which you give by submitting the form. You can withdraw this consent at any time by contacting us, and your testimonial will be removed.",
+    "section3_testimonials_content": "If you use our form to submit a testimonial, the data you provide (name, organisation/event, your review, ratings and optionally an uploaded photo) is stored in the content management system that runs on our own server, for the purpose of reviewing and publishing your feedback on our website. The processing is based on your consent (Art. 6(1)(a) GDPR), which you give by submitting the form. You can withdraw this consent at any time by contacting us, and your testimonial will be removed.",
     "section4_title": "3. Your Rights as a Data Subject",
     "section4_content": "Within the framework of the applicable legal provisions, you have the right at any time to free information about your stored personal data, its origin and recipients, and the purpose of the data processing, and, if applicable, a right to correction or deletion of this data."
-  },
-  "Auth": {
-    "LoginPage": {
-      "title": "Login",
-      "description": "Access your personal photo albums.",
-      "emailLabel": "Email",
-      "passwordLabel": "Password",
-      "submitButton": "Login with Email",
-      "googleButton": "Login with Google",
-      "noAccount": "Don't have an account?",
-      "registerLink": "Register",
-      "loginFailed": "Login failed. Please check your credentials and try again."
-    },
-    "RegisterPage": {
-      "title": "Register",
-      "description": "Create your customer account.",
-      "usernameLabel": "Username",
-      "emailLabel": "Email",
-      "passwordLabel": "Password",
-      "submitButton": "Create Account",
-      "googleButton": "Register with Google",
-      "hasAccount": "Already have an account?",
-      "loginLink": "Login",
-      "registrationFailed": "Registration failed. Please try again."
-    },
-    "CallbackPage": {
-      "title": "Connecting...",
-      "message": "Connecting, please wait..."
-    },
-    "DashboardPage": {
-      "title": "Dashboard",
-      "welcome": "Welcome, {username}!",
-      "logout": "Logout",
-      "albumsTitle": "Your Albums",
-      "noAlbums": "You don't have any albums assigned to you yet.",
-      "loading": "Loading your dashboard...",
-      "albumStatus": "Status: {status}",
-      "status": {
-        "unknown": "Pending"
-      },
-      "viewAlbum": "View Album"
-    }
   }
 }

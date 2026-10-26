@@ -167,6 +167,11 @@
   },
   "ApprovalPage": {
     "greeting": "Hi {clientName}, please select the images you approve for publication in my portfolio.",
+    "instructions": "Tap an image to select it. Selected images can get a comment.",
+    "selectionRange": "Please select between {min} and {max} images.",
+    "selectionMin": "Please select at least {count} images.",
+    "selectionMax": "Please select up to {count} images.",
+    "download": "Download",
     "actionBar": {
       "counter": "{selected} / {total} images selected",
       "selectAll": "Select All",

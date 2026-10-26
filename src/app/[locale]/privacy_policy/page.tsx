@@ -65,9 +65,9 @@ export default async function PrivacyPolicyPage() {
             </div>
             <div>
               <h3 className="text-lg font-semibold">
-                {t("section3_recaptcha_title")}
+                {t("section3_spam_title")}
               </h3>
-              <p>{t("section3_recaptcha_content")}</p>
+              <p>{t("section3_spam_content")}</p>
             </div>
             <div>
               <h3 className="text-lg font-semibold">

@@ -12,6 +12,17 @@ import { Media } from './src/payload/collections/Media'
 
 const dirname = path.dirname(fileURLToPath(import.meta.url))
 
+// Never run production with a guessable secret. The check is skipped while
+// `next build` collects pages, because runtime secrets are not available there.
+const secret = process.env.PAYLOAD_SECRET
+if (
+  !secret &&
+  process.env.NODE_ENV === 'production' &&
+  process.env.NEXT_PHASE !== 'phase-production-build'
+) {
+  throw new Error('PAYLOAD_SECRET must be set in production')
+}
+
 const portfolioUrl = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN
   ? `https://${process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN}`
   : 'https://photosby.joeldettinger.de'
@@ -30,7 +41,7 @@ export default buildConfig({
   },
   collections: [Users, Albums, Reviews, Media],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET ?? 'change-me-in-production',
+  secret: secret ?? 'dev-only-insecure-secret',
   typescript: {
     outputFile: path.resolve(dirname, 'src', 'payload-types.ts'),
   },
@@ -39,7 +50,11 @@ export default buildConfig({
       connectionString: process.env.POSTGRES_URL,
       connectionTimeoutMillis: 5000,
     },
-    push: true, // auto-sync schema to DB on startup (no manual migrations needed)
+    // Development: Payload pushes the schema automatically (push is ignored in production).
+    // Production: src/instrumentation.ts runs the migrations in src/migrations on
+    // startup. After changing a collection, run `npm run migrate:create <name>`
+    // and commit the generated files.
+    push: true,
   }),
   email: nodemailerAdapter({
     defaultFromAddress: process.env.SMTP_FROM ?? 'photosby@joeldettinger.de',

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 
-// The portfolio dashboard has moved to the Payload CMS admin panel.
+// The photographer dashboard is the Payload admin panel embedded in this app.
 export default function DashboardPage() {
-  const cmsUrl = process.env.NEXT_PUBLIC_CMS_URL ?? "https://cms.joeldettinger.de";
-  redirect(`${cmsUrl}/admin`);
+  redirect("/admin");
 }

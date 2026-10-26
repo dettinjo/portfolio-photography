@@ -2,14 +2,10 @@
 "use client";
 
 import React, { useState, useMemo, useEffect, useCallback } from "react";
-import {
-  GoogleReCaptchaProvider,
-  useGoogleReCaptcha,
-} from "react-google-recaptcha-v3";
 import { useSearchParams } from "next/navigation";
-// submitReview lives on the server — call /api/reviews instead
+// Reviews are stored server-side (unapproved) via /api/review-submissions
 async function submitReview(data: Record<string, unknown>) {
-  const res = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
+  const res = await fetch('/api/review-submissions', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(data) })
   const json = await res.json().catch(() => ({}))
   if (!res.ok) return { ok: false, error: json.error ?? 'Submission failed' }
   return { ok: true }
@@ -119,7 +115,6 @@ export const PreviewCard = ({
 
 const ReviewFormContents = () => {
   const t = useTranslations("photography.LeaveReviewPage");
-const { executeRecaptcha } = useGoogleReCaptcha();
   const searchParams = useSearchParams();
   const albumSlug = searchParams.get("albumSlug") ?? searchParams.get("albumSlug") ?? undefined;
   const prefilledName = searchParams.get("clientName");
@@ -138,6 +133,8 @@ const { executeRecaptcha } = useGoogleReCaptcha();
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [submissionStatus, setSubmissionStatus] = useState("idle");
+  // Honeypot — hidden from people, filled in by naive bots
+  const [website, setWebsite] = useState("");
 
   const isFormComplete = !!quote;
 
@@ -162,12 +159,7 @@ const { executeRecaptcha } = useGoogleReCaptcha();
   };
 
   const handleSubmit = useCallback(async () => {
-    if (!executeRecaptcha) {
-      setSubmissionStatus("error");
-      return;
-    }
     setSubmissionStatus("submitting");
-    await executeRecaptcha("testimonialSubmit"); // verify bot-check (token not forwarded)
 
     const finalName =
       authorName.trim() === "" ? t("form.anonymousName") : authorName.trim();
@@ -192,6 +184,7 @@ const { executeRecaptcha } = useGoogleReCaptcha();
       creativity: ratings.creativity,
       professionalism: ratings.professionalism,
       value: ratings.value,
+      website,
     });
 
     if (result.ok) {
@@ -202,7 +195,7 @@ const { executeRecaptcha } = useGoogleReCaptcha();
       setSubmissionStatus("error");
     }
   }, [
-    executeRecaptcha,
+    website,
     authorName,
     eventValue,
     quote,
@@ -244,7 +237,17 @@ const { executeRecaptcha } = useGoogleReCaptcha();
                 {albumSlug ? t("subtitleAlbum") : t("subtitle")}
               </CardDescription>
             </div>
-            <form onSubmit={handlePreview} className="space-y-4">
+            <form onSubmit={handlePreview} className="relative space-y-4">
+              <input
+                type="text"
+                name="website"
+                value={website}
+                onChange={(e) => setWebsite(e.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="absolute -left-[9999px] h-0 w-0 opacity-0"
+              />
               <TestimonialFormFields
                 name={authorName}
                 onNameChange={setAuthorName}
@@ -320,22 +323,6 @@ const { executeRecaptcha } = useGoogleReCaptcha();
   );
 };
 
-export function LeaveReviewForm({ siteKey }: { siteKey: string }) {
-  if (!siteKey) {
-    return (
-      <div className="container mx-auto max-w-2xl py-24 text-center">
-        <h2 className="text-2xl font-bold text-destructive">
-          Configuration Error
-        </h2>
-        <p className="text-muted-foreground mt-2">
-          The Google reCAPTCHA Site Key is missing.
-        </p>
-      </div>
-    );
-  }
-  return (
-    <GoogleReCaptchaProvider reCaptchaKey={siteKey}>
-      <ReviewFormContents />
-    </GoogleReCaptchaProvider>
-  );
+export function LeaveReviewForm() {
+  return <ReviewFormContents />;
 }
