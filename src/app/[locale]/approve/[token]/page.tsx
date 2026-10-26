@@ -3,7 +3,7 @@ import { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { ApprovalInterface } from "@/components/sections/ApprovalInterface";
 import { fetchAlbumByToken } from "@/lib/payload";
-import { fetchAlbumBySlug } from "@/lib/nextcloud";
+import { getSeriesBySlug } from "@/lib/portfolio";
 
 export const dynamic = "force-dynamic";
 
@@ -22,19 +22,21 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function AlbumApprovalPage({ params }: Props) {
-  const { token } = await params;
+  const { token, locale } = await params;
   const album = await fetchAlbumByToken(token);
 
   if (!album) notFound();
 
-  // Pull images for this album from Nextcloud
-  const ncAlbum = await fetchAlbumBySlug(album.slug);
-  const images = (ncAlbum?.images ?? []).map((img) => ({
+  // The album's photos are the series with the same slug (drafts included)
+  const series = await getSeriesBySlug(album.slug, locale === "de" ? "de" : "en", {
+    includeDrafts: true,
+  });
+  const images = (series?.photos ?? []).map((img) => ({
     id: img.id,
-    url: img.url,
-    thumbnailUrl: img.thumbnailUrl,
+    url: img.url(2400),
+    thumbnailUrl: img.url(960),
     filename: img.filename,
-    alternativeText: img.alternativeText,
+    alternativeText: img.alt,
     width: img.width,
     height: img.height,
   }));

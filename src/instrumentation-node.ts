@@ -1,16 +1,19 @@
 // Node-only startup work, imported from instrumentation.ts.
 // Initialises Payload so the database is ready: development pushes the schema,
-// production applies the pending migrations in src/migrations.
+// production applies the pending migrations in src/migrations. Then starts the
+// Nextcloud photo sync (src/lib/sync).
 import { getPayload, type Payload } from 'payload'
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import config from '@payload-config'
 import { migrations } from './migrations'
+import { startSync } from './lib/sync'
 
 export async function initPayload() {
   try {
     const payload = await getPayload({ config })
     if (process.env.NODE_ENV === 'production') await runMigrations(payload)
     console.log('[instrumentation] Payload initialised')
+    startSync()
   } catch (err) {
     console.error('[instrumentation] Payload init failed:', err)
   }

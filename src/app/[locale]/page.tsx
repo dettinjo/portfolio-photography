@@ -1,13 +1,12 @@
 import { getTranslations } from "next-intl/server";
 import { PhotographyTabs } from "@/components/sections/PhotographyTabs";
 import { ProfileHeaderSection } from "@/components/sections/ProfileHeaderSection";
-import { fetchAlbums } from "@/lib/nextcloud";
+import { getPublishedSeries } from "@/lib/portfolio";
 import { fetchApprovedReviews } from "@/lib/payload";
 import { WithContext, CollectionPage, Review } from "schema-dts";
 import { Metadata } from "next";
 
-// Albums come from Nextcloud at runtime — credentials are not available at
-// Docker build time, so pre-rendering would always produce an empty list.
+// Series and photos come from the database (filled by the Nextcloud sync).
 export const dynamic = "force-dynamic";
 
 // UPDATED: 'params' prop is now correctly typed as a Promise.
@@ -34,26 +33,23 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 // UPDATED: The component now takes 'Props' and awaits 'params'.
 export default async function PhotographyPage({ params }: Props) {
-  // UPDATED: Await the promise to get the locale.
-  await params; // locale resolved by next-intl request context
+  const { locale } = await params;
 
   const t = await getTranslations("photography.PhotographyPage");
   const [rawAlbums, rawReviews] = await Promise.all([
-    fetchAlbums(),
+    getPublishedSeries(locale === "de" ? "de" : "en"),
     fetchApprovedReviews(),
   ]);
   const profileName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
 
-  const albums = rawAlbums
-    .filter((album) => album && album.slug)
-    .map((album) => ({
-      id: album.id,
-      slug: album.slug,
-      title: album.title,
-      coverImageUrl: album.coverImage?.url ?? "/placeholder.jpg",
-      images: (album.images || []).map((img) => img.url),
-    }));
+  const albums = rawAlbums.map((series) => ({
+    id: series.id,
+    slug: series.slug,
+    title: series.title,
+    coverImageUrl: series.cover?.url(960) ?? "/placeholder.jpg",
+    images: series.photos.map((photo) => photo.url(2400)),
+  }));
 
   const testimonials = rawReviews.map((r) => ({
     name: r.name,

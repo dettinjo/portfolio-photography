@@ -67,10 +67,13 @@ export interface Config {
   };
   blocks: {};
   collections: {
-    users: User;
+    series: Series;
+    photos: Photo;
+    genres: Genre;
     albums: Album;
     reviews: Review;
     media: Media;
+    users: User;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -78,10 +81,13 @@ export interface Config {
   };
   collectionsJoins: {};
   collectionsSelect: {
-    users: UsersSelect<false> | UsersSelect<true>;
+    series: SeriesSelect<false> | SeriesSelect<true>;
+    photos: PhotosSelect<false> | PhotosSelect<true>;
+    genres: GenresSelect<false> | GenresSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -90,10 +96,14 @@ export interface Config {
   db: {
     defaultIDType: number;
   };
-  fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
-  locale: null;
+  fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'de') | ('en' | 'de')[];
+  globals: {
+    'sync-status': SyncStatus;
+  };
+  globalsSelect: {
+    'sync-status': SyncStatusSelect<false> | SyncStatusSelect<true>;
+  };
+  locale: 'en' | 'de';
   widgets: {
     collections: CollectionsWidget;
   };
@@ -122,30 +132,107 @@ export interface UserAuthOperations {
   };
 }
 /**
+ * Created from the folders in Nextcloud → Lightroom/Portfolio. A folder name starting with "_" is a draft.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users".
+ * via the `definition` "series".
  */
-export interface User {
+export interface Series {
   id: number;
-  name?: string | null;
+  title: string;
+  /**
+   * URL of the series. Kept stable when the folder is renamed.
+   */
+  slug: string;
+  story?: string | null;
+  genre?: (number | null) | Genre;
+  /**
+   * Defaults to the first 5-star photo, otherwise the first photo.
+   */
+  cover?: (number | null) | Photo;
+  order?: number | null;
+  /**
+   * Hidden from the public site. Set automatically for folders starting with "_".
+   */
+  draft?: boolean | null;
+  ncFileId?: number | null;
+  ncPath?: string | null;
+  photoCount?: number | null;
+  /**
+   * The folder no longer exists in Nextcloud.
+   */
+  missing?: boolean | null;
   updatedAt: string;
   createdAt: string;
-  email: string;
-  resetPasswordToken?: string | null;
-  resetPasswordExpiration?: string | null;
-  salt?: string | null;
-  hash?: string | null;
-  loginAttempts?: number | null;
-  lockUntil?: string | null;
-  sessions?:
-    | {
-        id: string;
-        createdAt?: string | null;
-        expiresAt: string;
-      }[]
-    | null;
-  password?: string | null;
-  collection: 'users';
+}
+/**
+ * Kinds of work (e.g. Portraits, Events & Motorsport). Series are grouped by genre.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "genres".
+ */
+export interface Genre {
+  id: number;
+  name: string;
+  slug: string;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photos".
+ */
+export interface Photo {
+  id: number;
+  series?: (number | null) | Series;
+  visibility?: ('public' | 'hidden') | null;
+  /**
+   * Optional manual position; otherwise capture time.
+   */
+  order?: number | null;
+  /**
+   * Overrides the Lightroom title.
+   */
+  title?: string | null;
+  /**
+   * Overrides the Lightroom caption.
+   */
+  caption?: string | null;
+  /**
+   * Image description for screen readers and search engines.
+   */
+  alt?: string | null;
+  meta?: {
+    title?: string | null;
+    caption?: string | null;
+    keywords?: string[] | null;
+    rating?: number | null;
+    camera?: string | null;
+    lens?: string | null;
+    focalLength?: number | null;
+    aperture?: number | null;
+    exposureTime?: number | null;
+    iso?: number | null;
+  };
+  takenAt?: string | null;
+  status?: ('pending' | 'ready' | 'failed' | 'missing') | null;
+  error?: string | null;
+  filename: string;
+  ncFileId: number;
+  ncPath?: string | null;
+  etag?: string | null;
+  /**
+   * Changes whenever the file is re-exported.
+   */
+  version?: string | null;
+  width?: number | null;
+  height?: number | null;
+  widths?: number[] | null;
+  placeholder?: string | null;
+  color?: string | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * Each album must have a slug matching the Nextcloud folder name under Lightroom/Portfolio/
@@ -253,6 +340,32 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users".
+ */
+export interface User {
+  id: number;
+  name?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  email: string;
+  resetPasswordToken?: string | null;
+  resetPasswordExpiration?: string | null;
+  salt?: string | null;
+  hash?: string | null;
+  loginAttempts?: number | null;
+  lockUntil?: string | null;
+  sessions?:
+    | {
+        id: string;
+        createdAt?: string | null;
+        expiresAt: string;
+      }[]
+    | null;
+  password?: string | null;
+  collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -276,8 +389,16 @@ export interface PayloadLockedDocument {
   id: number;
   document?:
     | ({
-        relationTo: 'users';
-        value: number | User;
+        relationTo: 'series';
+        value: number | Series;
+      } | null)
+    | ({
+        relationTo: 'photos';
+        value: number | Photo;
+      } | null)
+    | ({
+        relationTo: 'genres';
+        value: number | Genre;
       } | null)
     | ({
         relationTo: 'albums';
@@ -290,6 +411,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: number | Media;
+      } | null)
+    | ({
+        relationTo: 'users';
+        value: number | User;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -335,26 +460,74 @@ export interface PayloadMigration {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "users_select".
+ * via the `definition` "series_select".
  */
-export interface UsersSelect<T extends boolean = true> {
-  name?: T;
+export interface SeriesSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  story?: T;
+  genre?: T;
+  cover?: T;
+  order?: T;
+  draft?: T;
+  ncFileId?: T;
+  ncPath?: T;
+  photoCount?: T;
+  missing?: T;
   updatedAt?: T;
   createdAt?: T;
-  email?: T;
-  resetPasswordToken?: T;
-  resetPasswordExpiration?: T;
-  salt?: T;
-  hash?: T;
-  loginAttempts?: T;
-  lockUntil?: T;
-  sessions?:
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "photos_select".
+ */
+export interface PhotosSelect<T extends boolean = true> {
+  series?: T;
+  visibility?: T;
+  order?: T;
+  title?: T;
+  caption?: T;
+  alt?: T;
+  meta?:
     | T
     | {
-        id?: T;
-        createdAt?: T;
-        expiresAt?: T;
+        title?: T;
+        caption?: T;
+        keywords?: T;
+        rating?: T;
+        camera?: T;
+        lens?: T;
+        focalLength?: T;
+        aperture?: T;
+        exposureTime?: T;
+        iso?: T;
       };
+  takenAt?: T;
+  status?: T;
+  error?: T;
+  filename?: T;
+  ncFileId?: T;
+  ncPath?: T;
+  etag?: T;
+  version?: T;
+  width?: T;
+  height?: T;
+  widths?: T;
+  placeholder?: T;
+  color?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "genres_select".
+ */
+export interface GenresSelect<T extends boolean = true> {
+  name?: T;
+  slug?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -421,6 +594,29 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "users_select".
+ */
+export interface UsersSelect<T extends boolean = true> {
+  name?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  email?: T;
+  resetPasswordToken?: T;
+  resetPasswordExpiration?: T;
+  salt?: T;
+  hash?: T;
+  loginAttempts?: T;
+  lockUntil?: T;
+  sessions?:
+    | T
+    | {
+        id?: T;
+        createdAt?: T;
+        expiresAt?: T;
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv_select".
  */
 export interface PayloadKvSelect<T extends boolean = true> {
@@ -458,6 +654,34 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Photos are synced from Nextcloud → Lightroom/Portfolio when Nextcloud reports a change and every 15 minutes.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sync-status".
+ */
+export interface SyncStatus {
+  id: number;
+  lastReconcileAt?: string | null;
+  lastWebhookAt?: string | null;
+  lastResult?: string | null;
+  errors?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sync-status_select".
+ */
+export interface SyncStatusSelect<T extends boolean = true> {
+  lastReconcileAt?: T;
+  lastWebhookAt?: T;
+  lastResult?: T;
+  errors?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

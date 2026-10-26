@@ -2,10 +2,7 @@
 import { notFound } from "next/navigation";
 import Image from "next/image";
 import { Metadata } from "next";
-import {
-  fetchAlbumBySlug,
-  fetchAllAlbumSlugs,
-} from "@/lib/nextcloud";
+import { getSeriesBySlug } from "@/lib/portfolio";
 import { GalleryLightbox } from "@/components/GalleryLightbox";
 import { getTranslations } from "next-intl/server";
 import { WithContext, ImageGallery, BreadcrumbList } from "schema-dts";
@@ -15,22 +12,31 @@ type Props = {
   params: Promise<{ slug: string; locale: string }>;
 };
 
-// Album contents come from Nextcloud; re-render at most every 15 minutes so
-// newly exported photos appear without a redeploy.
-export const revalidate = 900;
+// Series and photos come from the database (filled by the Nextcloud sync).
+export const dynamic = "force-dynamic";
 
-// Generate static pages at build time
-export async function generateStaticParams() {
-  const albums = await fetchAllAlbumSlugs();
-  return albums.map((album) => ({
-    slug: album.slug,
-  }));
+async function fetchAlbumBySlug(slug: string, locale: string) {
+  const series = await getSeriesBySlug(slug, locale === "de" ? "de" : "en");
+  if (!series || !series.photos.length) return null;
+  return {
+    title: series.title,
+    coverImage: series.cover ? { url: series.cover.url(1600) } : null,
+    images: series.photos.map((photo) => ({
+      id: photo.id,
+      url: photo.url(2400),
+      thumbnailUrl: photo.url(960),
+      alternativeText: photo.alt,
+      placeholder: photo.placeholder,
+      width: photo.width,
+      height: photo.height,
+    })),
+  };
 }
 
 // Generate dynamic metadata for SEO
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug, locale } = await params;
-  const album = await fetchAlbumBySlug(slug);
+  const album = await fetchAlbumBySlug(slug, locale);
   if (!album) {
     return { title: "Album Not Found" };
   }
@@ -79,7 +85,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 // The main page component
 export default async function AlbumDetailPage({ params }: Props) {
   const { slug, locale } = await params;
-  const album = await fetchAlbumBySlug(slug);
+  const album = await fetchAlbumBySlug(slug, locale);
 
   if (!album) {
     notFound();
@@ -162,6 +168,8 @@ export default async function AlbumDetailPage({ params }: Props) {
                   height={image.height}
                   className="rounded-xl w-full h-auto block border-2 border-foreground hover:opacity-90 transition-opacity"
                   sizes="(max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                  placeholder={image.placeholder ? "blur" : "empty"}
+                  blurDataURL={image.placeholder ?? undefined}
                   unoptimized
                 />
               </div>
