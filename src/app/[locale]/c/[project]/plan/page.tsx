@@ -6,7 +6,7 @@ import { ProjectNav } from "@/components/portal/ProjectNav";
 import { PlanEditor } from "@/components/portal/PlanEditor";
 import { Moodboard } from "@/components/portal/Moodboard";
 import { getClient } from "@/lib/client-session";
-import { findClientProject, formatDate, getMoodboard, hasPreviews } from "@/lib/portal";
+import { findClientProject, formatDate, getMoodboard } from "@/lib/portal";
 import { planLocked, planQuestions } from "@/lib/plan";
 import { toLocale } from "@/lib/portfolio";
 
@@ -22,7 +22,7 @@ export default async function PlanPage({ params }: Props) {
   if (!project) notFound();
 
   const t = await getTranslations("Portal.plan");
-  const [questions, moodboard, previews] = await Promise.all([planQuestions(project, loc), getMoodboard(client, project.id), hasPreviews(project.id)]);
+  const [questions, moodboard] = await Promise.all([planQuestions(project, loc), getMoodboard(client, project.id)]);
   const saved = project.plan?.answers ?? [];
   // Keep answers attached to their question text, even if the order changed
   const answers = questions.map((q) => saved.find((a) => a.question === q.question)?.answer ?? "");
@@ -35,7 +35,7 @@ export default async function PlanPage({ params }: Props) {
       <SectionLabel n={1} aside={<SignOut locale={locale} />}>
         {project.title}
       </SectionLabel>
-      <ProjectNav slug={slug} active="plan" hasPreviews={previews} />
+      <ProjectNav slug={slug} projectId={project.id} active="plan" />
       <h1 className="display display-xl mt-10 text-6xl lowercase sm:text-8xl">{t("title")}</h1>
       <p className="mt-6 max-w-xl text-lg text-muted-foreground">{locked ? t("locked") : t("intro")}</p>
 

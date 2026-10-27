@@ -223,7 +223,7 @@ export interface Genre {
  */
 export interface Photo {
   id: number;
-  purpose?: ('portfolio' | 'preview') | null;
+  purpose?: ('portfolio' | 'preview' | 'final') | null;
   series?: (number | null) | Series;
   project?: (number | null) | Project;
   visibility?: ('public' | 'hidden') | null;
@@ -256,7 +256,7 @@ export interface Photo {
     iso?: number | null;
   };
   takenAt?: string | null;
-  status?: ('pending' | 'ready' | 'failed' | 'missing') | null;
+  status?: ('pending' | 'ready' | 'failed' | 'missing' | 'expired') | null;
   error?: string | null;
   filename: string;
   ncFileId: number;
@@ -266,6 +266,10 @@ export interface Photo {
    * Changes whenever the file is re-exported.
    */
   version?: string | null;
+  /**
+   * Size of the original file
+   */
+  bytes?: number | null;
   width?: number | null;
   height?: number | null;
   widths?: number[] | null;
@@ -434,6 +438,22 @@ export interface Project {
      */
     submittedAt?: string | null;
   };
+  /**
+   * Finals from "2 Final": online for 12 months after delivery, then deleted from the server (they stay in Nextcloud).
+   */
+  delivery?: {
+    deliveredAt?: string | null;
+    /**
+     * Move it later to extend the gallery — an expired gallery is restored from Nextcloud.
+     */
+    expiresAt?: string | null;
+    reminder30SentAt?: string | null;
+    reminder7SentAt?: string | null;
+    /**
+     * Files deleted from the server
+     */
+    purgedAt?: string | null;
+  };
   previews?: {
     docs?: (number | Photo)[];
     hasNextPage?: boolean;
@@ -462,7 +482,7 @@ export interface Project {
    */
   sendProposal?: boolean | null;
   /**
-   * On save, fetch new previews from Nextcloud now (otherwise every 15 min)
+   * On save, fetch new previews and finals from Nextcloud now (otherwise every 15 min)
    */
   syncPreviews?: boolean | null;
   ncFolder?: string | null;
@@ -1058,6 +1078,7 @@ export interface PhotosSelect<T extends boolean = true> {
   ncPath?: T;
   etag?: T;
   version?: T;
+  bytes?: T;
   width?: T;
   height?: T;
   widths?: T;
@@ -1269,6 +1290,15 @@ export interface ProjectsSelect<T extends boolean = true> {
         extraPrice?: T;
         previewsReadyAt?: T;
         submittedAt?: T;
+      };
+  delivery?:
+    | T
+    | {
+        deliveredAt?: T;
+        expiresAt?: T;
+        reminder30SentAt?: T;
+        reminder7SentAt?: T;
+        purgedAt?: T;
       };
   previews?: T;
   picks?: T;

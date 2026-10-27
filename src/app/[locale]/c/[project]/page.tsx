@@ -7,7 +7,7 @@ import { ProposalCard } from "@/components/portal/ProposalCard";
 import { ProjectNav } from "@/components/portal/ProjectNav";
 import { SignOut } from "@/components/portal/SignOut";
 import { getClient } from "@/lib/client-session";
-import { formatDate, getClientProject, getClientProjects, getProofing } from "@/lib/portal";
+import { findClientProject, formatDate, getClientProject, getClientProjects, getDelivery, getProofing } from "@/lib/portal";
 import { toLocale } from "@/lib/portfolio";
 import { getPayloadClient } from "@/lib/payload";
 import { refreshOpenPayments } from "@/lib/payments";
@@ -36,6 +36,8 @@ export default async function ProjectPage({ params, searchParams }: Props) {
   }
   const hasOthers = (await getClientProjects(client)).length > 1;
   const proofing = await getProofing(client, slug);
+  const rawProject = await findClientProject(client, slug);
+  const delivery = rawProject ? await getDelivery(rawProject) : null;
   const t = await getTranslations("Portal");
 
   const details: [string, string | null][] = [
@@ -57,7 +59,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
         )}
       </SectionLabel>
 
-      <ProjectNav slug={slug} active="overview" hasPreviews={Boolean(proofing?.photos.length)} />
+      <ProjectNav slug={slug} projectId={project.id} active="overview" />
 
       <p className="readout mt-10 text-muted-foreground">{t("home.hi", { name: client.name.split(" ")[0] })}</p>
       <h1 className="display display-xl mt-2 text-6xl lowercase sm:text-8xl">{project.title}</h1>
@@ -84,6 +86,32 @@ export default async function ProjectPage({ params, searchParams }: Props) {
       {payment === "cancelled" && <p className="mt-8 border-l-2 border-border pl-4" role="status">{t("proposal.cancelled")}</p>}
 
       <ProposalCard project={project} locale={loc} online={stripeEnabled()} />
+
+      {delivery?.open && delivery.photos.length > 0 && (
+        <Link
+          href={`/c/${slug}/photos`}
+          className="group mt-10 flex flex-col gap-6 bg-foreground p-4 text-background transition hover:bg-rec sm:flex-row sm:items-center"
+        >
+          <div className="flex shrink-0 -space-x-6">
+            {delivery.photos.slice(0, 4).map((p, i) => (
+              // eslint-disable-next-line @next/next/no-img-element -- access-checked /api/previews
+              <img
+                key={p.id}
+                src={p.src.replace(/\/960$/, "/480")}
+                alt=""
+                className="h-20 w-20 border-2 border-background object-cover shadow"
+                style={{ transform: `rotate(${[-6, 3, -2, 5][i]}deg)` }}
+              />
+            ))}
+          </div>
+          <div className="flex-1">
+            <p className="readout opacity-70">{t("delivery.label")}</p>
+            <p className="display mt-1 text-3xl lowercase">{t("delivery.card", { count: delivery.photos.length })}</p>
+            {delivery.expiresAt && <p className="readout mt-1 opacity-70">{t("delivery.until", { date: formatDate(delivery.expiresAt, loc) })}</p>}
+          </div>
+          <span className="border border-background px-5 py-2.5">{t("delivery.open")} →</span>
+        </Link>
+      )}
 
       {proofing && proofing.photos.length > 0 && (
         <Link

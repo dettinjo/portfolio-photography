@@ -178,7 +178,8 @@
       "overview": "Übersicht",
       "plan": "Planung",
       "selection": "Auswahl",
-      "messages": "Nachrichten"
+      "messages": "Nachrichten",
+      "photos": "Deine Fotos"
     },
     "plan": {
       "label": "Planung",
@@ -240,6 +241,25 @@
       "you": "Du",
       "photoNote": "Notiz zu {file}",
       "openPhoto": "öffnen"
+    },
+    "delivery": {
+      "label": "Lieferung",
+      "title": "deine fotos",
+      "intro": "Da sind sie! Lade sie in voller Auflösung herunter — oder in Webgröße, fertig zum Teilen.",
+      "until": "Online bis {date} — bitte speichere dir eine eigene Kopie.",
+      "allOriginal": "Alle herunterladen · volle Auflösung",
+      "allWeb": "Alle · Webgröße",
+      "size": "{count} Fotos · {size}",
+      "original": "Volle Auflösung",
+      "web": "Webgröße",
+      "expired": "Diese Galerie wurde am {date} geschlossen. Schreib mir, falls du deine Fotos noch einmal brauchst.",
+      "notYet": "Deine fertigen Fotos sind noch nicht da — du bekommst eine E-Mail, sobald sie bereit sind.",
+      "card": "{count} fertige Fotos sind für dich bereit.",
+      "open": "Zu meinen Fotos",
+      "close": "Schließen",
+      "previous": "Vorheriges Foto",
+      "next": "Nächstes Foto",
+      "zipHint": "Große Downloads können etwas dauern — lass die Seite offen, bis er fertig ist."
     }
   }
 }
