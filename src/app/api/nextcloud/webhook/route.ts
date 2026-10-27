@@ -1,11 +1,12 @@
 // Receives Nextcloud webhook_listeners events for files below the portfolio
-// folder and schedules a (debounced) sync of the affected series folder.
+// and clients folders and schedules a (debounced) sync of the affected folder.
 // Authenticated with a shared secret header configured on the Nextcloud side.
 import { NextRequest, NextResponse } from 'next/server'
 import { timingSafeEqual } from 'crypto'
 import { getPayloadClient } from '@/lib/payload'
-import { PORTFOLIO_DAV_PATH, webhookPathBelowPortfolio } from '@/lib/nextcloud'
+import { PORTFOLIO_DAV_PATH, webhookPathBelowPortfolio, webhookProjectFolder } from '@/lib/nextcloud'
 import { recordWebhook, scheduleFolderSync, scheduleReconcile } from '@/lib/sync'
+import { scheduleClientFolderSync } from '@/lib/sync/clients'
 
 const SECRET = process.env.NEXTCLOUD_WEBHOOK_SECRET ?? ''
 
@@ -51,6 +52,10 @@ export async function POST(req: NextRequest) {
     scheduleReconcile()
   }
 
-  if (folders.size) await recordWebhook(await getPayloadClient()).catch(() => {})
-  return NextResponse.json({ ok: true, scheduled: [...folders] }, { status: 202 })
+  // Client project folders (previews in Clients/<project>/1 Preview)
+  const projectFolders = new Set(nodes.map((n) => (n?.path ? webhookProjectFolder(n.path) : null)).filter(Boolean))
+  for (const folder of projectFolders) scheduleClientFolderSync(folder as string)
+
+  if (folders.size || projectFolders.size) await recordWebhook(await getPayloadClient()).catch(() => {})
+  return NextResponse.json({ ok: true, scheduled: [...folders, ...projectFolders] }, { status: 202 })
 }

@@ -1,7 +1,12 @@
 import type { CollectionConfig, Where } from 'payload'
 
+// Client previews are never public, whatever their visibility says
 const publiclyVisible: Where = {
-  and: [{ status: { equals: 'ready' } }, { visibility: { equals: 'public' } }],
+  and: [
+    { status: { equals: 'ready' } },
+    { visibility: { equals: 'public' } },
+    { purpose: { not_equals: 'preview' } },
+  ],
 }
 
 // One record per image file in Nextcloud, identified by its Nextcloud file id
@@ -11,7 +16,7 @@ export const Photos: CollectionConfig = {
   admin: {
     useAsTitle: 'filename',
     group: 'Portfolio',
-    defaultColumns: ['filename', 'series', 'status', 'visibility', 'takenAt'],
+    defaultColumns: ['filename', 'series', 'project', 'status', 'visibility', 'takenAt'],
     listSearchableFields: ['filename', 'title'],
   },
   access: {
@@ -21,7 +26,24 @@ export const Photos: CollectionConfig = {
     delete: ({ req }) => Boolean(req.user),
   },
   fields: [
-    { name: 'series', type: 'relationship', relationTo: 'series', index: true },
+    {
+      type: 'row',
+      fields: [
+        {
+          name: 'purpose',
+          type: 'select',
+          defaultValue: 'portfolio',
+          index: true,
+          options: [
+            { label: 'Portfolio', value: 'portfolio' },
+            { label: 'Client preview', value: 'preview' },
+          ],
+          admin: { readOnly: true },
+        },
+        { name: 'series', type: 'relationship', relationTo: 'series', index: true },
+        { name: 'project', type: 'relationship', relationTo: 'projects', index: true },
+      ],
+    },
     {
       type: 'row',
       fields: [
@@ -117,6 +139,7 @@ export const Photos: CollectionConfig = {
         { name: 'widths', type: 'number', hasMany: true, admin: { readOnly: true } },
         { name: 'placeholder', type: 'text', admin: { readOnly: true } },
         { name: 'color', type: 'text', admin: { readOnly: true } },
+        { name: 'watermark', type: 'text', admin: { readOnly: true, description: 'Text burned into the preview' } },
       ],
     },
   ],

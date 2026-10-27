@@ -541,8 +541,21 @@ every save. *Deviation:* clients are a plain collection with our own link + cook
 instead of a Payload auth collection (Payload has no passwordless login). The startup runner
 now applies data seeds after all schema migrations (the Local API expects the newest schema).
 **Needs** `Lightroom/Clients` shared with `portfolio-sync` (read, edit, create).
-**3b** — preview ingest with watermark → proofing gallery (picks, compare, filters, quota),
-region comments, `selection.txt` write-back.
+**3b ✅ done 2026-10-27** — `Clients/<project>/1 Preview` → preview photos (≤ 2048 px WebP,
+watermark burned in before any size is written: the project's text or "<CLIENT NAME> ·
+PREVIEW", bundled JetBrains Mono so no system fonts are needed). Stored apart from the
+portfolio and served only by `/api/previews/…` to the project's clients and admins (404
+for everyone else); a new watermark text re-renders them. Unknown folders become project
+stubs. First previews → stage *Selection* + email to every client. Portal
+`/c/<project>/proofing`: justified grid with ♥, counter against the included number (extra
+photos and price shown), filters (all / picked / not picked / with notes), two-up compare,
+fullscreen viewer with notes pinned to a spot (x/y), several pickers merged. "Send my
+selection" locks it, writes `_from-client/selection.txt` (with a Lightroom filter line) and
+`selection.csv`, moves the project to *Editing*, emails both sides; clearing *submitted at*
+in the admin reopens it. Sync: 15-min reconcile, "fetch previews now" on the project, and
+webhooks for `Clients/` once the listeners' path filter includes it.
+*Deviations:* offline-safe picks (Background Sync) postponed to Phase 5; extra photos are
+counted and shown, paid in 3c.
 **3c** — Stripe deposit on proposal acceptance.
 **3d** — Plan section (questionnaire, moodboard), messages.
 

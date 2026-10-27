@@ -76,6 +76,8 @@ export interface Config {
     reviews: Review;
     clients: Client;
     projects: Project;
+    picks: Pick;
+    comments: Comment;
     activity: Activity;
     media: Media;
     users: User;
@@ -88,6 +90,11 @@ export interface Config {
     clients: {
       projects: 'projects';
     };
+    projects: {
+      previews: 'photos';
+      picks: 'picks';
+      comments: 'comments';
+    };
   };
   collectionsSelect: {
     series: SeriesSelect<false> | SeriesSelect<true>;
@@ -99,6 +106,8 @@ export interface Config {
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     clients: ClientsSelect<false> | ClientsSelect<true>;
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    picks: PicksSelect<false> | PicksSelect<true>;
+    comments: CommentsSelect<false> | CommentsSelect<true>;
     activity: ActivitySelect<false> | ActivitySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -203,7 +212,9 @@ export interface Genre {
  */
 export interface Photo {
   id: number;
+  purpose?: ('portfolio' | 'preview') | null;
   series?: (number | null) | Series;
+  project?: (number | null) | Project;
   visibility?: ('public' | 'hidden') | null;
   /**
    * Optional manual position; otherwise capture time.
@@ -249,6 +260,180 @@ export interface Photo {
   widths?: number[] | null;
   placeholder?: string | null;
   color?: string | null;
+  /**
+   * Text burned into the preview
+   */
+  watermark?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  title: string;
+  stage:
+    | 'inquiry'
+    | 'proposal'
+    | 'booked'
+    | 'planning'
+    | 'shoot'
+    | 'sneak-peek'
+    | 'proofing'
+    | 'editing'
+    | 'revisions'
+    | 'delivery'
+    | 'feedback'
+    | 'archive';
+  /**
+   * Portal address: /c/<slug>
+   */
+  slug?: string | null;
+  clients?: (number | Client)[] | null;
+  /**
+   * Fills client, offering, date and place on create
+   */
+  inquiry?: (number | null) | Inquiry;
+  offering?: (number | null) | Offering;
+  shootDate?: string | null;
+  location?: string | null;
+  /**
+   * What happens next, shown to the client. Empty: the standard text for the stage.
+   */
+  nextStep?: string | null;
+  /**
+   * Further dates for the client, e.g. "Previews ready", "Delivery"
+   */
+  keyDates?:
+    | {
+        label: string;
+        date: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Text on preview images. Empty: the client's name.
+   */
+  watermarkText?: string | null;
+  /**
+   * Previews from "1 Preview" in the project folder
+   */
+  proofing?: {
+    /**
+     * Photos included. Empty: from the offering
+     */
+    quota?: number | null;
+    /**
+     * € per extra photo. Empty: from the offering
+     */
+    extraPrice?: number | null;
+    /**
+     * Clients were told on this date
+     */
+    previewsReadyAt?: string | null;
+    /**
+     * When the selection was sent. Clear it to let the client change their picks again.
+     */
+    submittedAt?: string | null;
+  };
+  previews?: {
+    docs?: (number | Photo)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  picks?: {
+    docs?: (number | Pick)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  comments?: {
+    docs?: (number | Comment)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Never shown to the client
+   */
+  internalNotes?: string | null;
+  /**
+   * On save, email every client a sign-in link (valid 7 days)
+   */
+  inviteClients?: boolean | null;
+  /**
+   * On save, fetch new previews from Nextcloud now (otherwise every 15 min)
+   */
+  syncPreviews?: boolean | null;
+  ncFolder?: string | null;
+  ncFolderId?: number | null;
+  ncFolderError?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clients".
+ */
+export interface Client {
+  id: number;
+  name: string;
+  email: string;
+  /**
+   * Language of emails and the portal
+   */
+  locale?: ('en' | 'de') | null;
+  phone?: string | null;
+  projects?: {
+    docs?: (number | Project)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Internal notes
+   */
+  notes?: string | null;
+  lastLoginAt?: string | null;
+  /**
+   * Ends all portal sessions of this client on save
+   */
+  signOutEverywhere?: boolean | null;
+  loginTokenHash?: string | null;
+  loginTokenExpiresAt?: string | null;
+  sessionVersion?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inquiries".
+ */
+export interface Inquiry {
+  id: number;
+  status?: ('new' | 'replied' | 'booked' | 'declined') | null;
+  locale?: string | null;
+  offering?: (number | null) | Offering;
+  /**
+   * Free text when "something else" was chosen
+   */
+  kind?: string | null;
+  date?: string | null;
+  dateFlexible?: boolean | null;
+  location?: string | null;
+  size?: ('small' | 'medium' | 'large') | null;
+  budget?: ('lt200' | '200-500' | '500-1000' | 'gt1000' | 'unsure') | null;
+  name: string;
+  email: string;
+  phone?: string | null;
+  message?: string | null;
+  /**
+   * The photo that inspired the request
+   */
+  photo?: (number | null) | Photo;
+  /**
+   * Internal notes
+   */
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -299,34 +484,38 @@ export interface Offering {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "inquiries".
+ * via the `definition` "picks".
  */
-export interface Inquiry {
+export interface Pick {
   id: number;
-  status?: ('new' | 'replied' | 'booked' | 'declined') | null;
-  locale?: string | null;
-  offering?: (number | null) | Offering;
+  project: number | Project;
+  photo: number | Photo;
+  client: number | Client;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  project: number | Project;
+  photo: number | Photo;
   /**
-   * Free text when "something else" was chosen
+   * Empty: written by you
    */
-  kind?: string | null;
-  date?: string | null;
-  dateFlexible?: boolean | null;
-  location?: string | null;
-  size?: ('small' | 'medium' | 'large') | null;
-  budget?: ('lt200' | '200-500' | '500-1000' | 'gt1000' | 'unsure') | null;
-  name: string;
-  email: string;
-  phone?: string | null;
-  message?: string | null;
+  client?: (number | null) | Client;
+  resolved?: boolean | null;
+  body: string;
   /**
-   * The photo that inspired the request
+   * Pin position, 0–1 from the left
    */
-  photo?: (number | null) | Photo;
+  x?: number | null;
   /**
-   * Internal notes
+   * Pin position, 0–1 from the top
    */
-  notes?: string | null;
+  y?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -436,102 +625,6 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "clients".
- */
-export interface Client {
-  id: number;
-  name: string;
-  email: string;
-  /**
-   * Language of emails and the portal
-   */
-  locale?: ('en' | 'de') | null;
-  phone?: string | null;
-  projects?: {
-    docs?: (number | Project)[];
-    hasNextPage?: boolean;
-    totalDocs?: number;
-  };
-  /**
-   * Internal notes
-   */
-  notes?: string | null;
-  lastLoginAt?: string | null;
-  /**
-   * Ends all portal sessions of this client on save
-   */
-  signOutEverywhere?: boolean | null;
-  loginTokenHash?: string | null;
-  loginTokenExpiresAt?: string | null;
-  sessionVersion?: number | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "projects".
- */
-export interface Project {
-  id: number;
-  title: string;
-  stage:
-    | 'inquiry'
-    | 'proposal'
-    | 'booked'
-    | 'planning'
-    | 'shoot'
-    | 'sneak-peek'
-    | 'proofing'
-    | 'editing'
-    | 'revisions'
-    | 'delivery'
-    | 'feedback'
-    | 'archive';
-  /**
-   * Portal address: /c/<slug>
-   */
-  slug?: string | null;
-  clients?: (number | Client)[] | null;
-  /**
-   * Fills client, offering, date and place on create
-   */
-  inquiry?: (number | null) | Inquiry;
-  offering?: (number | null) | Offering;
-  shootDate?: string | null;
-  location?: string | null;
-  /**
-   * What happens next, shown to the client. Empty: the standard text for the stage.
-   */
-  nextStep?: string | null;
-  /**
-   * Further dates for the client, e.g. "Previews ready", "Delivery"
-   */
-  keyDates?:
-    | {
-        label: string;
-        date: string;
-        id?: string | null;
-      }[]
-    | null;
-  /**
-   * Text on preview images. Empty: the client's name.
-   */
-  watermarkText?: string | null;
-  /**
-   * Never shown to the client
-   */
-  internalNotes?: string | null;
-  /**
-   * On save, email every client a sign-in link (valid 7 days)
-   */
-  inviteClients?: boolean | null;
-  ncFolder?: string | null;
-  ncFolderError?: string | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "activity".
  */
 export interface Activity {
@@ -636,6 +729,14 @@ export interface PayloadLockedDocument {
         value: number | Project;
       } | null)
     | ({
+        relationTo: 'picks';
+        value: number | Pick;
+      } | null)
+    | ({
+        relationTo: 'comments';
+        value: number | Comment;
+      } | null)
+    | ({
         relationTo: 'activity';
         value: number | Activity;
       } | null)
@@ -713,7 +814,9 @@ export interface SeriesSelect<T extends boolean = true> {
  * via the `definition` "photos_select".
  */
 export interface PhotosSelect<T extends boolean = true> {
+  purpose?: T;
   series?: T;
+  project?: T;
   visibility?: T;
   order?: T;
   title?: T;
@@ -746,6 +849,7 @@ export interface PhotosSelect<T extends boolean = true> {
   widths?: T;
   placeholder?: T;
   color?: T;
+  watermark?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -890,10 +994,49 @@ export interface ProjectsSelect<T extends boolean = true> {
         id?: T;
       };
   watermarkText?: T;
+  proofing?:
+    | T
+    | {
+        quota?: T;
+        extraPrice?: T;
+        previewsReadyAt?: T;
+        submittedAt?: T;
+      };
+  previews?: T;
+  picks?: T;
+  comments?: T;
   internalNotes?: T;
   inviteClients?: T;
+  syncPreviews?: T;
   ncFolder?: T;
+  ncFolderId?: T;
   ncFolderError?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "picks_select".
+ */
+export interface PicksSelect<T extends boolean = true> {
+  project?: T;
+  photo?: T;
+  client?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments_select".
+ */
+export interface CommentsSelect<T extends boolean = true> {
+  project?: T;
+  photo?: T;
+  client?: T;
+  resolved?: T;
+  body?: T;
+  x?: T;
+  y?: T;
   updatedAt?: T;
   createdAt?: T;
 }

@@ -20,30 +20,12 @@ import {
   type DavEntry,
 } from '@/lib/nextcloud'
 import { hasProcessedFiles, processPhoto, removeOtherVersions } from './process'
+import { debounce, idle as queueIdle } from './queue'
+import { reconcileClients } from './clients'
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/tiff'])
 const RECONCILE_INTERVAL_MS = 15 * 60 * 1000
 const DEBOUNCE_MS = Number(process.env.SYNC_DEBOUNCE_MS ?? 60_000)
-
-// ── Serial task runner ────────────────────────────────────────────────────
-
-let chain: Promise<void> = Promise.resolve()
-function enqueue(label: string, task: () => Promise<void>): Promise<void> {
-  chain = chain.then(task).catch((err) => console.error(`[sync] ${label} failed:`, err))
-  return chain
-}
-
-const timers = new Map<string, NodeJS.Timeout>()
-function debounce(key: string, delay: number, label: string, task: () => Promise<void>) {
-  clearTimeout(timers.get(key))
-  timers.set(
-    key,
-    setTimeout(() => {
-      timers.delete(key)
-      void enqueue(label, task)
-    }, delay),
-  )
-}
 
 /** Sync one series folder after things have been quiet for a while. */
 export function scheduleFolderSync(folderPath: string, delay = DEBOUNCE_MS) {
@@ -61,7 +43,7 @@ export function scheduleReconcile(delay = DEBOUNCE_MS) {
 }
 
 /** Waits until all queued work is done (used by tests and the manual trigger). */
-export const idle = () => chain
+export const idle = queueIdle
 
 let started = false
 /** Starts the periodic reconcile. Safe to call more than once. */
@@ -98,6 +80,13 @@ export async function reconcile(payload: Payload) {
     depth: 0,
   })
   for (const s of gone.docs) await markSeriesMissing(payload, s.id)
+
+  // Client projects: previews in Clients/<project>/1 Preview
+  try {
+    errors.push(...(await reconcileClients(payload)))
+  } catch (err) {
+    errors.push(`clients: ${(err as Error).message}`)
+  }
 
   await writeStatus(payload, {
     lastReconcileAt: new Date().toISOString(),
@@ -278,6 +267,7 @@ async function syncFile(payload: Payload, file: DavEntry, seriesId: number) {
     photo.version !== version ||
     photo.status === 'pending' ||
     photo.status === 'failed' ||
+    photo.purpose === 'preview' ||
     // processed files lost (e.g. volume replaced) — regenerate them
     !hasProcessedFiles(file.fileId as number, version)
 
@@ -286,7 +276,7 @@ async function syncFile(payload: Payload, file: DavEntry, seriesId: number) {
       await payload.update({
         collection: 'photos',
         id: photo.id,
-        data: { ncPath: file.path, filename: file.name, series: seriesId, status: 'ready' },
+        data: { ncPath: file.path, filename: file.name, series: seriesId, status: 'ready', purpose: 'portfolio', project: null },
       })
     }
     return
@@ -302,6 +292,8 @@ async function syncFile(payload: Payload, file: DavEntry, seriesId: number) {
         filename: file.name,
         ncPath: file.path,
         series: seriesId,
+        purpose: 'portfolio',
+        project: null,
         etag: file.etag,
         version,
         width: result.width,

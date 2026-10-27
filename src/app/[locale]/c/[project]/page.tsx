@@ -5,7 +5,7 @@ import { SectionLabel } from "@/components/site/SectionLabel";
 import { ProjectTimeline } from "@/components/portal/ProjectTimeline";
 import { SignOut } from "@/components/portal/SignOut";
 import { getClient } from "@/lib/client-session";
-import { formatDate, getClientProject, getClientProjects } from "@/lib/portal";
+import { formatDate, getClientProject, getClientProjects, getProofing } from "@/lib/portal";
 import { toLocale } from "@/lib/portfolio";
 
 type Props = { params: Promise<{ locale: string; project: string }> };
@@ -20,6 +20,7 @@ export default async function ProjectPage({ params }: Props) {
   const project = await getClientProject(client, slug, loc);
   if (!project) notFound();
   const hasOthers = (await getClientProjects(client)).length > 1;
+  const proofing = await getProofing(client, slug);
   const t = await getTranslations("Portal");
 
   const details: [string, string | null][] = [
@@ -59,6 +60,35 @@ export default async function ProjectPage({ params }: Props) {
           ))}
         </div>
       </section>
+
+      {proofing && proofing.photos.length > 0 && (
+        <Link
+          href={`/c/${slug}/proofing`}
+          className="group mt-10 flex flex-col gap-6 border border-border p-4 transition hover:border-foreground sm:flex-row sm:items-center"
+        >
+          <div className="flex shrink-0 -space-x-6">
+            {proofing.photos.slice(0, 4).map((p, i) => (
+              // eslint-disable-next-line @next/next/no-img-element -- access-checked /api/previews
+              <img
+                key={p.id}
+                src={p.src.replace(/\/960$/, "/480")}
+                alt=""
+                className="h-20 w-20 border-2 border-background object-cover shadow transition group-hover:rotate-0"
+                style={{ transform: `rotate(${[-6, 3, -2, 5][i]}deg)` }}
+              />
+            ))}
+          </div>
+          <div className="flex-1">
+            <p className="readout text-muted-foreground">{t("proofing.previewsTitle")}</p>
+            <p className="display mt-1 text-3xl lowercase">
+              {proofing.submittedAt ? t("proofing.sentTitle") : t("proofing.previewsText", { count: proofing.photos.length })}
+            </p>
+          </div>
+          <span className="bg-foreground px-5 py-2.5 text-background transition group-hover:bg-rec group-hover:text-white">
+            {t("proofing.open")} →
+          </span>
+        </Link>
+      )}
 
       <section className="mt-16">
         <SectionLabel n={2}>{t("project.timeline")}</SectionLabel>

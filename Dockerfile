@@ -52,6 +52,8 @@ RUN mkdir -p .next public/media cache \
 # The standalone output bundles everything needed to run the server.
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+# Font for the preview watermark (rendered by sharp, no system fonts needed)
+COPY --from=builder --chown=nextjs:nodejs /app/assets ./assets
 
 USER nextjs
 
