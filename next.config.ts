@@ -12,7 +12,9 @@ const withSerwist = withSerwistInit({
   swSrc: "src/app/sw.ts",
   swDest: "public/sw.js",
   // New revision per build so the precached offline page is refreshed
-  additionalPrecacheEntries: ["/offline", "/de/offline"].map((url) => ({ url, revision: randomUUID() })),
+  // Locale-prefixed paths are served without the i18n middleware (see
+  // src/middleware.ts), so precaching them never sets the language cookie.
+  additionalPrecacheEntries: ["/en/offline", "/de/offline"].map((url) => ({ url, revision: randomUUID() })),
   disable: process.env.NODE_ENV !== "production",
 });
 

@@ -116,7 +116,7 @@ export default async function HomePage({ params }: Props) {
             <p className="display text-3xl">{t("ctaTitle")}</p>
             <p className="mt-2 max-w-sm text-muted-foreground">{t("ctaText")}</p>
             <div className="mt-6 flex flex-wrap items-center gap-5">
-              <Link href="/contact" className="bg-foreground px-6 py-3 text-background transition hover:bg-rec hover:text-white">
+              <Link href="/sessions#plan" className="bg-foreground px-6 py-3 text-background transition hover:bg-rec hover:text-white">
                 {t("ctaButton")} →
               </Link>
               <Link href="/about" className="link-slide pb-0.5">{t("aboutLink")}</Link>

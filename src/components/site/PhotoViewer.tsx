@@ -16,7 +16,8 @@ interface PhotoViewerProps {
   onClose: () => void;
 }
 
-export const photoPath = (locale: string, id: number) => `${locale === "de" ? "/de" : ""}/p/${id}`;
+export const photoPrefix = (locale: string) => `${locale === "de" ? "/de" : ""}/p/`;
+export const photoPath = (locale: string, id: number) => `${photoPrefix(locale)}${id}`;
 export const seriesPath = (locale: string, slug: string) => `${locale === "de" ? "/de" : ""}/work/${slug}`;
 
 export function PhotoViewer({ photos, index, onIndexChange, onClose }: PhotoViewerProps) {
@@ -179,7 +180,11 @@ export function PhotoViewer({ photos, index, onIndexChange, onClose }: PhotoView
             {exposure && <InfoRow label={t("settings")}>{exposure}</InfoRow>}
           </dl>
           <a
-            href={`${locale === "de" ? "/de" : ""}/contact?photo=${photo.id}`}
+            href={
+              photo.genre
+                ? `${locale === "de" ? "/de" : ""}/sessions?genre=${photo.genre}&photo=${photo.id}#plan`
+                : `${locale === "de" ? "/de" : ""}/contact?photo=${photo.id}`
+            }
             className="mt-6 inline-block bg-white px-4 py-2 text-sm text-black transition hover:bg-rec hover:text-white"
           >
             {t("bookSimilar")}

@@ -5,7 +5,8 @@
       "work": "Work",
       "about": "About",
       "contact": "Contact",
-      "menu": "Menu"
+      "menu": "Menu",
+      "sessions": "Sessions"
     },
     "footer": {
       "tagline": "Photography — events, motorsport, portraits and brands.",
@@ -45,7 +46,7 @@
       "aboutLink": "More about me",
       "ctaTitle": "Something in front of the lens?",
       "ctaText": "Tell me what you have in mind — I'll get back to you personally.",
-      "ctaButton": "Get in touch",
+      "ctaButton": "Plan a shoot",
       "kicker": "Photography",
       "headlineA": "I chase",
       "headlineAccent": "light",
@@ -94,6 +95,73 @@
       "intro": "What people say after working together.",
       "leave": "Worked with me? Leave a review",
       "label": "Reviews"
+    },
+    "sessions": {
+      "metaTitle": "Sessions",
+      "metaDescription": "Ways to work together — portraits, events & motorsport, cars & brands. Plan your shoot in four short steps.",
+      "label": "Sessions",
+      "headlineA": "Let's make",
+      "headlineAccent": "something",
+      "headlineB": "together.",
+      "intro": "A few ways to work together — each one flexible. Not sure which one fits? Plan your shoot below and I'll suggest the right one.",
+      "from": "from {price}",
+      "onRequest": "on request",
+      "included": "What you get",
+      "facts": {
+        "duration": "Duration",
+        "delivery": "Delivery",
+        "deliveryDays": "{count, plural, one {# day} other {# days}}",
+        "revisions": "Revision rounds",
+        "deposit": "Deposit",
+        "extra": "Extra photo"
+      },
+      "plan": "Plan this shoot",
+      "addOnsLabel": "Extras",
+      "addOnsTitle": "add-ons",
+      "empty": "Sessions are being prepared — write me in the meantime.",
+      "planner": {
+        "label": "Plan your shoot",
+        "title": "plan your shoot",
+        "step": "Step {n} / {total}",
+        "what": "What are we shooting?",
+        "somethingElse": "Something else",
+        "somethingElsePlaceholder": "Tell me in a few words",
+        "when": "When & where?",
+        "date": "Date",
+        "flexible": "I'm flexible",
+        "location": "Location",
+        "locationPlaceholder": "City or place",
+        "size": "How big is it?",
+        "sizes": {
+          "small": "Small — 1–2 people or one car",
+          "medium": "Medium — a small group or a few cars",
+          "large": "Large — an event or a whole day"
+        },
+        "budget": "Budget",
+        "budgets": {
+          "lt200": "up to €200",
+          "200-500": "€200–500",
+          "500-1000": "€500–1000",
+          "gt1000": "over €1000",
+          "unsure": "not sure yet"
+        },
+        "you": "Who are you?",
+        "name": "Name",
+        "email": "Email",
+        "phone": "Phone (optional)",
+        "message": "Anything else?",
+        "messagePlaceholder": "Ideas, references, questions…",
+        "back": "Back",
+        "next": "Next",
+        "send": "Send request",
+        "sending": "Sending…",
+        "privacy": "Your details are only used to answer your request.",
+        "successTitle": "got it.",
+        "successText": "Thanks, {name}! A confirmation is on its way to your inbox — I'll get back to you personally within two days.",
+        "error": "Something went wrong. Please try again, or write to me via the contact page.",
+        "required": "Please choose or fill in this step.",
+        "fromPhoto": "Inspired by photo #{id}"
+      }
     }
   }
 }

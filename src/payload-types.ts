@@ -70,6 +70,8 @@ export interface Config {
     series: Series;
     photos: Photo;
     genres: Genre;
+    offerings: Offering;
+    inquiries: Inquiry;
     albums: Album;
     reviews: Review;
     media: Media;
@@ -84,6 +86,8 @@ export interface Config {
     series: SeriesSelect<false> | SeriesSelect<true>;
     photos: PhotosSelect<false> | PhotosSelect<true>;
     genres: GenresSelect<false> | GenresSelect<true>;
+    offerings: OfferingsSelect<false> | OfferingsSelect<true>;
+    inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
@@ -99,9 +103,11 @@ export interface Config {
   fallbackLocale: ('false' | 'none' | 'null') | false | null | ('en' | 'de') | ('en' | 'de')[];
   globals: {
     'sync-status': SyncStatus;
+    'sessions-settings': SessionsSetting;
   };
   globalsSelect: {
     'sync-status': SyncStatusSelect<false> | SyncStatusSelect<true>;
+    'sessions-settings': SessionsSettingsSelect<false> | SessionsSettingsSelect<true>;
   };
   locale: 'en' | 'de';
   widgets: {
@@ -152,7 +158,7 @@ export interface Series {
   cover?: (number | null) | Photo;
   order?: number | null;
   /**
-   * Hidden from the public site. Set automatically for folders starting with "_".
+   * Hidden from the public site. Set from the folder name ("_" prefix) when the folder is created or renamed; can be changed here.
    */
   draft?: boolean | null;
   ncFileId?: number | null;
@@ -231,6 +237,84 @@ export interface Photo {
   widths?: number[] | null;
   placeholder?: string | null;
   color?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Shown on /sessions once the genre has a published series.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offerings".
+ */
+export interface Offering {
+  id: number;
+  title: string;
+  slug: string;
+  genre: number | Genre;
+  /**
+   * One line: who it is for.
+   */
+  tagline?: string | null;
+  /**
+   * What you get — one item per line.
+   */
+  includes?: string | null;
+  /**
+   * e.g. "1 h" or "up to 3 h"
+   */
+  duration?: string | null;
+  /**
+   * Days until delivery
+   */
+  deliveryDays?: number | null;
+  /**
+   * €, empty = on request
+   */
+  fromPrice?: number | null;
+  depositPercent?: number | null;
+  /**
+   * Edited images included
+   */
+  imageQuota?: number | null;
+  /**
+   * € per extra image
+   */
+  extraImagePrice?: number | null;
+  revisionRounds?: number | null;
+  order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inquiries".
+ */
+export interface Inquiry {
+  id: number;
+  status?: ('new' | 'replied' | 'booked' | 'declined') | null;
+  locale?: string | null;
+  offering?: (number | null) | Offering;
+  /**
+   * Free text when "something else" was chosen
+   */
+  kind?: string | null;
+  date?: string | null;
+  dateFlexible?: boolean | null;
+  location?: string | null;
+  size?: ('small' | 'medium' | 'large') | null;
+  budget?: ('lt200' | '200-500' | '500-1000' | 'gt1000' | 'unsure') | null;
+  name: string;
+  email: string;
+  phone?: string | null;
+  message?: string | null;
+  /**
+   * The photo that inspired the request
+   */
+  photo?: (number | null) | Photo;
+  /**
+   * Internal notes
+   */
+  notes?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -401,6 +485,14 @@ export interface PayloadLockedDocument {
         value: number | Genre;
       } | null)
     | ({
+        relationTo: 'offerings';
+        value: number | Offering;
+      } | null)
+    | ({
+        relationTo: 'inquiries';
+        value: number | Inquiry;
+      } | null)
+    | ({
         relationTo: 'albums';
         value: number | Album;
       } | null)
@@ -526,6 +618,50 @@ export interface GenresSelect<T extends boolean = true> {
   name?: T;
   slug?: T;
   order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "offerings_select".
+ */
+export interface OfferingsSelect<T extends boolean = true> {
+  title?: T;
+  slug?: T;
+  genre?: T;
+  tagline?: T;
+  includes?: T;
+  duration?: T;
+  deliveryDays?: T;
+  fromPrice?: T;
+  depositPercent?: T;
+  imageQuota?: T;
+  extraImagePrice?: T;
+  revisionRounds?: T;
+  order?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "inquiries_select".
+ */
+export interface InquiriesSelect<T extends boolean = true> {
+  status?: T;
+  locale?: T;
+  offering?: T;
+  kind?: T;
+  date?: T;
+  dateFlexible?: T;
+  location?: T;
+  size?: T;
+  budget?: T;
+  name?: T;
+  email?: T;
+  phone?: T;
+  message?: T;
+  photo?: T;
+  notes?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -672,6 +808,26 @@ export interface SyncStatus {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sessions-settings".
+ */
+export interface SessionsSetting {
+  id: number;
+  addOns?:
+    | {
+        label: string;
+        /**
+         * e.g. "+20 %", "€55 / h"
+         */
+        price: string;
+        id?: string | null;
+      }[]
+    | null;
+  priceNote?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "sync-status_select".
  */
 export interface SyncStatusSelect<T extends boolean = true> {
@@ -679,6 +835,23 @@ export interface SyncStatusSelect<T extends boolean = true> {
   lastWebhookAt?: T;
   lastResult?: T;
   errors?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "sessions-settings_select".
+ */
+export interface SessionsSettingsSelect<T extends boolean = true> {
+  addOns?:
+    | T
+    | {
+        label?: T;
+        price?: T;
+        id?: T;
+      };
+  priceNote?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

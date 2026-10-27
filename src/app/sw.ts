@@ -53,7 +53,7 @@ const serwist = new Serwist({
           request.destination === "document" && /^\/de(\/|$)/.test(new URL(request.url).pathname),
       },
       {
-        url: "/offline",
+        url: "/en/offline",
         matcher: ({ request }) => request.destination === "document",
       },
     ],

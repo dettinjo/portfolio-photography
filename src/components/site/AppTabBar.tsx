@@ -11,7 +11,7 @@ export function AppTabBar() {
   const pathname = usePathname();
   return (
     <nav className="fixed inset-x-0 bottom-0 z-50 hidden border-t border-border/60 bg-background/90 pb-[env(safe-area-inset-bottom)] backdrop-blur standalone:block md:!hidden">
-      <ul className="grid grid-cols-4">
+      <ul className="grid grid-cols-5">
         {NAV_ITEMS.map(({ href, key, icon: Icon }) => (
           <li key={href}>
             <Link
