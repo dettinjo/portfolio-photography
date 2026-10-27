@@ -2,10 +2,12 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { AccentWord } from "@/components/site/AccentWord";
+import { Faq } from "@/components/site/Faq";
 import { OfferingBlock } from "@/components/site/OfferingBlock";
 import { SectionLabel } from "@/components/site/SectionLabel";
 import { ShootPlanner } from "@/components/site/ShootPlanner";
 import { getSessions } from "@/lib/sessions";
+import { getAbout } from "@/lib/about";
 import { toLocale } from "@/lib/portfolio";
 
 // Offerings depend on which genres have published series (database).
@@ -27,7 +29,8 @@ export default async function SessionsPage({ params, searchParams }: Props) {
   setRequestLocale(locale);
   const loc = toLocale(locale);
   const t = await getTranslations("Site.sessions");
-  const { offerings, addOns, priceNote } = await getSessions(loc);
+  const [{ offerings, addOns, priceNote }, about] = await Promise.all([getSessions(loc), getAbout(loc)]);
+  const faq = about.faq.filter((f) => f.onSessions);
   const query = await searchParams;
 
   // Preselect an offering: ?offering=<slug>, or ?genre=<slug> from "book a shoot like this"
@@ -74,6 +77,23 @@ export default async function SessionsPage({ params, searchParams }: Props) {
             ))}
           </ul>
           {priceNote && <p className="readout mt-4 text-muted-foreground">{priceNote}</p>}
+        </section>
+      )}
+
+      {faq.length > 0 && (
+        <section id="faq" className="mt-28 scroll-mt-20">
+          <SectionLabel n={n++}>{t("faqLabel")}</SectionLabel>
+          <div className="mt-6 grid gap-10 lg:grid-cols-[2fr_3fr] lg:gap-20">
+            <div>
+              <h2 className="display display-xl text-6xl lowercase sm:text-7xl">{t("faqTitle")}</h2>
+              {faq.length < about.faq.length && (
+                <Link href="/about#faq" className="link-slide mt-6 inline-block pb-0.5">
+                  {t("faqAll")} →
+                </Link>
+              )}
+            </div>
+            <Faq items={faq} />
+          </div>
         </section>
       )}
 
