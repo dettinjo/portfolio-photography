@@ -3,22 +3,36 @@ import { notFound, redirect } from "next/navigation";
 import { Link } from "@/i18n/navigation";
 import { SectionLabel } from "@/components/site/SectionLabel";
 import { ProjectTimeline } from "@/components/portal/ProjectTimeline";
+import { ProposalCard } from "@/components/portal/ProposalCard";
 import { SignOut } from "@/components/portal/SignOut";
 import { getClient } from "@/lib/client-session";
 import { formatDate, getClientProject, getClientProjects, getProofing } from "@/lib/portal";
 import { toLocale } from "@/lib/portfolio";
+import { getPayloadClient } from "@/lib/payload";
+import { refreshOpenPayments } from "@/lib/payments";
+import { formatCents } from "@/lib/proposal";
+import { stripeEnabled } from "@/lib/stripe";
 
-type Props = { params: Promise<{ locale: string; project: string }> };
+type Props = {
+  params: Promise<{ locale: string; project: string }>;
+  searchParams: Promise<{ payment?: string }>;
+};
 
-export default async function ProjectPage({ params }: Props) {
+export default async function ProjectPage({ params, searchParams }: Props) {
   const { locale, project: slug } = await params;
   setRequestLocale(locale);
   const loc = toLocale(locale);
   const client = await getClient();
   if (!client) redirect(`${locale === "de" ? "/de" : ""}/c/login`);
 
-  const project = await getClientProject(client, slug, loc);
+  const { payment } = await searchParams;
+  let project = await getClientProject(client, slug, loc);
   if (!project) notFound();
+  // Back from Stripe Checkout: confirm with Stripe directly in case the webhook is slower
+  if (payment === "success") {
+    await refreshOpenPayments(await getPayloadClient(), project.id);
+    project = (await getClientProject(client, slug, loc)) ?? project;
+  }
   const hasOthers = (await getClientProjects(client)).length > 1;
   const proofing = await getProofing(client, slug);
   const t = await getTranslations("Portal");
@@ -60,6 +74,13 @@ export default async function ProjectPage({ params }: Props) {
           ))}
         </div>
       </section>
+
+      {payment === "success" && !project.payments.some((x) => x.status === "paid" || x.status === "processing") && (
+        <p className="mt-8 border-l-2 border-rec pl-4" role="status">{t("proposal.success")}</p>
+      )}
+      {payment === "cancelled" && <p className="mt-8 border-l-2 border-border pl-4" role="status">{t("proposal.cancelled")}</p>}
+
+      <ProposalCard project={project} locale={loc} online={stripeEnabled()} />
 
       {proofing && proofing.photos.length > 0 && (
         <Link
@@ -111,6 +132,23 @@ export default async function ProjectPage({ params }: Props) {
               ))}
           </dl>
         </section>
+
+        {project.payments.length > 0 && (
+          <section>
+            <SectionLabel n={5}>{t("proposal.payments")}</SectionLabel>
+            <ul className="mt-6 space-y-3">
+              {project.payments.map((x) => (
+                <li key={x.id} className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-1 border-b border-border pb-3">
+                  <span>{x.label}</span>
+                  <span className="font-mono text-sm">
+                    {formatCents(x.amount, loc)} · {t(`proposal.status.${x.status}`)}
+                    {x.paidAt && ` · ${formatDate(x.paidAt, loc)}`}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {project.activity.length > 0 && (
           <section>

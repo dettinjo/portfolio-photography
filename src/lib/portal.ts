@@ -4,8 +4,10 @@ import type { Client, Offering, Project } from '@/payload-types'
 import { getPayloadClient } from '@/lib/payload'
 import type { Locale } from '@/lib/portfolio'
 import { isStage, type Stage } from '@/lib/stages'
+import { proposalSummary, type ProposalSummary } from '@/lib/proposal'
 
 export interface PortalProjectSummary {
+  id: number
   slug: string
   title: string
   stage: Stage
@@ -18,9 +20,12 @@ export interface PortalProject extends PortalProjectSummary {
   nextStep: string | null
   keyDates: { label: string; date: string }[]
   activity: { id: number; message: string; stage: Stage | null; createdAt: string }[]
+  proposal: ProposalSummary | null
+  payments: { id: number; label: string; amount: number; refunded: number; status: string; kind: string; paidAt: string | null }[]
 }
 
 const summary = (p: Project): PortalProjectSummary => ({
+  id: p.id,
   slug: p.slug ?? String(p.id),
   title: p.title,
   stage: isStage(p.stage) ? p.stage : 'proposal',
@@ -62,9 +67,28 @@ export async function getClientProject(client: Client, slug: string, locale: Loc
     overrideAccess: true,
   })
 
+  const payments = await payload.find({
+    collection: 'payments',
+    where: { and: [{ project: { equals: p.id } }, { status: { not_in: ['open', 'expired'] } }] },
+    sort: 'createdAt',
+    limit: 50,
+    depth: 0,
+    overrideAccess: true,
+  })
+
   const offering = p.offering && typeof p.offering === 'object' ? (p.offering as Offering) : null
   return {
     ...summary(p),
+    proposal: p.proposal?.sentAt ? proposalSummary(p) : null,
+    payments: payments.docs.map((x) => ({
+      id: x.id,
+      label: x.label,
+      amount: x.amount,
+      refunded: x.refunded ?? 0,
+      status: x.status,
+      kind: x.kind,
+      paidAt: x.paidAt ?? null,
+    })),
     location: p.location ?? null,
     offering: offering?.title ?? null,
     nextStep: p.nextStep?.trim() || null,

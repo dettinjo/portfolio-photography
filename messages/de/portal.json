@@ -141,6 +141,38 @@
       "previewsText": "{count} Vorschauen sind für dich bereit.",
       "noPreviews": "Noch keine Vorschauen — du bekommst eine E-Mail, sobald sie fertig sind.",
       "keys": "← → blättern · P auswählen · Esc schließen"
+    },
+    "proposal": {
+      "label": "Angebot",
+      "title": "dein angebot",
+      "total": "Gesamt",
+      "deposit": "Anzahlung",
+      "depositPercent": "Anzahlung ({percent} %)",
+      "rest": "Der Rest ist vor der Lieferung fällig.",
+      "noVat": "Alle Preise sind Endpreise.",
+      "confirm": "Ich nehme dieses Angebot an",
+      "pay": "Annehmen & {amount} zahlen",
+      "payAgain": "Anzahlung zahlen · {amount}",
+      "acceptOnly": "Angebot annehmen",
+      "secure": "Sichere Zahlung über Stripe — Karte, Apple Pay, Google Pay oder SEPA, je nach Gerät.",
+      "accepted": "Angenommen am {date}.",
+      "manual": "Danke! Die Zahlungsdetails schicke ich dir persönlich.",
+      "paid": "Anzahlung über {amount} am {date} bezahlt — dein Termin ist gebucht.",
+      "processing": "Deine Zahlung ist unterwegs — Überweisungen können ein paar Tage dauern. Dein Termin ist so lange reserviert.",
+      "cancelled": "Zahlung abgebrochen — kein Problem, du kannst jederzeit zahlen.",
+      "success": "Danke! Deine Zahlung wird gerade bestätigt.",
+      "working": "Einen Moment…",
+      "error": "Das hat nicht geklappt — bitte versuch es gleich noch einmal.",
+      "payments": "Zahlungen",
+      "status": {
+        "open": "Begonnen",
+        "processing": "In Bearbeitung",
+        "paid": "Bezahlt",
+        "failed": "Fehlgeschlagen",
+        "expired": "Nicht abgeschlossen",
+        "partially_refunded": "Teilweise erstattet",
+        "refunded": "Erstattet"
+      }
     }
   }
 }

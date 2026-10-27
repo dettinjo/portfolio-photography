@@ -78,6 +78,8 @@ export interface Config {
     projects: Project;
     picks: Pick;
     comments: Comment;
+    payments: Payment;
+    'stripe-events': StripeEvent;
     activity: Activity;
     media: Media;
     users: User;
@@ -91,6 +93,7 @@ export interface Config {
       projects: 'projects';
     };
     projects: {
+      payments: 'payments';
       previews: 'photos';
       picks: 'picks';
       comments: 'comments';
@@ -108,6 +111,8 @@ export interface Config {
     projects: ProjectsSelect<false> | ProjectsSelect<true>;
     picks: PicksSelect<false> | PicksSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
+    payments: PaymentsSelect<false> | PaymentsSelect<true>;
+    'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
     activity: ActivitySelect<false> | ActivitySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -318,6 +323,41 @@ export interface Project {
    */
   watermarkText?: string | null;
   /**
+   * What the client accepts in the portal; the deposit is paid by card/SEPA via Stripe.
+   */
+  proposal?: {
+    /**
+     * Final amounts in € (no VAT is added).
+     */
+    lines?:
+      | {
+          label: string;
+          amount: number;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Shown to the client above the proposal
+     */
+    note?: string | null;
+    /**
+     * Empty: from the offering (else 30 %)
+     */
+    depositPercent?: number | null;
+    /**
+     * Fixed deposit in €; overrides the percentage
+     */
+    depositAmount?: number | null;
+    sentAt?: string | null;
+    acceptedAt?: string | null;
+    acceptedBy?: (number | null) | Client;
+  };
+  payments?: {
+    docs?: (number | Payment)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
    * Previews from "1 Preview" in the project folder
    */
   proofing?: {
@@ -361,6 +401,10 @@ export interface Project {
    * On save, email every client a sign-in link (valid 7 days)
    */
   inviteClients?: boolean | null;
+  /**
+   * On save, email the proposal to every client (they accept and pay the deposit in the portal)
+   */
+  sendProposal?: boolean | null;
   /**
    * On save, fetch new previews from Nextcloud now (otherwise every 15 min)
    */
@@ -479,6 +523,34 @@ export interface Offering {
   extraImagePrice?: number | null;
   revisionRounds?: number | null;
   order?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments".
+ */
+export interface Payment {
+  id: number;
+  project: number | Project;
+  client?: (number | null) | Client;
+  kind: 'deposit' | 'balance' | 'extras' | 'addon';
+  status: 'open' | 'processing' | 'paid' | 'failed' | 'expired' | 'partially_refunded' | 'refunded';
+  label: string;
+  /**
+   * In cents
+   */
+  amount: number;
+  /**
+   * In cents
+   */
+  refunded?: number | null;
+  currency?: string | null;
+  paidAt?: string | null;
+  stripeSessionId?: string | null;
+  paymentIntentId?: string | null;
+  checkoutUrl?: string | null;
+  livemode?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -625,6 +697,17 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stripe-events".
+ */
+export interface StripeEvent {
+  id: number;
+  eventId: string;
+  type?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "activity".
  */
 export interface Activity {
@@ -735,6 +818,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'comments';
         value: number | Comment;
+      } | null)
+    | ({
+        relationTo: 'payments';
+        value: number | Payment;
+      } | null)
+    | ({
+        relationTo: 'stripe-events';
+        value: number | StripeEvent;
       } | null)
     | ({
         relationTo: 'activity';
@@ -994,6 +1085,24 @@ export interface ProjectsSelect<T extends boolean = true> {
         id?: T;
       };
   watermarkText?: T;
+  proposal?:
+    | T
+    | {
+        lines?:
+          | T
+          | {
+              label?: T;
+              amount?: T;
+              id?: T;
+            };
+        note?: T;
+        depositPercent?: T;
+        depositAmount?: T;
+        sentAt?: T;
+        acceptedAt?: T;
+        acceptedBy?: T;
+      };
+  payments?: T;
   proofing?:
     | T
     | {
@@ -1007,6 +1116,7 @@ export interface ProjectsSelect<T extends boolean = true> {
   comments?: T;
   internalNotes?: T;
   inviteClients?: T;
+  sendProposal?: T;
   syncPreviews?: T;
   ncFolder?: T;
   ncFolderId?: T;
@@ -1037,6 +1147,37 @@ export interface CommentsSelect<T extends boolean = true> {
   body?: T;
   x?: T;
   y?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "payments_select".
+ */
+export interface PaymentsSelect<T extends boolean = true> {
+  project?: T;
+  client?: T;
+  kind?: T;
+  status?: T;
+  label?: T;
+  amount?: T;
+  refunded?: T;
+  currency?: T;
+  paidAt?: T;
+  stripeSessionId?: T;
+  paymentIntentId?: T;
+  checkoutUrl?: T;
+  livemode?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "stripe-events_select".
+ */
+export interface StripeEventsSelect<T extends boolean = true> {
+  eventId?: T;
+  type?: T;
   updatedAt?: T;
   createdAt?: T;
 }
