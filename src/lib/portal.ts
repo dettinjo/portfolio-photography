@@ -236,3 +236,85 @@ export async function getProofing(client: Client, slug: string): Promise<Proofin
     pickers: clients.length,
   }
 }
+
+// ── Plan & messages ───────────────────────────────────────────────────────
+
+export interface MoodImage {
+  id: number
+  thumb: string
+  full: string
+  mine: boolean
+}
+
+export async function getMoodboard(client: Client, projectId: number): Promise<MoodImage[]> {
+  const payload = await getPayloadClient()
+  const res = await payload.find({
+    collection: 'project-files',
+    where: { and: [{ project: { equals: projectId } }, { kind: { equals: 'moodboard' } }] },
+    sort: 'createdAt',
+    limit: 100,
+    depth: 0,
+    overrideAccess: true,
+  })
+  return res.docs.map((f) => ({
+    id: f.id,
+    thumb: `/api/portal/files/${f.id}/thumb`,
+    full: `/api/portal/files/${f.id}/full`,
+    mine: (typeof f.client === 'object' ? f.client?.id : f.client) === client.id,
+  }))
+}
+
+export interface ThreadItem {
+  key: string
+  kind: 'message' | 'comment'
+  body: string
+  author: string
+  mine: boolean
+  fromPhotographer: boolean
+  createdAt: string
+  photo?: { thumb: string; filename: string } | null
+}
+
+/** Messages and photo notes of a project, oldest first. */
+export async function getThread(client: Client, project: Project): Promise<ThreadItem[]> {
+  const payload = await getPayloadClient()
+  const clients = (project.clients ?? []).filter((c): c is Client => typeof c === 'object' && c !== null)
+  const name = (id: number | null | undefined) => (id ? clients.find((c) => c.id === id)?.name.split(' ')[0] ?? '—' : 'Joel')
+  const relId = (v: unknown) => (typeof v === 'object' && v !== null ? (v as { id: number }).id : (v as number | null))
+
+  const [messages, comments] = await Promise.all([
+    payload.find({ collection: 'messages', where: { project: { equals: project.id } }, sort: 'createdAt', limit: 500, depth: 0, overrideAccess: true }),
+    payload.find({ collection: 'comments', where: { project: { equals: project.id } }, sort: 'createdAt', limit: 500, depth: 1, overrideAccess: true }),
+  ])
+  const items: ThreadItem[] = [
+    ...messages.docs.map((m) => {
+      const author = relId(m.client)
+      return { key: `m${m.id}`, kind: 'message' as const, body: m.body, author: name(author), mine: author === client.id, fromPhotographer: !author, createdAt: m.createdAt }
+    }),
+    ...comments.docs.map((c) => {
+      const author = relId(c.client)
+      const photo = typeof c.photo === 'object' && c.photo && c.photo.status === 'ready' ? c.photo : null
+      return {
+        key: `c${c.id}`,
+        kind: 'comment' as const,
+        body: c.body,
+        author: name(author),
+        mine: author === client.id,
+        fromPhotographer: !author,
+        createdAt: c.createdAt,
+        photo: photo ? { thumb: `/api/previews/${photo.id}/${photo.version}/480`, filename: photo.filename } : null,
+      }
+    }),
+  ]
+  return items.sort((a, b) => a.createdAt.localeCompare(b.createdAt))
+}
+
+export async function hasPreviews(projectId: number) {
+  const payload = await getPayloadClient()
+  const res = await payload.count({
+    collection: 'photos',
+    where: { and: [{ project: { equals: projectId } }, { purpose: { equals: 'preview' } }, { status: { equals: 'ready' } }] },
+    overrideAccess: true,
+  })
+  return res.totalDocs > 0
+}

@@ -80,6 +80,8 @@ export interface Config {
     comments: Comment;
     payments: Payment;
     'stripe-events': StripeEvent;
+    'project-files': ProjectFile;
+    messages: Message;
     activity: Activity;
     media: Media;
     users: User;
@@ -94,6 +96,8 @@ export interface Config {
     };
     projects: {
       payments: 'payments';
+      files: 'project-files';
+      messages: 'messages';
       previews: 'photos';
       picks: 'picks';
       comments: 'comments';
@@ -113,6 +117,8 @@ export interface Config {
     comments: CommentsSelect<false> | CommentsSelect<true>;
     payments: PaymentsSelect<false> | PaymentsSelect<true>;
     'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
+    'project-files': ProjectFilesSelect<false> | ProjectFilesSelect<true>;
+    messages: MessagesSelect<false> | MessagesSelect<true>;
     activity: ActivitySelect<false> | ActivitySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -358,6 +364,56 @@ export interface Project {
     totalDocs?: number;
   };
   /**
+   * Planning together: the client answers and adds a shot list and moodboard in the portal.
+   */
+  plan?: {
+    /**
+     * Shown to the client, e.g. "Main entrance, gate B"
+     */
+    meetingPoint?: string | null;
+    /**
+     * The day, shown to the client
+     */
+    schedule?:
+      | {
+          time: string;
+          item: string;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * From the client
+     */
+    answers?:
+      | {
+          question: string;
+          answer?: string | null;
+          id?: string | null;
+        }[]
+      | null;
+    /**
+     * Must-have shots — the client and you can both add to it
+     */
+    shotList?:
+      | {
+          item: string;
+          done?: boolean | null;
+          id?: string | null;
+        }[]
+      | null;
+    updatedByClientAt?: string | null;
+  };
+  files?: {
+    docs?: (number | ProjectFile)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  messages?: {
+    docs?: (number | Message)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
    * Previews from "1 Preview" in the project folder
    */
   proofing?: {
@@ -522,6 +578,16 @@ export interface Offering {
    */
   extraImagePrice?: number | null;
   revisionRounds?: number | null;
+  /**
+   * Questions the client answers in the portal under "Plan". Empty: the standard questions.
+   */
+  planQuestions?:
+    | {
+        question: string;
+        help?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   order?: number | null;
   updatedAt: string;
   createdAt: string;
@@ -551,6 +617,55 @@ export interface Payment {
   paymentIntentId?: string | null;
   checkoutUrl?: string | null;
   livemode?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-files".
+ */
+export interface ProjectFile {
+  id: number;
+  project: number | Project;
+  client?: (number | null) | Client;
+  kind?: 'moodboard' | null;
+  note?: string | null;
+  updatedAt: string;
+  createdAt: string;
+  url?: string | null;
+  thumbnailURL?: string | null;
+  filename?: string | null;
+  mimeType?: string | null;
+  filesize?: number | null;
+  width?: number | null;
+  height?: number | null;
+  focalX?: number | null;
+  focalY?: number | null;
+  sizes?: {
+    thumb?: {
+      url?: string | null;
+      width?: number | null;
+      height?: number | null;
+      mimeType?: string | null;
+      filesize?: number | null;
+      filename?: string | null;
+    };
+  };
+}
+/**
+ * To answer a client, create a message with the project and leave "client" empty.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages".
+ */
+export interface Message {
+  id: number;
+  project: number | Project;
+  /**
+   * Empty: written by you
+   */
+  client?: (number | null) | Client;
+  body: string;
   updatedAt: string;
   createdAt: string;
 }
@@ -828,6 +943,14 @@ export interface PayloadLockedDocument {
         value: number | StripeEvent;
       } | null)
     | ({
+        relationTo: 'project-files';
+        value: number | ProjectFile;
+      } | null)
+    | ({
+        relationTo: 'messages';
+        value: number | Message;
+      } | null)
+    | ({
         relationTo: 'activity';
         value: number | Activity;
       } | null)
@@ -972,6 +1095,13 @@ export interface OfferingsSelect<T extends boolean = true> {
   imageQuota?: T;
   extraImagePrice?: T;
   revisionRounds?: T;
+  planQuestions?:
+    | T
+    | {
+        question?: T;
+        help?: T;
+        id?: T;
+      };
   order?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -1103,6 +1233,35 @@ export interface ProjectsSelect<T extends boolean = true> {
         acceptedBy?: T;
       };
   payments?: T;
+  plan?:
+    | T
+    | {
+        meetingPoint?: T;
+        schedule?:
+          | T
+          | {
+              time?: T;
+              item?: T;
+              id?: T;
+            };
+        answers?:
+          | T
+          | {
+              question?: T;
+              answer?: T;
+              id?: T;
+            };
+        shotList?:
+          | T
+          | {
+              item?: T;
+              done?: T;
+              id?: T;
+            };
+        updatedByClientAt?: T;
+      };
+  files?: T;
+  messages?: T;
   proofing?:
     | T
     | {
@@ -1178,6 +1337,52 @@ export interface PaymentsSelect<T extends boolean = true> {
 export interface StripeEventsSelect<T extends boolean = true> {
   eventId?: T;
   type?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "project-files_select".
+ */
+export interface ProjectFilesSelect<T extends boolean = true> {
+  project?: T;
+  client?: T;
+  kind?: T;
+  note?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  url?: T;
+  thumbnailURL?: T;
+  filename?: T;
+  mimeType?: T;
+  filesize?: T;
+  width?: T;
+  height?: T;
+  focalX?: T;
+  focalY?: T;
+  sizes?:
+    | T
+    | {
+        thumb?:
+          | T
+          | {
+              url?: T;
+              width?: T;
+              height?: T;
+              mimeType?: T;
+              filesize?: T;
+              filename?: T;
+            };
+      };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages_select".
+ */
+export interface MessagesSelect<T extends boolean = true> {
+  project?: T;
+  client?: T;
+  body?: T;
   updatedAt?: T;
   createdAt?: T;
 }

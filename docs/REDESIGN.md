@@ -569,7 +569,16 @@ from the Dashboard sync. Without `STRIPE_SECRET_KEY` the portal records the acce
 says payment details follow by email. *Deployed with payments off* — the keys in Infisical
 are the live keys of the account RoutePass uses, so enabling needs the owner's decision and a
 portfolio webhook endpoint.
-**3d** — Plan section (questionnaire, moodboard), messages.
+**3d ✅ done 2026-10-27** — Project tabs in the portal (Overview · Plan · Selection ·
+Messages). *Plan*: date, place, meeting point and the day's schedule (set in the admin);
+questionnaire from the offering's `planQuestions` (else five standard questions, en/de),
+shot list with check-offs, moodboard (≤ 30 images, ≤ 15 MB, stored as private
+`project-files` with thumbnails, served by `/api/portal/files` to the project's clients and
+admins); editable until the shoot, then read-only; the photographer gets at most one
+"plan updated" email per hour. *Messages*: one thread per project, photo notes from the
+selection shown inline with a thumbnail; client messages email the photographer (reply-to
+the client), replies created in the admin (*Inbox → Messages*, client empty) email every
+client with a link to the thread.
 
 - Magic link, project timeline, Plan section.
 - `Clients/<project>/` folder creation; preview ingest → proofing gallery.

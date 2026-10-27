@@ -253,3 +253,36 @@ export async function sendProposalAccepted(opts: { projectTitle: string; client:
     }`,
   })
 }
+
+const REPLY = {
+  en: { subject: (p: string) => `New message from Joel — ${p}`, button: 'Reply' },
+  de: { subject: (p: string) => `Neue Nachricht von Joel — ${p}`, button: 'Antworten' },
+}
+
+/** To a client: the photographer wrote in the project thread. */
+export async function sendMessageToClient(opts: { to: string; name: string; locale: 'en' | 'de'; projectTitle: string; body: string; url: string }) {
+  const c = REPLY[opts.locale]
+  const hi = COPY[opts.locale].hi(opts.name)
+  await transporter.sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: c.subject(opts.projectTitle),
+    text: `${hi}\n\n${opts.body}\n\n${opts.url}\n\nJoel`,
+    html: `<div style="font-family:sans-serif;max-width:560px;color:#111;line-height:1.5">
+      <p>${e(hi)}</p>
+      <blockquote style="margin:16px 0;padding:12px 16px;border-left:3px solid #ff5a1f;background:#f6f4ef;white-space:pre-wrap">${e(opts.body)}</blockquote>
+      <p style="margin:28px 0"><a href="${e(opts.url)}" style="background:#111;color:#fff;padding:12px 22px;text-decoration:none;display:inline-block">${e(c.button)} →</a></p>
+    </div>`,
+  })
+}
+
+/** To the photographer: a client wrote in the project thread (or updated the plan). */
+export async function sendClientUpdateToAdmin(opts: { client: string; clientEmail: string; projectTitle: string; subject: string; body: string; adminUrl: string }) {
+  await transporter.sendMail({
+    from: FROM,
+    to: ADMIN_TO,
+    replyTo: opts.clientEmail,
+    subject: `💬 ${opts.subject} — ${opts.projectTitle}`,
+    text: `${opts.client}:\n\n${opts.body}\n\nAnswer in the admin (Inbox → Messages, project "${opts.projectTitle}"):\n${opts.adminUrl}`,
+  })
+}

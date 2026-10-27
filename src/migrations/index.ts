@@ -8,6 +8,7 @@ import * as migration_20261027_081500_seed_about from './20261027_081500_seed_ab
 import * as migration_20261027_082634_phase3a_clients_projects from './20261027_082634_phase3a_clients_projects';
 import * as migration_20261027_122531_phase3b_proofing from './20261027_122531_phase3b_proofing';
 import * as migration_20261027_135102_phase3c_payments from './20261027_135102_phase3c_payments';
+import * as migration_20261027_141748_phase3d_plan_messages from './20261027_141748_phase3d_plan_messages';
 
 export const migrations = [
   {
@@ -58,6 +59,11 @@ export const migrations = [
   {
     up: migration_20261027_135102_phase3c_payments.up,
     down: migration_20261027_135102_phase3c_payments.down,
-    name: '20261027_135102_phase3c_payments'
+    name: '20261027_135102_phase3c_payments',
+  },
+  {
+    up: migration_20261027_141748_phase3d_plan_messages.up,
+    down: migration_20261027_141748_phase3d_plan_messages.down,
+    name: '20261027_141748_phase3d_plan_messages'
   },
 ];
