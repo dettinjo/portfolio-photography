@@ -1,64 +1,34 @@
-// src/app/sitemap.ts
-import { MetadataRoute } from "next";
+import type { MetadataRoute } from "next";
+import { routing } from "@/i18n/routing";
 import { getPublishedSeries } from "@/lib/portfolio";
 
-// Series live in the database, which is not available at build time.
+// Series and photos live in the database, which is not available at build time.
 export const dynamic = "force-dynamic";
-import { routing } from "@/i18n/routing";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const photographyDomain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN;
-  const baseUrl = `https://${photographyDomain}`;
+  const baseUrl = `https://${process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN}`;
   const { locales, defaultLocale } = routing;
+  const url = (path: string, locale: string) =>
+    `${baseUrl}${locale === defaultLocale ? "" : `/${locale}`}${path}`;
 
-  // Helper to create a localized URL
-  const getUrl = (slug: string, locale: string) => {
-    const path = slug ? `/${slug}` : "";
-    if (locale === defaultLocale) {
-      return `${baseUrl}${path}`;
-    }
-    return `${baseUrl}/${locale}${path}`;
-  };
+  const entry = (path: string, priority: number): MetadataRoute.Sitemap =>
+    locales.map((locale) => ({
+      url: url(path, locale),
+      lastModified: new Date(),
+      priority,
+      alternates: { languages: Object.fromEntries(locales.map((l) => [l, url(path, l)])) },
+    }));
 
-  const sitemapEntries: MetadataRoute.Sitemap = [];
-
-  // 1. Static Pages (Home, Imprint, Privacy Policy)
-  const staticPages = ["", "imprint", "privacy_policy"];
-  staticPages.forEach((slug) => {
-    const alternates: Record<string, string> = {};
-    locales.forEach((locale) => {
-      alternates[locale] = getUrl(slug, locale);
-    });
-
-    // Add an entry for *each* locale version of the static page
-    locales.forEach((locale) => {
-      sitemapEntries.push({
-        url: getUrl(slug, locale),
-        lastModified: new Date(),
-        alternates: {
-          languages: alternates,
-        },
-      });
-    });
-  });
-
-  // 2. Dynamic Album Pages
-  const albums = await getPublishedSeries("en");
-
-  albums.forEach((album) => {
-    const alternates: Record<string, string> = {};
-    locales.forEach((locale) => {
-      alternates[locale] = getUrl(album.slug, locale);
-    });
-
-    locales.forEach((locale) => {
-      sitemapEntries.push({
-        url: alternates[locale],
-        lastModified: new Date(),
-        alternates: { languages: alternates },
-      });
-    });
-  });
-
-  return sitemapEntries;
+  const series = await getPublishedSeries("en");
+  return [
+    ...entry("", 1),
+    ...entry("/work", 0.9),
+    ...series.flatMap((s) => entry(`/work/${s.slug}`, 0.8)),
+    ...series.flatMap((s) => s.photos.flatMap((p) => entry(`/p/${p.id}`, 0.5))),
+    ...entry("/about", 0.7),
+    ...entry("/contact", 0.7),
+    ...entry("/kind-words", 0.5),
+    ...entry("/imprint", 0.1),
+    ...entry("/privacy_policy", 0.1),
+  ];
 }

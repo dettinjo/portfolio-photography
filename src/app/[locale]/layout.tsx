@@ -3,7 +3,7 @@ import React from "react";
 import Script from "next/script";
 import { notFound } from "next/navigation";
 import { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Serif, JetBrains_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import {
   getMessages,
@@ -17,10 +17,24 @@ import "../globals.css";
 import { routing, isValidLocale } from "@/i18n/routing";
 import { cn } from "@/lib/utils";
 import { ThemeProvider } from "@/components/Theme-Provider";
-import { PhotographyHeader } from "@/components/layout/PhotographyHeader";
-import { Footer } from "@/components/layout/Footer";
+import { SiteHeader } from "@/components/site/SiteHeader";
+import { SiteFooter } from "@/components/site/SiteFooter";
+import { AppTabBar } from "@/components/site/AppTabBar";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
+// Characterful grotesque (with width/optical-size axes) for text and display,
+// an italic serif for accent words, a mono for camera-style readouts.
+const sans = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  axes: ["opsz", "wdth"],
+});
+const serif = Instrument_Serif({
+  subsets: ["latin"],
+  weight: "400",
+  style: ["italic"],
+  variable: "--font-serif",
+});
+const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));
@@ -117,6 +131,7 @@ export default async function LocaleLayout({ children, params }: Props) {
   setRequestLocale(locale);
 
   const messages = await getMessages();
+  const fullName = process.env.NEXT_PUBLIC_FULL_NAME || "Photographer";
   const umamiWebsiteId = process.env.UMAMI_WEBSITE_ID;
 
   return (
@@ -124,18 +139,18 @@ export default async function LocaleLayout({ children, params }: Props) {
       <body
         className={cn(
           "min-h-screen bg-background font-sans antialiased",
-          inter.variable
+          sans.variable,
+          serif.variable,
+          mono.variable
         )}
       >
         <NextIntlClientProvider locale={locale} messages={messages}>
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <div className="relative flex min-h-dvh flex-col bg-background">
-              {/* The Single Header for the entire app */}
-              <PhotographyHeader />
-
-              <main className="flex-1">{children}</main>
-
-              <Footer />
+              <SiteHeader name={fullName} />
+              <main className="flex-1 pt-14">{children}</main>
+              <SiteFooter name={fullName} />
+              <AppTabBar />
             </div>
             {umamiWebsiteId && (
               <Script

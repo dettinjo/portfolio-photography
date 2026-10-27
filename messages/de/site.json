@@ -1,0 +1,99 @@
+{
+  "Site": {
+    "nav": {
+      "home": "Start",
+      "work": "Arbeiten",
+      "about": "Über mich",
+      "contact": "Kontakt",
+      "menu": "Menü"
+    },
+    "footer": {
+      "tagline": "Fotografie — Events, Motorsport, Porträts und Marken.",
+      "kindWords": "Stimmen",
+      "imprint": "Impressum",
+      "privacy": "Datenschutz",
+      "sayHi": "sag hallo",
+      "sayHiSub": "Eine Idee, ein Termin oder eine Frage? Schreib mir.",
+      "madeBy": "Fotografiert & gebaut von {name}"
+    },
+    "viewer": {
+      "close": "Schließen",
+      "previous": "Vorheriges Foto",
+      "next": "Nächstes Foto",
+      "info": "Details",
+      "share": "Teilen",
+      "copied": "Link kopiert",
+      "series": "Serie",
+      "date": "Aufgenommen",
+      "camera": "Kamera",
+      "lens": "Objektiv",
+      "settings": "Einstellungen",
+      "bookSimilar": "Ein ähnliches Shooting buchen"
+    },
+    "stream": {
+      "filter": "Nach Art der Arbeit filtern",
+      "all": "Alle"
+    },
+    "home": {
+      "metaTitle": "Fotos von {name}",
+      "heroLine": "Fotografie",
+      "scroll": "Zu den Arbeiten scrollen",
+      "streamTitle": "Ausgewählte Arbeiten",
+      "seriesTitle": "Serien",
+      "photos": "{count, plural, one {# Foto} other {# Fotos}}",
+      "aboutLine": "Ich bin {name}, Fotograf für Events, Motorsport, Porträts und Marken.",
+      "aboutLink": "Mehr über mich",
+      "ctaTitle": "Etwas vor der Linse?",
+      "ctaText": "Erzähl mir, was du vorhast — ich melde mich persönlich bei dir.",
+      "ctaButton": "Kontakt aufnehmen",
+      "kicker": "Fotografie",
+      "headlineA": "Ich jage",
+      "headlineAccent": "Licht",
+      "headlineB": "& alles, was sich bewegt.",
+      "rec": "Rec",
+      "streamLabel": "Frisch von der Karte",
+      "seriesLabel": "Filmrollen",
+      "aboutLabel": "Hinter der Kamera",
+      "frames": "{count, plural, one {# Bild} other {# Bilder}}"
+    },
+    "work": {
+      "metaTitle": "Arbeiten",
+      "title": "Arbeiten",
+      "intro": "Eine Auswahl von Fotoserien.",
+      "empty": "Neue Arbeiten sind unterwegs.",
+      "more": "Weitere Serien",
+      "back": "Alle Arbeiten",
+      "label": "Index"
+    },
+    "photo": {
+      "inSeries": "Aus der Serie",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "viewSeries": "Die ganze Serie ansehen",
+      "bookSimilar": "Ein ähnliches Shooting buchen"
+    },
+    "about": {
+      "metaTitle": "Über mich",
+      "title": "Über mich",
+      "instagram": "Auf Instagram folgen",
+      "approachTitle": "Wie ich arbeite",
+      "approach": "Ich halte Shootings entspannt und gut geplant. Du bekommst vorab ein kurzes Gespräch, einen klaren Plan für den Tag, kurz danach einen ersten Blick auf deine Fotos und die fertigen Bilder in einer privaten Online-Galerie.",
+      "cta": "Kontakt aufnehmen",
+      "label": "Hinter der Kamera"
+    },
+    "contact": {
+      "metaTitle": "Kontakt",
+      "title": "Lass uns sprechen",
+      "intro": "Fragen, Ideen oder schon ein Termin im Kopf — schreib mir ein paar Zeilen, ich melde mich persönlich bei dir.",
+      "aboutPhoto": "Zu Foto {id}: ",
+      "label": "Kontakt"
+    },
+    "kindWords": {
+      "metaTitle": "Stimmen",
+      "title": "Stimmen",
+      "intro": "Was Menschen nach unserer Zusammenarbeit sagen.",
+      "leave": "Wir haben zusammengearbeitet? Hinterlasse eine Bewertung",
+      "label": "Bewertungen"
+    }
+  }
+}

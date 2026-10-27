@@ -1,0 +1,99 @@
+{
+  "Site": {
+    "nav": {
+      "home": "Home",
+      "work": "Work",
+      "about": "About",
+      "contact": "Contact",
+      "menu": "Menu"
+    },
+    "footer": {
+      "tagline": "Photography — events, motorsport, portraits and brands.",
+      "kindWords": "Kind words",
+      "imprint": "Imprint",
+      "privacy": "Privacy",
+      "sayHi": "say hi",
+      "sayHiSub": "Got an idea, a date or a question? Write me.",
+      "madeBy": "Shot & built by {name}"
+    },
+    "viewer": {
+      "close": "Close",
+      "previous": "Previous photo",
+      "next": "Next photo",
+      "info": "Details",
+      "share": "Share",
+      "copied": "Link copied",
+      "series": "Series",
+      "date": "Taken",
+      "camera": "Camera",
+      "lens": "Lens",
+      "settings": "Settings",
+      "bookSimilar": "Book a shoot like this"
+    },
+    "stream": {
+      "filter": "Filter by kind of work",
+      "all": "All"
+    },
+    "home": {
+      "metaTitle": "Photos by {name}",
+      "heroLine": "Photography",
+      "scroll": "Scroll to the work",
+      "streamTitle": "Selected work",
+      "seriesTitle": "Series",
+      "photos": "{count, plural, one {# photo} other {# photos}}",
+      "aboutLine": "I'm {name}, a photographer for events, motorsport, portraits and brands.",
+      "aboutLink": "More about me",
+      "ctaTitle": "Something in front of the lens?",
+      "ctaText": "Tell me what you have in mind — I'll get back to you personally.",
+      "ctaButton": "Get in touch",
+      "kicker": "Photography",
+      "headlineA": "I chase",
+      "headlineAccent": "light",
+      "headlineB": "& everything that moves.",
+      "rec": "Rec",
+      "streamLabel": "Fresh off the card",
+      "seriesLabel": "Rolls",
+      "aboutLabel": "Behind the camera",
+      "frames": "{count, plural, one {# frame} other {# frames}}"
+    },
+    "work": {
+      "metaTitle": "Work",
+      "title": "Work",
+      "intro": "A selection of photo series.",
+      "empty": "New work is on its way.",
+      "more": "More series",
+      "back": "All work",
+      "label": "Index"
+    },
+    "photo": {
+      "inSeries": "From the series",
+      "previous": "Previous",
+      "next": "Next",
+      "viewSeries": "View the whole series",
+      "bookSimilar": "Book a shoot like this"
+    },
+    "about": {
+      "metaTitle": "About",
+      "title": "About",
+      "instagram": "Follow on Instagram",
+      "approachTitle": "How I work",
+      "approach": "I keep shoots relaxed and well planned. You get a short conversation beforehand, a clear plan for the day, a first look at your photos soon after, and the final edits delivered in a private online gallery.",
+      "cta": "Get in touch",
+      "label": "Behind the camera"
+    },
+    "contact": {
+      "metaTitle": "Contact",
+      "title": "Let's talk",
+      "intro": "Questions, ideas or a date in mind — write me a few lines and I'll get back to you personally.",
+      "aboutPhoto": "About photo {id}: ",
+      "label": "Contact"
+    },
+    "kindWords": {
+      "metaTitle": "Kind words",
+      "title": "Kind words",
+      "intro": "What people say after working together.",
+      "leave": "Worked with me? Leave a review",
+      "label": "Reviews"
+    }
+  }
+}

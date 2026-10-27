@@ -20,6 +20,7 @@ module.exports = {
     },
     extend: {
       colors: {
+        rec: "hsl(var(--rec))",
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
@@ -74,9 +75,18 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
       },
       fontFamily: {
-        sans: ["var(--font-inter)", "sans-serif"],
+        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
+        serif: ["var(--font-serif)", "Georgia", "serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
     },
   },
-  plugins: [require("tailwindcss-animate"), require("@tailwindcss/typography")],
+  plugins: [
+    require("tailwindcss-animate"),
+    require("@tailwindcss/typography"),
+    // `standalone:` applies when the site runs as an installed app (PWA)
+    function ({ addVariant }) {
+      addVariant("standalone", "@media (display-mode: standalone)");
+    },
+  ],
 };
