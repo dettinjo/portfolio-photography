@@ -179,7 +179,8 @@
       "plan": "Plan",
       "selection": "Selection",
       "messages": "Messages",
-      "photos": "Your photos"
+      "photos": "Your photos",
+      "review": "Review"
     },
     "plan": {
       "label": "Plan",
@@ -295,6 +296,59 @@
       "changes": "Changes",
       "error": "That didn't work — please try again.",
       "confirm": "Send {count} changes as round {round}? After that you can't add to this round."
+    },
+    "feedback": {
+      "booking": "How was booking so far?",
+      "sneak-peek": "First impression of your sneak peek?",
+      "private": "Only I see this — it helps me get better.",
+      "faces": [
+        "Not good",
+        "Meh",
+        "Okay",
+        "Good",
+        "Love it"
+      ],
+      "comment": "Anything you'd like to add? (optional)",
+      "send": "Send",
+      "thanks": "Thank you — that helps a lot!",
+      "error": "That didn't send — please try again."
+    },
+    "review": {
+      "label": "Review",
+      "title": "how was it?",
+      "intro": "A few honest words help others decide — and they mean a lot to me. Once I've approved it, your review appears on my website.",
+      "ratings": {
+        "communication": "Communication",
+        "creativity": "Creativity",
+        "professionalism": "Professionalism",
+        "value": "Value for money"
+      },
+      "quote": "Your words",
+      "quotePlaceholder": "What was it like to work together? How do you like the photos?",
+      "name": "Shown as",
+      "role": "Occasion (optional)",
+      "rolePlaceholder": "e.g. Race weekend, Wedding, Portrait shoot",
+      "favourite": "Your favourite photo",
+      "favouriteHelp": "Which one is your favourite? (optional)",
+      "consent": "Which photos may I show?",
+      "consentHelp": "Tap the photos I may use in my portfolio and on Instagram. Untouched ones stay private. You can change this anytime.",
+      "all": "All",
+      "none": "None",
+      "agree": "My review may be published on this website with the name above.",
+      "submit": "Send review",
+      "sending": "Sending…",
+      "thanks": "thank you!",
+      "thanksText": "Your review arrived — I'll publish it after a quick look.",
+      "consentTitle": "Photos I may show",
+      "consentSave": "Save choices",
+      "saved": "Saved ✓",
+      "missing": "Please rate all four and write a few words.",
+      "error": "That didn't send — please try again.",
+      "notYet": "You can write a review once your photos are delivered.",
+      "card": "Tell me how it was — and which photos I may show.",
+      "open": "Write a review",
+      "may": "May show",
+      "private": "Private"
     }
   }
 }

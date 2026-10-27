@@ -5,9 +5,11 @@ import { SectionLabel } from "@/components/site/SectionLabel";
 import { ProjectTimeline } from "@/components/portal/ProjectTimeline";
 import { ProposalCard } from "@/components/portal/ProposalCard";
 import { ProjectNav } from "@/components/portal/ProjectNav";
+import { FeedbackCard } from "@/components/portal/FeedbackCard";
+import { stageIndex } from "@/lib/stages";
 import { SignOut } from "@/components/portal/SignOut";
 import { getClient } from "@/lib/client-session";
-import { findClientProject, formatDate, getClientProject, getClientProjects, getDelivery, getProofing } from "@/lib/portal";
+import { findClientProject, formatDate, getClientProject, getClientProjects, getDelivery, getFeedbackState, getProofing } from "@/lib/portal";
 import { toLocale } from "@/lib/portfolio";
 import { getPayloadClient } from "@/lib/payload";
 import { refreshOpenPayments } from "@/lib/payments";
@@ -38,6 +40,17 @@ export default async function ProjectPage({ params, searchParams }: Props) {
   const proofing = await getProofing(client, slug);
   const rawProject = await findClientProject(client, slug);
   const delivery = rawProject ? await getDelivery(rawProject) : null;
+  const feedback = await getFeedbackState(client, project.id);
+  const at = stageIndex(project.stage);
+  // One gentle ask at a time: review after delivery, else the sneak peek, else booking
+  const ask: "review" | "sneak-peek" | "booking" | null =
+    rawProject?.delivery?.deliveredAt && !feedback.reviewed
+      ? "review"
+      : proofing?.photos.length && !feedback.sneakPeek && at >= stageIndex("sneak-peek") && at < stageIndex("delivery")
+        ? "sneak-peek"
+        : !feedback.booking && at >= stageIndex("booked") && at < stageIndex("sneak-peek")
+          ? "booking"
+          : null;
   const t = await getTranslations("Portal");
 
   const details: [string, string | null][] = [
@@ -86,6 +99,18 @@ export default async function ProjectPage({ params, searchParams }: Props) {
       {payment === "cancelled" && <p className="mt-8 border-l-2 border-border pl-4" role="status">{t("proposal.cancelled")}</p>}
 
       <ProposalCard project={project} locale={loc} online={stripeEnabled()} />
+
+      {ask === "review" ? (
+        <Link href={`/c/${slug}/review`} className="group mt-10 flex flex-wrap items-center justify-between gap-4 border border-rec p-5 transition hover:bg-rec hover:text-white">
+          <span>
+            <span className="readout block text-rec group-hover:text-white">{t("review.label")}</span>
+            <span className="display mt-1 block text-3xl lowercase">{t("review.card")}</span>
+          </span>
+          <span className="whitespace-nowrap">{t("review.open")} →</span>
+        </Link>
+      ) : ask ? (
+        <FeedbackCard slug={slug} moment={ask} />
+      ) : null}
 
       {delivery?.open && delivery.photos.length > 0 && (
         <Link

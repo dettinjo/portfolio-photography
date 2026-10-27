@@ -65,7 +65,8 @@
       "empty": "New work is on its way.",
       "more": "More series",
       "back": "All work",
-      "label": "Index"
+      "label": "Index",
+      "kindWords": "Kind words"
     },
     "photo": {
       "inSeries": "From the series",

@@ -83,6 +83,7 @@ export interface Config {
     'project-files': ProjectFile;
     messages: Message;
     revisions: Revision;
+    feedback: Feedback;
     activity: Activity;
     media: Media;
     users: User;
@@ -100,6 +101,8 @@ export interface Config {
       files: 'project-files';
       messages: 'messages';
       revisions: 'revisions';
+      feedback: 'feedback';
+      reviews: 'reviews';
       previews: 'photos';
       picks: 'picks';
       comments: 'comments';
@@ -122,6 +125,7 @@ export interface Config {
     'project-files': ProjectFilesSelect<false> | ProjectFilesSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
     revisions: RevisionsSelect<false> | RevisionsSelect<true>;
+    feedback: FeedbackSelect<false> | FeedbackSelect<true>;
     activity: ActivitySelect<false> | ActivitySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -234,6 +238,12 @@ export interface Photo {
    * Optional manual position; otherwise capture time.
    */
   order?: number | null;
+  /**
+   * Set by the client in the portal. Only publish client photos with "agreed".
+   */
+  publishConsent?: ('unknown' | 'yes' | 'no') | null;
+  consentBy?: (number | null) | Client;
+  consentAt?: string | null;
   /**
    * Overrides the Lightroom title.
    */
@@ -461,6 +471,10 @@ export interface Project {
      * Files deleted from the server
      */
     purgedAt?: string | null;
+    /**
+     * Review invitation sent
+     */
+    reviewRequestedAt?: string | null;
   };
   /**
    * Rounds of changes the client can ask for on delivered photos
@@ -477,6 +491,16 @@ export interface Project {
   };
   revisions?: {
     docs?: (number | Revision)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  feedback?: {
+    docs?: (number | Feedback)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  reviews?: {
+    docs?: (number | Review)[];
     hasNextPage?: boolean;
     totalDocs?: number;
   };
@@ -742,39 +766,58 @@ export interface Revision {
   createdAt: string;
 }
 /**
+ * Private — only you see this.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "picks".
+ * via the `definition` "feedback".
  */
-export interface Pick {
+export interface Feedback {
   id: number;
   project: number | Project;
-  photo: number | Photo;
   client: number | Client;
+  moment: 'booking' | 'sneak-peek';
+  rating: number;
+  comment?: string | null;
   updatedAt: string;
   createdAt: string;
 }
 /**
+ * Public after approval: on /kind-words and on the chosen series page.
+ *
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "comments".
+ * via the `definition` "reviews".
  */
-export interface Comment {
+export interface Review {
   id: number;
-  project: number | Project;
-  photo: number | Photo;
-  /**
-   * Empty: written by you
-   */
+  project?: (number | null) | Project;
   client?: (number | null) | Client;
-  resolved?: boolean | null;
-  body: string;
   /**
-   * Pin position, 0–1 from the left
+   * Also show it on this series page
    */
-  x?: number | null;
+  series?: (number | null) | Series;
   /**
-   * Pin position, 0–1 from the top
+   * The client's favourite delivered photo
    */
-  y?: number | null;
+  favouritePhoto?: (number | null) | Photo;
+  /**
+   * Link this review to a specific album (optional).
+   */
+  album?: (number | null) | Album;
+  name: string;
+  /**
+   * e.g. "Bride & Groom" or "Corporate Client"
+   */
+  role?: string | null;
+  quote: string;
+  avatar?: (number | null) | Media;
+  communication?: number | null;
+  creativity?: number | null;
+  professionalism?: number | null;
+  value?: number | null;
+  /**
+   * Only approved reviews appear on the public portfolio.
+   */
+  approved?: boolean | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -837,34 +880,6 @@ export interface Album {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "reviews".
- */
-export interface Review {
-  id: number;
-  /**
-   * Link this review to a specific album (optional).
-   */
-  album?: (number | null) | Album;
-  name: string;
-  /**
-   * e.g. "Bride & Groom" or "Corporate Client"
-   */
-  role?: string | null;
-  quote: string;
-  avatar?: (number | null) | Media;
-  communication?: number | null;
-  creativity?: number | null;
-  professionalism?: number | null;
-  value?: number | null;
-  /**
-   * Only approved reviews appear on the public portfolio.
-   */
-  approved?: boolean | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "media".
  */
 export interface Media {
@@ -881,6 +896,43 @@ export interface Media {
   height?: number | null;
   focalX?: number | null;
   focalY?: number | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "picks".
+ */
+export interface Pick {
+  id: number;
+  project: number | Project;
+  photo: number | Photo;
+  client: number | Client;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comments".
+ */
+export interface Comment {
+  id: number;
+  project: number | Project;
+  photo: number | Photo;
+  /**
+   * Empty: written by you
+   */
+  client?: (number | null) | Client;
+  resolved?: boolean | null;
+  body: string;
+  /**
+   * Pin position, 0–1 from the left
+   */
+  x?: number | null;
+  /**
+   * Pin position, 0–1 from the top
+   */
+  y?: number | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1027,6 +1079,10 @@ export interface PayloadLockedDocument {
         value: number | Revision;
       } | null)
     | ({
+        relationTo: 'feedback';
+        value: number | Feedback;
+      } | null)
+    | ({
         relationTo: 'activity';
         value: number | Activity;
       } | null)
@@ -1109,6 +1165,9 @@ export interface PhotosSelect<T extends boolean = true> {
   project?: T;
   visibility?: T;
   order?: T;
+  publishConsent?: T;
+  consentBy?: T;
+  consentAt?: T;
   title?: T;
   caption?: T;
   alt?: T;
@@ -1240,6 +1299,10 @@ export interface AlbumsSelect<T extends boolean = true> {
  * via the `definition` "reviews_select".
  */
 export interface ReviewsSelect<T extends boolean = true> {
+  project?: T;
+  client?: T;
+  series?: T;
+  favouritePhoto?: T;
   album?: T;
   name?: T;
   role?: T;
@@ -1357,6 +1420,7 @@ export interface ProjectsSelect<T extends boolean = true> {
         reminder30SentAt?: T;
         reminder7SentAt?: T;
         purgedAt?: T;
+        reviewRequestedAt?: T;
       };
   revisionRounds?:
     | T
@@ -1365,6 +1429,8 @@ export interface ProjectsSelect<T extends boolean = true> {
         used?: T;
       };
   revisions?: T;
+  feedback?: T;
+  reviews?: T;
   previews?: T;
   picks?: T;
   comments?: T;
@@ -1498,6 +1564,19 @@ export interface RevisionsSelect<T extends boolean = true> {
   requestedAt?: T;
   doneAt?: T;
   reviewedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "feedback_select".
+ */
+export interface FeedbackSelect<T extends boolean = true> {
+  project?: T;
+  client?: T;
+  moment?: T;
+  rating?: T;
+  comment?: T;
   updatedAt?: T;
   createdAt?: T;
 }

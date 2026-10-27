@@ -612,6 +612,17 @@ open request of a round is done, the clients get an email. They approve or say "
 right" (a new draft for the next round, while rounds are left); with nothing open the
 project returns to *Delivery*.
 
+**4d ✅ done 2026-10-27** — Private `feedback` (five faces + comment) asked once at a time on the
+project overview: after booking (Booked…Shoot) and after the sneak peek (Sneak peek…Editing);
+emailed to the photographer, never published. Review after delivery (`/c/<project>/review`,
+tab *Review*): four star ratings, quote, display name and occasion, favourite delivered photo,
+**per-photo publication consent** (`photos.publishConsent` yes/no/unknown with who and when;
+changeable or withdrawable any time afterwards; per photo, so on shared projects the last
+change wins) and agreement to publish the text. One review per client; project → *Feedback*.
+Reviews stay private until approved in *Inbox → Reviews*; approved ones show on `/kind-words`
+and, with a series chosen, on that series page. Housekeeping sends one review invitation 7
+days after delivery if nobody has reviewed yet.
+
 - Versions and revision approvals; final mirroring, signed downloads, async ZIP.
 - 12-month expiry with 30/7-day reminders, admin extend, purge job.
 - Stripe: balance (with delivery gating), extra images above quota, add-ons, refunds sync.

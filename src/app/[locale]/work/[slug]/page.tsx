@@ -5,6 +5,7 @@ import type { ImageGallery, WithContext } from "schema-dts";
 import { Link } from "@/i18n/navigation";
 import { PhotoStream } from "@/components/site/PhotoStream";
 import { getPublishedSeries, getSeriesBySlug, toLocale, toView } from "@/lib/portfolio";
+import { fetchApprovedReviews } from "@/lib/payload";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,8 @@ export default async function SeriesPage({ params }: Props) {
   if (!series?.photos.length) notFound();
 
   const t = await getTranslations("Site.work");
-  const others = (await getPublishedSeries(loc)).filter((s) => s.id !== series.id).slice(0, 3);
+  const [all, reviews] = await Promise.all([getPublishedSeries(loc), fetchApprovedReviews(series.id)]);
+  const others = all.filter((s) => s.id !== series.id).slice(0, 3);
 
   const jsonLd: WithContext<ImageGallery> = {
     "@context": "https://schema.org",
@@ -82,6 +84,27 @@ export default async function SeriesPage({ params }: Props) {
       <div className="mx-auto max-w-[1800px] px-1 sm:px-6">
         <PhotoStream photos={series.photos.map((p) => toView(p, series))} eager={6} />
       </div>
+      {reviews.length > 0 && (
+        <section className="mx-auto mt-20 max-w-[1800px] px-4 sm:px-6">
+          <h2 className="readout text-muted-foreground">
+            {t("kindWords")} · {String(reviews.length).padStart(2, "0")}
+          </h2>
+          <ul className="mt-6 grid gap-10 md:grid-cols-2">
+            {reviews.slice(0, 4).map((r) => (
+              <li key={r.id}>
+                <blockquote className="accent-serif text-3xl leading-snug sm:text-4xl">“{r.quote}”</blockquote>
+                <p className="readout mt-4 text-muted-foreground">
+                  <span className="text-rec">★ {((r.communication + r.creativity + r.professionalism + r.value) / 4).toFixed(1)}</span> · {r.name}
+                  {r.role && ` · ${r.role}`}
+                </p>
+              </li>
+            ))}
+          </ul>
+          <Link href="/kind-words" className="link-slide mt-8 inline-block pb-0.5">
+            {t("kindWords")} →
+          </Link>
+        </section>
+      )}
       {others.length > 0 && (
         <nav className="mx-auto mt-20 max-w-[1800px] border-t border-border/60 px-4 pt-10 sm:px-6">
           <h2 className="readout text-muted-foreground">{t("more")}</h2>

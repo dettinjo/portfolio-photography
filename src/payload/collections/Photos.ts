@@ -16,7 +16,7 @@ export const Photos: CollectionConfig = {
   admin: {
     useAsTitle: 'filename',
     group: 'Portfolio',
-    defaultColumns: ['filename', 'series', 'project', 'status', 'visibility', 'takenAt'],
+    defaultColumns: ['filename', 'series', 'project', 'status', 'publishConsent', 'takenAt'],
     listSearchableFields: ['filename', 'title'],
   },
   access: {
@@ -62,6 +62,25 @@ export const Photos: CollectionConfig = {
           type: 'number',
           admin: { description: 'Optional manual position; otherwise capture time.' },
         },
+      ],
+    },
+    {
+      type: 'row',
+      admin: { condition: (d) => d?.purpose === 'final' },
+      fields: [
+        {
+          name: 'publishConsent',
+          type: 'select',
+          defaultValue: 'unknown',
+          options: [
+            { label: 'Not asked / no answer', value: 'unknown' },
+            { label: 'Client agreed — may be published', value: 'yes' },
+            { label: 'Client declined', value: 'no' },
+          ],
+          admin: { description: 'Set by the client in the portal. Only publish client photos with "agreed".' },
+        },
+        { name: 'consentBy', type: 'relationship', relationTo: 'clients', admin: { readOnly: true } },
+        { name: 'consentAt', type: 'date', admin: { readOnly: true } },
       ],
     },
     {

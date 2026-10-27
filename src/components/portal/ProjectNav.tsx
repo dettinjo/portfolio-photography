@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import { getPayloadClient } from "@/lib/payload";
 import { deliveryOpen } from "@/lib/delivery";
 
-type Tab = "overview" | "plan" | "selection" | "photos" | "messages";
+type Tab = "overview" | "plan" | "selection" | "photos" | "review" | "messages";
 
 // Tabs across the project pages, styled like the site's mono readouts.
 // Selection and photos appear once there is something to see.
@@ -24,6 +24,7 @@ export async function ProjectNav({ slug, projectId, active }: { slug: string; pr
     { key: "plan", href: `/c/${slug}/plan` },
     ...(previews.totalDocs ? [{ key: "selection" as const, href: `/c/${slug}/proofing` }] : []),
     ...(deliveryOpen(project) ? [{ key: "photos" as const, href: `/c/${slug}/photos` }] : []),
+    ...(project.delivery?.deliveredAt ? [{ key: "review" as const, href: `/c/${slug}/review` }] : []),
     { key: "messages", href: `/c/${slug}/messages` },
   ];
   return (

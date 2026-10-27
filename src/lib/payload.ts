@@ -134,12 +134,12 @@ export async function submitSelections(
 // --------------------------------------------------------------------------
 
 /** Approved reviews for the testimonials section. Returns [] on failure so the page still renders. */
-export async function fetchApprovedReviews(): Promise<PublicReview[]> {
+export async function fetchApprovedReviews(seriesId?: number): Promise<PublicReview[]> {
   try {
     const payload = await getPayloadClient()
     const result = await payload.find({
       collection: 'reviews',
-      where: { approved: { equals: true } },
+      where: seriesId ? { and: [{ approved: { equals: true } }, { series: { equals: seriesId } }] } : { approved: { equals: true } },
       sort: '-createdAt',
       limit: 50,
       depth: 1,

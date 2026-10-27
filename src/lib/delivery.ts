@@ -5,10 +5,12 @@ import 'server-only'
 import type { Payload } from 'payload'
 import type { Client, Project } from '@/payload-types'
 import { siteUrl } from '@/lib/client-tokens'
-import { sendExpiryReminder } from '@/lib/email-client'
+import { sendExpiryReminder, sendReviewRequest } from '@/lib/email-client'
 import { removeAllVersions } from '@/lib/sync/process'
 
 const DAY = 86_400_000
+/** Days after delivery when clients are asked for a review */
+export const REVIEW_ASK_DAYS = 7
 
 /** True while the finals of a project can be viewed and downloaded. */
 export function deliveryOpen(project: Pick<Project, 'delivery'>) {
@@ -67,6 +69,8 @@ async function handle(payload: Payload, project: Project) {
     return
   }
 
+  await askForReview(payload, project)
+
   const which = left <= 7 * DAY && !project.delivery?.reminder7SentAt ? 7 : left <= 30 * DAY && !project.delivery?.reminder30SentAt ? 30 : null
   if (!which) return
   const days = Math.max(1, Math.ceil(left / DAY))
@@ -90,4 +94,29 @@ async function handle(payload: Payload, project: Project) {
     context: { skipFolders: true },
     overrideAccess: true,
   })
+}
+
+/** One friendly email a week after delivery, unless a review exists already. */
+async function askForReview(payload: Payload, project: Project) {
+  const d = project.delivery
+  if (!d?.deliveredAt || d.reviewRequestedAt) return
+  if (Date.now() - new Date(d.deliveredAt).getTime() < REVIEW_ASK_DAYS * DAY) return
+  const reviews = await payload.count({ collection: 'reviews', where: { project: { equals: project.id } }, overrideAccess: true })
+  if (!reviews.totalDocs) {
+    for (const c of (project.clients ?? []).filter((x): x is Client => typeof x === 'object' && x !== null)) {
+      const locale = c.locale === 'de' ? 'de' : 'en'
+      await sendReviewRequest({ to: c.email, name: c.name.split(' ')[0], locale, projectTitle: project.title, url: siteUrl(`/c/${project.slug}/review`, locale) }).catch(
+        (err) => console.error(`[delivery] review request to ${c.email} failed:`, err),
+      )
+    }
+  }
+  await payload.update({
+    collection: 'projects',
+    id: project.id,
+    data: { delivery: { ...d, reviewRequestedAt: new Date().toISOString() } },
+    context: { skipFolders: true },
+    overrideAccess: true,
+  })
+  // Keep the in-memory copy current for the reminder logic that follows
+  project.delivery = { ...d, reviewRequestedAt: new Date().toISOString() }
 }

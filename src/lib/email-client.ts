@@ -381,3 +381,26 @@ export async function sendRevisionsRequested(opts: { projectTitle: string; clien
     ].join('\n'),
   })
 }
+
+const REVIEW_ASK = {
+  en: {
+    subject: (p: string) => `How did we do? — ${p}`,
+    body: "I hope you love your photos! If you have two minutes, I'd be really happy about a few words — and you can tell me which photos I may show in my portfolio.",
+    button: 'Write a review',
+  },
+  de: {
+    subject: (p: string) => `Wie war's für dich? — ${p}`,
+    body: 'ich hoffe, du liebst deine Fotos! Wenn du zwei Minuten hast, freue ich mich sehr über ein paar Worte — und du kannst mir sagen, welche Fotos ich in meinem Portfolio zeigen darf.',
+    button: 'Bewertung schreiben',
+  },
+}
+
+export async function sendReviewRequest(opts: { to: string; name: string; locale: 'en' | 'de'; projectTitle: string; url: string }) {
+  const c = REVIEW_ASK[opts.locale]
+  await transporter.sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: c.subject(opts.projectTitle),
+    ...buttonMail(COPY[opts.locale].hi(opts.name), c.body, opts.url, c.button),
+  })
+}
