@@ -514,7 +514,11 @@ notification + bilingual confirmation; "book a shoot like this" preselects the o
 Also fixed: the service worker's precache of `/de/offline` set the language cookie to
 German for every visitor — offline pages are now precached under `/en|de/offline`
 outside the i18n middleware, and the cookie was renamed (`locale`) to reset it.
-**2c** — About/FAQ in the CMS, polish.
+**2c ✅ done 2026-10-27** — `about-page` global ("About & FAQ" in the admin): portrait,
+bio, approach, short facts and the FAQ (en/de), seeded with the former texts and a starter
+FAQ built from D1–D5; `/about` shows the FAQ (with FAQPage structured data), `/sessions`
+shows the questions marked "also show on /sessions" above the planner. Empty fields fall
+back to the built-in texts.
 
 - Justified stream, series pages, photo permalinks and shared viewer.
 - `/sessions` with Offerings, Plan-your-shoot → Inquiry.

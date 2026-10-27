@@ -104,10 +104,12 @@ export interface Config {
   globals: {
     'sync-status': SyncStatus;
     'sessions-settings': SessionsSetting;
+    'about-page': AboutPage;
   };
   globalsSelect: {
     'sync-status': SyncStatusSelect<false> | SyncStatusSelect<true>;
     'sessions-settings': SessionsSettingsSelect<false> | SessionsSettingsSelect<true>;
+    'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
   };
   locale: 'en' | 'de';
   widgets: {
@@ -828,6 +830,46 @@ export interface SessionsSetting {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page".
+ */
+export interface AboutPage {
+  id: number;
+  /**
+   * Portrait on /about. Empty: the built-in photo.
+   */
+  portrait?: (number | null) | Media;
+  /**
+   * A blank line starts a new paragraph.
+   */
+  bio?: string | null;
+  approachTitle?: string | null;
+  approach?: string | null;
+  /**
+   * Short facts next to the bio, e.g. "Based in" → "Stuttgart".
+   */
+  facts?:
+    | {
+        label: string;
+        value: string;
+        id?: string | null;
+      }[]
+    | null;
+  faq?:
+    | {
+        question: string;
+        /**
+         * A blank line starts a new paragraph.
+         */
+        answer: string;
+        onSessions?: boolean | null;
+        id?: string | null;
+      }[]
+    | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "sync-status_select".
  */
 export interface SyncStatusSelect<T extends boolean = true> {
@@ -852,6 +894,34 @@ export interface SessionsSettingsSelect<T extends boolean = true> {
         id?: T;
       };
   priceNote?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "about-page_select".
+ */
+export interface AboutPageSelect<T extends boolean = true> {
+  portrait?: T;
+  bio?: T;
+  approachTitle?: T;
+  approach?: T;
+  facts?:
+    | T
+    | {
+        label?: T;
+        value?: T;
+        id?: T;
+      };
+  faq?:
+    | T
+    | {
+        question?: T;
+        answer?: T;
+        onSessions?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

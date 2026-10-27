@@ -80,7 +80,11 @@
       "approachTitle": "Wie ich arbeite",
       "approach": "Ich halte Shootings entspannt und gut geplant. Du bekommst vorab ein kurzes Gespräch, einen klaren Plan für den Tag, kurz danach einen ersten Blick auf deine Fotos und die fertigen Bilder in einer privaten Online-Galerie.",
       "cta": "Kontakt aufnehmen",
-      "label": "Hinter der Kamera"
+      "label": "Hinter der Kamera",
+      "faqLabel": "Fragen",
+      "faqTitle": "gut zu wissen",
+      "faqMore": "Noch etwas auf dem Herzen?",
+      "faqAsk": "Frag mich"
     },
     "contact": {
       "metaTitle": "Kontakt",
@@ -161,7 +165,10 @@
         "error": "Da ist etwas schiefgelaufen. Bitte versuch es noch einmal oder schreib mir über die Kontaktseite.",
         "required": "Bitte wähle etwas aus oder fülle diesen Schritt aus.",
         "fromPhoto": "Inspiriert von Foto #{id}"
-      }
+      },
+      "faqLabel": "Gut zu wissen",
+      "faqTitle": "fragen?",
+      "faqAll": "Alle Fragen"
     }
   }
 }

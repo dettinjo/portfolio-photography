@@ -3,6 +3,8 @@ import * as migration_20261026_193319_phase1a_photos_series from './20261026_193
 import * as migration_20261027_000000_seed_launch_genres from './20261027_000000_seed_launch_genres';
 import * as migration_20261027_072532_phase2b_sessions from './20261027_072532_phase2b_sessions';
 import * as migration_20261027_080000_seed_offerings from './20261027_080000_seed_offerings';
+import * as migration_20261027_081131_phase2c_about from './20261027_081131_phase2c_about';
+import * as migration_20261027_081500_seed_about from './20261027_081500_seed_about';
 
 export const migrations = [
   {
@@ -28,6 +30,16 @@ export const migrations = [
   {
     up: migration_20261027_080000_seed_offerings.up,
     down: migration_20261027_080000_seed_offerings.down,
-    name: '20261027_080000_seed_offerings'
+    name: '20261027_080000_seed_offerings',
+  },
+  {
+    up: migration_20261027_081131_phase2c_about.up,
+    down: migration_20261027_081131_phase2c_about.down,
+    name: '20261027_081131_phase2c_about',
+  },
+  {
+    up: migration_20261027_081500_seed_about.up,
+    down: migration_20261027_081500_seed_about.down,
+    name: '20261027_081500_seed_about',
   },
 ];

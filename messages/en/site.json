@@ -80,7 +80,11 @@
       "approachTitle": "How I work",
       "approach": "I keep shoots relaxed and well planned. You get a short conversation beforehand, a clear plan for the day, a first look at your photos soon after, and the final edits delivered in a private online gallery.",
       "cta": "Get in touch",
-      "label": "Behind the camera"
+      "label": "Behind the camera",
+      "faqLabel": "Questions",
+      "faqTitle": "good to know",
+      "faqMore": "Something else on your mind?",
+      "faqAsk": "Ask me"
     },
     "contact": {
       "metaTitle": "Contact",
@@ -161,7 +165,10 @@
         "error": "Something went wrong. Please try again, or write to me via the contact page.",
         "required": "Please choose or fill in this step.",
         "fromPhoto": "Inspired by photo #{id}"
-      }
+      },
+      "faqLabel": "Good to know",
+      "faqTitle": "questions?",
+      "faqAll": "All questions"
     }
   }
 }

@@ -14,6 +14,7 @@ import { Series } from './src/payload/collections/Series'
 import { Photos } from './src/payload/collections/Photos'
 import { SyncStatus } from './src/payload/globals/SyncStatus'
 import { SessionsSettings } from './src/payload/globals/SessionsSettings'
+import { AboutPage } from './src/payload/globals/AboutPage'
 import { Offerings } from './src/payload/collections/Offerings'
 import { Inquiries } from './src/payload/collections/Inquiries'
 import { smtpOptions } from './src/lib/mailer'
@@ -48,7 +49,7 @@ export default buildConfig({
     admin: '/admin',
   },
   collections: [Series, Photos, Genres, Offerings, Inquiries, Albums, Reviews, Media, Users],
-  globals: [SyncStatus, SessionsSettings],
+  globals: [SyncStatus, SessionsSettings, AboutPage],
   localization: {
     locales: [
       { label: 'English', code: 'en' },
