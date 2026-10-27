@@ -335,6 +335,8 @@ export interface DeliveredPhoto {
   web: string
   /** The version before the last re-export, for before/after */
   before: string | null
+  /** The client agreed that it may be published */
+  consent: boolean
 }
 
 export interface RevisionItem {
@@ -428,6 +430,7 @@ export async function getDelivery(project: Project, client?: Client): Promise<De
       original: `/api/portal/download/${p.id}/original`,
       web: `/api/portal/download/${p.id}/web`,
       before: p.previousVersion ? `/api/previews/${p.id}/${p.previousVersion}/1600` : null,
+      consent: p.publishConsent === 'yes',
     })),
   }
 }
@@ -441,4 +444,26 @@ export const formatBytes = (bytes: number, locale: 'en' | 'de') => {
     i++
   }
   return `${new Intl.NumberFormat(locale === 'de' ? 'de-DE' : 'en-GB', { maximumFractionDigits: n < 10 && i > 1 ? 1 : 0 }).format(n)} ${units[i]}`
+}
+
+// ── Feedback & review ─────────────────────────────────────────────────────
+
+export async function getFeedbackState(client: Client, projectId: number) {
+  const payload = await getPayloadClient()
+  const [feedback, reviews] = await Promise.all([
+    payload.find({
+      collection: 'feedback',
+      where: { and: [{ project: { equals: projectId } }, { client: { equals: client.id } }] },
+      limit: 10,
+      depth: 0,
+      overrideAccess: true,
+    }),
+    payload.count({
+      collection: 'reviews',
+      where: { and: [{ project: { equals: projectId } }, { client: { equals: client.id } }] },
+      overrideAccess: true,
+    }),
+  ])
+  const moments = new Set(feedback.docs.map((f) => f.moment))
+  return { booking: moments.has('booking'), sneakPeek: moments.has('sneak-peek'), reviewed: reviews.totalDocs > 0 }
 }

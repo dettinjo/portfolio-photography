@@ -179,7 +179,8 @@
       "plan": "Planung",
       "selection": "Auswahl",
       "messages": "Nachrichten",
-      "photos": "Deine Fotos"
+      "photos": "Deine Fotos",
+      "review": "Bewertung"
     },
     "plan": {
       "label": "Planung",
@@ -295,6 +296,59 @@
       "changes": "Änderungen",
       "error": "Das hat nicht geklappt — bitte versuch es noch einmal.",
       "confirm": "{count} Änderungen als Runde {round} senden? Danach kannst du dieser Runde nichts mehr hinzufügen."
+    },
+    "feedback": {
+      "booking": "Wie lief die Buchung bisher?",
+      "sneak-peek": "Dein erster Eindruck vom Sneak Peek?",
+      "private": "Das sehe nur ich — es hilft mir, besser zu werden.",
+      "faces": [
+        "Nicht gut",
+        "Naja",
+        "Okay",
+        "Gut",
+        "Großartig"
+      ],
+      "comment": "Möchtest du noch etwas sagen? (optional)",
+      "send": "Senden",
+      "thanks": "Danke — das hilft mir sehr!",
+      "error": "Das wurde nicht gesendet — bitte versuch es noch einmal."
+    },
+    "review": {
+      "label": "Bewertung",
+      "title": "wie war's?",
+      "intro": "Ein paar ehrliche Worte helfen anderen bei der Entscheidung — und mir bedeuten sie viel. Nach einer kurzen Durchsicht erscheint deine Bewertung auf meiner Website.",
+      "ratings": {
+        "communication": "Kommunikation",
+        "creativity": "Kreativität",
+        "professionalism": "Professionalität",
+        "value": "Preis-Leistung"
+      },
+      "quote": "Deine Worte",
+      "quotePlaceholder": "Wie war die Zusammenarbeit? Wie gefallen dir die Fotos?",
+      "name": "Angezeigt als",
+      "role": "Anlass (optional)",
+      "rolePlaceholder": "z. B. Rennwochenende, Hochzeit, Porträt-Shooting",
+      "favourite": "Dein Lieblingsfoto",
+      "favouriteHelp": "Welches ist dein Favorit? (optional)",
+      "consent": "Welche Fotos darf ich zeigen?",
+      "consentHelp": "Tippe die Fotos an, die ich in meinem Portfolio und auf Instagram zeigen darf. Alle anderen bleiben privat. Du kannst das jederzeit ändern.",
+      "all": "Alle",
+      "none": "Keine",
+      "agree": "Meine Bewertung darf mit dem obigen Namen auf dieser Website veröffentlicht werden.",
+      "submit": "Bewertung senden",
+      "sending": "Wird gesendet…",
+      "thanks": "danke!",
+      "thanksText": "Deine Bewertung ist angekommen — ich veröffentliche sie nach einer kurzen Durchsicht.",
+      "consentTitle": "Fotos, die ich zeigen darf",
+      "consentSave": "Auswahl speichern",
+      "saved": "Gespeichert ✓",
+      "missing": "Bitte vergib alle vier Bewertungen und schreib ein paar Worte.",
+      "error": "Das wurde nicht gesendet — bitte versuch es noch einmal.",
+      "notYet": "Eine Bewertung kannst du schreiben, sobald deine Fotos geliefert sind.",
+      "card": "Erzähl mir, wie es war — und welche Fotos ich zeigen darf.",
+      "open": "Bewertung schreiben",
+      "may": "Darf ich zeigen",
+      "private": "Privat"
     }
   }
 }

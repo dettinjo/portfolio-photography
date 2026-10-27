@@ -65,7 +65,8 @@
       "empty": "Neue Arbeiten sind unterwegs.",
       "more": "Weitere Serien",
       "back": "Alle Arbeiten",
-      "label": "Index"
+      "label": "Index",
+      "kindWords": "Stimmen"
     },
     "photo": {
       "inSeries": "Aus der Serie",

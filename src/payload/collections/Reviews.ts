@@ -5,7 +5,9 @@ export const Reviews: CollectionConfig = {
   slug: 'reviews',
   admin: {
     useAsTitle: 'name',
-    defaultColumns: ['name', 'album', 'approved', 'createdAt'],
+    group: 'Inbox',
+    defaultColumns: ['name', 'project', 'series', 'approved', 'createdAt'],
+    description: 'Public after approval: on /kind-words and on the chosen series page.',
   },
   access: {
     // The public sees approved reviews only. Submissions go through
@@ -38,6 +40,25 @@ export const Reviews: CollectionConfig = {
     ],
   },
   fields: [
+    {
+      type: 'row',
+      fields: [
+        { name: 'project', type: 'relationship', relationTo: 'projects', admin: { readOnly: true } },
+        { name: 'client', type: 'relationship', relationTo: 'clients', admin: { readOnly: true } },
+        {
+          name: 'series',
+          type: 'relationship',
+          relationTo: 'series',
+          admin: { description: 'Also show it on this series page' },
+        },
+      ],
+    },
+    {
+      name: 'favouritePhoto',
+      type: 'relationship',
+      relationTo: 'photos',
+      admin: { readOnly: true, description: "The client's favourite delivered photo" },
+    },
     {
       name: 'album',
       type: 'relationship',
