@@ -32,6 +32,10 @@ const WEBHOOK_PATH_PREFIX = (
   process.env.NEXTCLOUD_WEBHOOK_PATH_PREFIX || `/${NEXTCLOUD_USER}/files/${PORTFOLIO_DAV_PATH}`
 ).replace(/\/+$/, "");
 
+const WEBHOOK_CLIENTS_PREFIX = (
+  process.env.NEXTCLOUD_WEBHOOK_CLIENTS_PREFIX || `/${NEXTCLOUD_USER}/files/${CLIENTS_DAV_PATH}`
+).replace(/\/+$/, "");
+
 export const nextcloudConfigured = () => Boolean(NEXTCLOUD_PASSWORD);
 
 export interface DavEntry {
@@ -158,6 +162,29 @@ export async function createFolder(relPath: string): Promise<"created" | "exists
   if (res.status === 409) throw new Error(`MKCOL ${relPath}: parent folder missing`);
   if (res.status === 403 || res.status === 401) throw new Error(`MKCOL ${relPath}: no write access (${res.status})`);
   throw new Error(`MKCOL ${relPath} failed: ${res.status} ${res.statusText}`);
+}
+
+/** Uploads (or overwrites) a file. */
+export async function uploadFile(relPath: string, body: string | Buffer, contentType = "text/plain; charset=utf-8") {
+  const res = await fetch(davUrl(relPath), {
+    method: "PUT",
+    headers: { Authorization: makeAuth(), "Content-Type": contentType },
+    body: typeof body === "string" ? body : new Uint8Array(body),
+    cache: "no-store",
+    signal: AbortSignal.timeout(30_000),
+  });
+  if (![200, 201, 204].includes(res.status)) throw new Error(`PUT ${relPath} failed: ${res.status} ${res.statusText}`);
+}
+
+/**
+ * Maps a webhook node path below the clients folder to the project folder it
+ * belongs to (path relative to the sync account), or null.
+ */
+export function webhookProjectFolder(nodePath: string): string | null {
+  const path = nodePath.replace(/\/+$/, "");
+  if (!path.startsWith(`${WEBHOOK_CLIENTS_PREFIX}/`)) return null;
+  const folder = path.slice(WEBHOOK_CLIENTS_PREFIX.length + 1).split("/")[0];
+  return folder ? `${CLIENTS_DAV_PATH}/${folder}` : null;
 }
 
 /**

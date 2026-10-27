@@ -10,14 +10,23 @@ import sharp from 'sharp'
 import exifr from 'exifr'
 
 export const PHOTO_WIDTHS = [480, 960, 1600, 2400]
+/** Client previews: smaller, WebP only, watermarked (decision D4). */
+export const PREVIEW_WIDTHS = [480, 960, 1600, 2048]
 
-// Processed photos are regenerable, so any writable location works. Candidates
+/**
+ * Portfolio photos and client previews are kept apart: portfolio files are
+ * served publicly by /api/photos, previews only by /api/previews after an
+ * access check — they must never be reachable through the public route.
+ */
+export type ImageKind = 'photos' | 'previews'
+
+// Processed images are regenerable, so any writable location works. Candidates
 // in order of preference; the first one the server can write to is used.
-const rootCandidates = () =>
+const rootCandidates = (kind: ImageKind = 'photos') =>
   [
-    process.env.PHOTO_DIR,
-    path.join(process.env.MEDIA_DIR ?? '/app/public/media', 'photos'),
-    process.env.IMAGE_CACHE_DIR && path.join(process.env.IMAGE_CACHE_DIR, 'photos'),
+    kind === 'photos' ? process.env.PHOTO_DIR : process.env.PREVIEW_DIR,
+    path.join(process.env.MEDIA_DIR ?? '/app/public/media', kind),
+    process.env.IMAGE_CACHE_DIR && path.join(process.env.IMAGE_CACHE_DIR, kind),
   ].filter((p): p is string => Boolean(p))
 
 function writable(dir: string) {
@@ -32,26 +41,27 @@ function writable(dir: string) {
   }
 }
 
-let resolvedRoot: string | null = null
-export function photoRoot() {
-  if (!resolvedRoot) {
-    const candidates = rootCandidates()
-    resolvedRoot = candidates.find(writable) ?? candidates[0]
-    console.log(`[sync] processed photos stored in ${resolvedRoot}`)
+const resolvedRoots: Partial<Record<ImageKind, string>> = {}
+export function photoRoot(kind: ImageKind = 'photos') {
+  if (!resolvedRoots[kind]) {
+    const candidates = rootCandidates(kind)
+    resolvedRoots[kind] = candidates.find(writable) ?? candidates[0]
+    console.log(`[sync] processed ${kind} stored in ${resolvedRoots[kind]}`)
   }
-  return resolvedRoot
+  return resolvedRoots[kind] as string
 }
 
-/** True when the processed files of this photo version exist in the current root. */
-export const hasProcessedFiles = (fileId: number, version: string) => existsSync(photoDir(fileId, version))
+/** True when the processed files of this version exist in the current root. */
+export const hasProcessedFiles = (fileId: number, version: string, kind: ImageKind = 'photos') =>
+  existsSync(photoDir(fileId, version, kind))
 
 /**
  * Where to read a photo version from: the current root first, then the other
  * candidates — so photos keep being served while they are regenerated after
  * the preferred location changes (e.g. the storage box became writable).
  */
-export function findPhotoDir(fileId: number, version: string): string | null {
-  const roots = [photoRoot(), ...rootCandidates().filter((r) => r !== photoRoot())]
+export function findPhotoDir(fileId: number, version: string, kind: ImageKind = 'photos'): string | null {
+  const roots = [photoRoot(kind), ...rootCandidates(kind).filter((r) => r !== photoRoot(kind))]
   for (const root of roots) {
     const dir = path.join(root, String(fileId), version)
     if (existsSync(dir)) return dir
@@ -60,14 +70,14 @@ export function findPhotoDir(fileId: number, version: string): string | null {
 }
 
 /** Removes copies of a photo left in non-current roots. */
-async function removeFromOtherRoots(fileId: number) {
-  for (const root of rootCandidates().filter((r) => r !== photoRoot())) {
+async function removeFromOtherRoots(fileId: number, kind: ImageKind) {
+  for (const root of rootCandidates(kind).filter((r) => r !== photoRoot(kind))) {
     await rm(path.join(root, String(fileId)), { recursive: true, force: true }).catch(() => {})
   }
 }
 
-export const photoDir = (fileId: number, version?: string) =>
-  version ? path.join(photoRoot(), String(fileId), version) : path.join(photoRoot(), String(fileId))
+export const photoDir = (fileId: number, version?: string, kind: ImageKind = 'photos') =>
+  version ? path.join(photoRoot(kind), String(fileId), version) : path.join(photoRoot(kind), String(fileId))
 
 export interface ProcessedPhoto {
   width: number
@@ -91,10 +101,47 @@ export interface ProcessedPhoto {
 }
 
 /** Widths to generate: the standard set below the original, plus the original size (capped). */
-export function targetWidths(originalWidth: number): number[] {
-  const max = Math.min(originalWidth, PHOTO_WIDTHS[PHOTO_WIDTHS.length - 1])
+export function targetWidths(originalWidth: number, standard = PHOTO_WIDTHS): number[] {
+  const max = Math.min(originalWidth, standard[standard.length - 1])
   // Skip standard widths that are barely smaller than the top size
-  return [...PHOTO_WIDTHS.filter((w) => w < max * 0.85), max]
+  return [...standard.filter((w) => w < max * 0.85), max]
+}
+
+const WATERMARK_FONT =
+  process.env.WATERMARK_FONT ?? path.join(process.cwd(), 'assets', 'fonts', 'JetBrainsMono.ttf')
+
+const escapeMarkup = (value: string) =>
+  value.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+
+/**
+ * Burns a small text label into the bottom-right corner: white at 75 % with a
+ * soft dark shadow, so it reads on bright and dark photos alike.
+ */
+async function watermark(image: Buffer, width: number, height: number, label: string): Promise<Buffer> {
+  const px = Math.max(11, Math.round(Math.min(width, height) * 0.017))
+  const render = (color: string, alpha: string) =>
+    sharp({
+      text: {
+        text: `<span foreground="${color}" fgalpha="${alpha}">${escapeMarkup(label)}</span>`,
+        font: 'JetBrains Mono 10',
+        fontfile: WATERMARK_FONT,
+        rgba: true,
+        dpi: Math.round((px * 72) / 10),
+      },
+    })
+      .png()
+      .toBuffer({ resolveWithObject: true })
+  const [text, shadow] = await Promise.all([render('#ffffff', '75%'), render('#000000', '35%')])
+  const margin = Math.round(px * 1.6)
+  const left = Math.max(0, width - text.info.width - margin)
+  const top = Math.max(0, height - text.info.height - margin)
+  const blurred = await sharp(shadow.data).blur(Math.max(1, px / 8)).toBuffer()
+  return sharp(image)
+    .composite([
+      { input: blurred, left: Math.min(left + 1, width - shadow.info.width), top: Math.min(top + 1, height - shadow.info.height) },
+      { input: text.data, left, top },
+    ])
+    .toBuffer()
 }
 
 // XMP language alternatives come back as { value, lang } or arrays of them
@@ -144,22 +191,46 @@ async function readMetadata(buffer: Buffer): Promise<Pick<ProcessedPhoto, 'meta'
   }
 }
 
-/** Processes `buffer` and writes the derivatives to photoDir(fileId, version). */
-export async function processPhoto(buffer: Buffer, fileId: number, version: string): Promise<ProcessedPhoto> {
+export interface ProcessOptions {
+  kind?: ImageKind
+  /** Text burned into every derivative (previews only) */
+  watermark?: string | null
+}
+
+/** Processes `buffer` and writes the derivatives to photoDir(fileId, version, kind). */
+export async function processPhoto(
+  buffer: Buffer,
+  fileId: number,
+  version: string,
+  { kind = 'photos', watermark: label }: ProcessOptions = {},
+): Promise<ProcessedPhoto> {
   // rotate() applies the EXIF orientation, so width/height are as displayed
-  const oriented = await sharp(buffer, { failOn: 'error' }).rotate().toBuffer({ resolveWithObject: true })
+  let oriented = await sharp(buffer, { failOn: 'error' }).rotate().toBuffer({ resolveWithObject: true })
+  if (kind === 'previews') {
+    // Previews never exist larger than 2048 px, and never without the watermark
+    const max = PREVIEW_WIDTHS[PREVIEW_WIDTHS.length - 1]
+    oriented = await sharp(oriented.data)
+      .resize({ width: max, height: max, fit: 'inside', withoutEnlargement: true })
+      .toBuffer({ resolveWithObject: true })
+    if (label) {
+      const marked = await watermark(oriented.data, oriented.info.width, oriented.info.height, label)
+      oriented = await sharp(marked).toBuffer({ resolveWithObject: true })
+    }
+  }
   const { width, height } = oriented.info
   const base = () => sharp(oriented.data)
 
-  const finalDir = photoDir(fileId, version)
+  const finalDir = photoDir(fileId, version, kind)
   const tmpDir = `${finalDir}.tmp-${process.pid}-${Date.now()}`
   await mkdir(tmpDir, { recursive: true })
   try {
-    const widths = targetWidths(width)
+    const widths = targetWidths(width, kind === 'previews' ? PREVIEW_WIDTHS : PHOTO_WIDTHS)
     for (const w of widths) {
       const resized = base().resize({ width: w, withoutEnlargement: true })
       await writeFile(path.join(tmpDir, `${w}.webp`), await resized.clone().webp({ quality: 82 }).toBuffer())
-      await writeFile(path.join(tmpDir, `${w}.avif`), await resized.clone().avif({ quality: 55, effort: 0 }).toBuffer())
+      if (kind === 'photos') {
+        await writeFile(path.join(tmpDir, `${w}.avif`), await resized.clone().avif({ quality: 55, effort: 0 }).toBuffer())
+      }
     }
     await rm(finalDir, { recursive: true, force: true })
     await rename(tmpDir, finalDir)
@@ -183,10 +254,17 @@ export async function processPhoto(buffer: Buffer, fileId: number, version: stri
 }
 
 /** Removes older versions of a photo, and copies left in other locations. */
-export async function removeOtherVersions(fileId: number, keepVersion: string) {
-  const dir = photoDir(fileId)
+export async function removeOtherVersions(fileId: number, keepVersion: string, kind: ImageKind = 'photos') {
+  const dir = photoDir(fileId, undefined, kind)
   for (const entry of await readdir(dir).catch(() => [] as string[])) {
     if (entry !== keepVersion) await rm(path.join(dir, entry), { recursive: true, force: true })
   }
-  await removeFromOtherRoots(fileId)
+  await removeFromOtherRoots(fileId, kind)
+}
+
+/** Deletes every processed file of a photo (e.g. a preview that left its folder). */
+export async function removeAllVersions(fileId: number, kind: ImageKind) {
+  for (const root of rootCandidates(kind)) {
+    await rm(path.join(root, String(fileId)), { recursive: true, force: true }).catch(() => {})
+  }
 }

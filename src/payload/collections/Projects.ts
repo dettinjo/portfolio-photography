@@ -104,6 +104,11 @@ export const Projects: CollectionConfig = {
           req.context.inviteClients = true
           data.inviteClients = false
         }
+        // Fetch previews now; a new watermark text means re-rendering them
+        if (data.syncPreviews || (operation === 'update' && (data.watermarkText ?? '') !== (originalDoc?.watermarkText ?? ''))) {
+          req.context.syncPreviews = true
+          data.syncPreviews = false
+        }
         return data
       },
     ],
@@ -153,6 +158,12 @@ export const Projects: CollectionConfig = {
               })
             }
           }
+        }
+
+        if (req.context.syncPreviews) {
+          delete req.context.syncPreviews
+          const { scheduleProjectSync } = await import('../../lib/sync/clients')
+          scheduleProjectSync(project.id, 1500)
         }
 
         // Nextcloud folders, until they exist. Runs after the response so a slow
@@ -224,6 +235,34 @@ export const Projects: CollectionConfig = {
       type: 'text',
       admin: { description: "Text on preview images. Empty: the client's name." },
     },
+    {
+      name: 'proofing',
+      type: 'group',
+      admin: { description: 'Previews from "1 Preview" in the project folder' },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            { name: 'quota', type: 'number', min: 0, admin: { description: 'Photos included. Empty: from the offering' } },
+            { name: 'extraPrice', type: 'number', min: 0, admin: { description: '€ per extra photo. Empty: from the offering' } },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            { name: 'previewsReadyAt', type: 'date', admin: { readOnly: true, description: 'Clients were told on this date' } },
+            {
+              name: 'submittedAt',
+              type: 'date',
+              admin: { description: 'When the selection was sent. Clear it to let the client change their picks again.' },
+            },
+          ],
+        },
+      ],
+    },
+    { name: 'previews', type: 'join', collection: 'photos', on: 'project', admin: { defaultColumns: ['filename', 'status'] } },
+    { name: 'picks', type: 'join', collection: 'picks', on: 'project' },
+    { name: 'comments', type: 'join', collection: 'comments', on: 'project' },
     { name: 'internalNotes', type: 'textarea', admin: { description: 'Never shown to the client' } },
     {
       name: 'inviteClients',
@@ -231,7 +270,14 @@ export const Projects: CollectionConfig = {
       defaultValue: false,
       admin: { position: 'sidebar', description: 'On save, email every client a sign-in link (valid 7 days)' },
     },
+    {
+      name: 'syncPreviews',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { position: 'sidebar', description: 'On save, fetch new previews from Nextcloud now (otherwise every 15 min)' },
+    },
     { name: 'ncFolder', label: 'Nextcloud folder', type: 'text', admin: { readOnly: true, position: 'sidebar' } },
+    { name: 'ncFolderId', type: 'number', index: true, admin: { readOnly: true, position: 'sidebar' } },
     { name: 'ncFolderError', type: 'text', admin: { readOnly: true, position: 'sidebar', condition: (d) => Boolean(d?.ncFolderError) } },
   ],
 }

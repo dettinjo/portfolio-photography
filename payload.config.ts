@@ -15,6 +15,8 @@ import { Photos } from './src/payload/collections/Photos'
 import { Clients } from './src/payload/collections/Clients'
 import { Projects } from './src/payload/collections/Projects'
 import { Activity } from './src/payload/collections/Activity'
+import { Picks } from './src/payload/collections/Picks'
+import { Comments } from './src/payload/collections/Comments'
 import { SyncStatus } from './src/payload/globals/SyncStatus'
 import { SessionsSettings } from './src/payload/globals/SessionsSettings'
 import { AboutPage } from './src/payload/globals/AboutPage'
@@ -51,7 +53,7 @@ export default buildConfig({
   routes: {
     admin: '/admin',
   },
-  collections: [Series, Photos, Genres, Offerings, Inquiries, Albums, Reviews, Clients, Projects, Activity, Media, Users],
+  collections: [Series, Photos, Genres, Offerings, Inquiries, Albums, Reviews, Clients, Projects, Picks, Comments, Activity, Media, Users],
   globals: [SyncStatus, SessionsSettings, AboutPage],
   localization: {
     locales: [
