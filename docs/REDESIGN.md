@@ -96,8 +96,14 @@ the client workflow has never been used in production.
 
 - **Photo first, chrome last.** Edge-to-edge images in their native aspect ratio, no
   borders or rounded corners on photographs, controls appear on hover/tap.
-- **Neutral stage.** Near-black / near-white backgrounds, dark viewing mode by default for
-  galleries, one restrained type pairing (display serif + Inter).
+- **Minimal, but playful — not another Helvetica portfolio.** Warm paper and ink with one
+  signal colour (a camera's REC orange). Type: *Bricolage Grotesque* (squeezed to its
+  narrowest, heaviest cut for display), *Instrument Serif italic* for a single accent word
+  per headline, *JetBrains Mono* for camera-style readouts. Playful details come from the
+  camera: the hero as a viewfinder with the photo's real exposure readout and a blinking
+  REC, viewfinder corners and frame numbers on hover, series as slightly tilted prints, a
+  shutter blink when a photo opens, numbered section labels. Viewer and photo pages are
+  always dark; all motion respects reduced-motion.
 - **One next action.** Every client screen states what happens next and who acts.
 - **Feedback is attached to things** (a photo, a region, a gallery, a stage), never
   free-floating.
@@ -492,6 +498,16 @@ within minutes with correct ratio, metadata and placeholders; deleting/renaming 
 per §5.3.
 
 ### Phase 2 — Public redesign
+
+**2a ✅ done 2026-10-27** — design system above; home (viewfinder hero, justified
+stream with genre filter, series as prints, about line, CTA, "say hi" footer), `/work`,
+`/work/[series]`, `/p/[photo]` (fullscreen viewer: keys, swipe, info, share, URL per
+photo), `/about`, `/contact` (prefilled from "book a shoot like this"), `/kind-words`;
+old `/<album>` URLs redirect permanently; launch genres seeded (Formula 1 → Events &
+Motorsport); sitemap with every photo; bottom tab bar in the installed app.
+**2b** — `/sessions` with Offerings, Plan-your-shoot → Inquiry.
+**2c** — About/FAQ in the CMS, polish.
+
 - Justified stream, series pages, photo permalinks and shared viewer.
 - `/sessions` with Offerings, Plan-your-shoot → Inquiry.
 - `/about`, `/contact` sheet, `/kind-words`, navigation, design tokens, dark viewing mode.

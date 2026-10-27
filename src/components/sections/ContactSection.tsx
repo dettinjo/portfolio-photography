@@ -9,7 +9,14 @@ import { Instagram, CheckCircle2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { motion } from "framer-motion";
 
-export function ContactSection() {
+export function ContactSection({
+  defaultMessage = "",
+  headingLevel = "h2",
+}: {
+  defaultMessage?: string;
+  headingLevel?: "h1" | "h2";
+} = {}) {
+  const Heading = headingLevel;
   // --- THIS IS THE DEFINITIVE FIX ---
   // We specify the full path to the translations, including the namespace.
   const t = useTranslations("photography.PhotoContactSection");
@@ -56,7 +63,7 @@ export function ContactSection() {
           viewport={{ once: true }}
           transition={{ duration: 0.5 }}
         >
-          <h2 className="text-4xl font-bold tracking-tight">{t("title")}</h2>
+          <Heading className="display display-xl text-7xl lowercase sm:text-8xl">{t("title")}</Heading>
           <p className="mt-4 text-lg leading-8 text-muted-foreground">
             {t("subtitle")}
           </p>
@@ -129,6 +136,7 @@ export function ContactSection() {
                   id="message"
                   name="message"
                   placeholder={t("form_message_placeholder")}
+                  defaultValue={defaultMessage}
                   className="min-h-[100px]"
                   required
                 />

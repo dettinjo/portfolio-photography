@@ -2,69 +2,53 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Warm paper & ink, one signal colour (a camera's REC light). */
 @layer base {
   :root {
-    --background: 240 10% 98%;
-    --foreground: 240 10% 10%;
-    
-    --card: 240 10% 98%;
-    --card-foreground: 240 10% 10%;
-
-    --popover: 240 10% 98%;
-    --popover-foreground: 240 10% 10%;
-
-    --primary: 240 10% 10%;
-    --primary-foreground: 240 10% 98%;
-
-    --secondary: 240 5% 90%;
-    --secondary-foreground: 240 10% 10%;
-    
-    --muted: 240 5% 90%;
-    --muted-foreground: 240 5% 45%;
-
-    --accent: 240 5% 90%;
-    --accent-foreground: 240 10% 10%;
-
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 240 10% 98%;
-
-    --border: 240 10% 85%;
-    --input: 240 10% 85%;
-    --ring: 240 10% 10%;
-    
-    --radius: 0.75rem;
+    --background: 40 22% 95%;
+    --foreground: 30 8% 7%;
+    --card: 40 22% 95%;
+    --card-foreground: 30 8% 7%;
+    --popover: 40 22% 97%;
+    --popover-foreground: 30 8% 7%;
+    --primary: 30 8% 7%;
+    --primary-foreground: 40 22% 95%;
+    --secondary: 38 16% 88%;
+    --secondary-foreground: 30 8% 7%;
+    --muted: 38 16% 88%;
+    --muted-foreground: 30 5% 38%;
+    --accent: 38 16% 88%;
+    --accent-foreground: 30 8% 7%;
+    --destructive: 0 72% 48%;
+    --destructive-foreground: 40 22% 95%;
+    --border: 35 12% 80%;
+    --input: 35 12% 74%;
+    --ring: 16 100% 55%;
+    --rec: 16 100% 55%;
+    --radius: 0.2rem;
   }
 
   .dark {
-    /* --- THIS IS THE DEFINITIVE FIX --- */
-    --background: 240 5.9% 10%;
-    --foreground: 240 10% 98%;
-    
-    /* Update card and popover for consistency */
-    --card: 240 5.9% 10%;
-    --card-foreground: 240 10% 98%;
-
-    --popover: 240 5.9% 10%;
-    --popover-foreground: 240 10% 98%;
-
-    --primary: 240 10% 98%;
-    --primary-foreground: 240 10% 10%;
-
-    --secondary: 240 5% 20%;
-    --secondary-foreground: 240 10% 98%;
-
-    --muted: 240 5% 20%;
-    --muted-foreground: 240 5% 65%;
-
-    --accent: 240 5% 20%;
-    --accent-foreground: 240 10% 98%;
-
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 240 10% 98%;
-
-    --border: 240 5% 30%;
-    --input: 240 5% 30%;
-    --ring: 240 10% 98%;
+    --background: 30 6% 5%;
+    --foreground: 40 20% 92%;
+    --card: 30 6% 5%;
+    --card-foreground: 40 20% 92%;
+    --popover: 30 6% 8%;
+    --popover-foreground: 40 20% 92%;
+    --primary: 40 20% 92%;
+    --primary-foreground: 30 6% 5%;
+    --secondary: 30 5% 14%;
+    --secondary-foreground: 40 20% 92%;
+    --muted: 30 5% 14%;
+    --muted-foreground: 35 6% 62%;
+    --accent: 30 5% 14%;
+    --accent-foreground: 40 20% 92%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 40 20% 92%;
+    --border: 30 5% 20%;
+    --input: 30 5% 26%;
+    --ring: 16 100% 58%;
+    --rec: 16 100% 58%;
   }
 }
 
@@ -72,16 +56,113 @@
   * {
     @apply border-border;
   }
-  
+
   html {
     scroll-behavior: smooth;
   }
-  
+
   body {
     @apply bg-background text-foreground;
+    font-variation-settings: "opsz" 14;
   }
+
+  ::selection {
+    background: hsl(var(--rec));
+    color: white;
+  }
+
   .prose code::before,
   .prose code::after {
     content: none !important;
   }
+}
+
+@layer components {
+  /* Big headlines: Bricolage squeezed to its narrowest, heaviest cut */
+  .display {
+    font-family: var(--font-sans);
+    font-variation-settings: "opsz" 96, "wdth" 75;
+    font-weight: 760;
+    letter-spacing: -0.012em;
+    line-height: 0.9;
+  }
+
+  /* Poster sizes can take much tighter spacing */
+  .display-xl {
+    letter-spacing: -0.035em;
+    line-height: 0.86;
+  }
+
+  /* A single word in a headline, set in italic serif */
+  .accent-serif {
+    font-family: var(--font-serif);
+    font-style: italic;
+    font-weight: 400;
+    font-variation-settings: normal;
+    letter-spacing: -0.01em;
+  }
+
+  /* Camera-display labels: frame numbers, exposure, small captions */
+  .readout {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* Viewfinder corner marks drawn with four L-shaped gradients */
+  .viewfinder {
+    --vf-size: 18px;
+    --vf-line: 1.5px;
+    background:
+      linear-gradient(currentColor, currentColor) top left / var(--vf-size) var(--vf-line),
+      linear-gradient(currentColor, currentColor) top left / var(--vf-line) var(--vf-size),
+      linear-gradient(currentColor, currentColor) top right / var(--vf-size) var(--vf-line),
+      linear-gradient(currentColor, currentColor) top right / var(--vf-line) var(--vf-size),
+      linear-gradient(currentColor, currentColor) bottom left / var(--vf-size) var(--vf-line),
+      linear-gradient(currentColor, currentColor) bottom left / var(--vf-line) var(--vf-size),
+      linear-gradient(currentColor, currentColor) bottom right / var(--vf-size) var(--vf-line),
+      linear-gradient(currentColor, currentColor) bottom right / var(--vf-line) var(--vf-size);
+    background-repeat: no-repeat;
+  }
+
+  .rec-dot {
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 9999px;
+    background: hsl(var(--rec));
+    animation: rec-blink 1.4s steps(1) infinite;
+  }
+
+  /* Underline that slides in, in the signal colour */
+  .link-slide {
+    background: linear-gradient(hsl(var(--rec)), hsl(var(--rec))) left bottom / 0 1.5px no-repeat;
+    transition: background-size 0.3s ease;
+  }
+  .link-slide:hover,
+  .link-slide[aria-current="page"] {
+    background-size: 100% 1.5px;
+  }
+
+  .shutter {
+    animation: shutter 0.32s ease-out both;
+  }
+}
+
+@keyframes rec-blink {
+  0%, 60% { opacity: 1; }
+  61%, 100% { opacity: 0.15; }
+}
+
+/* A quick blink, like a shutter closing and opening */
+@keyframes shutter {
+  0% { clip-path: inset(50% 0 50% 0); opacity: 0.6; }
+  100% { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .rec-dot, .shutter { animation: none; }
+  *, *::before, *::after { transition-duration: 0.01ms !important; }
 }
