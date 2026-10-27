@@ -141,6 +141,38 @@
       "previewsText": "{count} previews are ready for you.",
       "noPreviews": "No previews yet — you'll get an email as soon as they're ready.",
       "keys": "← → to browse · P to pick · Esc to close"
+    },
+    "proposal": {
+      "label": "Proposal",
+      "title": "your proposal",
+      "total": "Total",
+      "deposit": "Deposit",
+      "depositPercent": "Deposit ({percent} %)",
+      "rest": "The rest is due before delivery.",
+      "noVat": "All prices are final amounts.",
+      "confirm": "I accept this proposal",
+      "pay": "Accept & pay {amount}",
+      "payAgain": "Pay deposit · {amount}",
+      "acceptOnly": "Accept proposal",
+      "secure": "Secure payment via Stripe — card, Apple Pay, Google Pay or SEPA, depending on your device.",
+      "accepted": "Accepted on {date}.",
+      "manual": "Thank you! I'll send you the payment details personally.",
+      "paid": "Deposit of {amount} paid on {date} — your date is booked.",
+      "processing": "Your payment is on its way — bank transfers can take a few days. Your date is reserved meanwhile.",
+      "cancelled": "Payment cancelled — no problem, you can pay whenever you're ready.",
+      "success": "Thank you! Your payment is being confirmed.",
+      "working": "One moment…",
+      "error": "That didn't work — please try again in a moment.",
+      "payments": "Payments",
+      "status": {
+        "open": "Started",
+        "processing": "Processing",
+        "paid": "Paid",
+        "failed": "Failed",
+        "expired": "Not completed",
+        "partially_refunded": "Partly refunded",
+        "refunded": "Refunded"
+      }
     }
   }
 }

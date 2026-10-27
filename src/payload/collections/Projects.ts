@@ -1,6 +1,6 @@
-import type { CollectionConfig, Payload, PayloadRequest } from 'payload'
+import { APIError, type CollectionConfig, type Payload, type PayloadRequest } from 'payload'
 import type { Project } from '@/payload-types'
-import { STAGES, STAGE_LABELS, isStage } from '../../lib/stages'
+import { STAGES, STAGE_LABELS, isStage, stageIndex } from '../../lib/stages'
 import { INVITE_LINK_TTL_MS, issueLoginToken, signInUrl } from '../../lib/client-tokens'
 import { sendSignInEmail } from '../../lib/email-client'
 
@@ -88,6 +88,10 @@ export const Projects: CollectionConfig = {
         data.shootDate ??= inquiry.date ?? undefined
         data.location ??= inquiry.location ?? undefined
         data.title ||= [inquiry.name, offering?.title ?? inquiry.kind].filter(Boolean).join(' — ')
+        // A first proposal line from the offering's price; edit before sending
+        if (offering?.fromPrice && !data.proposal?.lines?.length) {
+          data.proposal = { ...data.proposal, lines: [{ label: offering.title, amount: offering.fromPrice }] }
+        }
         return data
       },
     ],
@@ -103,6 +107,21 @@ export const Projects: CollectionConfig = {
         if (data.inviteClients) {
           req.context.inviteClients = true
           data.inviteClients = false
+        }
+        if (data.sendProposal) {
+          data.sendProposal = false
+          if (!data.proposal?.lines?.length) {
+            throw new APIError('Add at least one line to the proposal before sending it.', 400, undefined, true)
+          }
+          if (!data.clients?.length) throw new APIError('Add a client before sending the proposal.', 400, undefined, true)
+          data.proposal = { ...data.proposal, sentAt: new Date().toISOString(), acceptedAt: null, acceptedBy: null }
+          if (stageIndex(isStage(data.stage) ? data.stage : 'inquiry') < stageIndex('proposal')) {
+            data.stage = 'proposal'
+            if (operation === 'update' && originalDoc?.stage !== 'proposal') {
+              req.context.stageChange = { from: originalDoc?.stage, to: 'proposal' }
+            }
+          }
+          req.context.sendProposal = true
         }
         // Fetch previews now; a new watermark text means re-rendering them
         if (data.syncPreviews || (operation === 'update' && (data.watermarkText ?? '') !== (originalDoc?.watermarkText ?? ''))) {
@@ -158,6 +177,12 @@ export const Projects: CollectionConfig = {
               })
             }
           }
+        }
+
+        if (req.context.sendProposal) {
+          delete req.context.sendProposal
+          const { notifyProposal } = await import('../../lib/proposal-mail')
+          await notifyProposal(payload, project, req)
         }
 
         if (req.context.syncPreviews) {
@@ -236,6 +261,44 @@ export const Projects: CollectionConfig = {
       admin: { description: "Text on preview images. Empty: the client's name." },
     },
     {
+      name: 'proposal',
+      type: 'group',
+      admin: { description: 'What the client accepts in the portal; the deposit is paid by card/SEPA via Stripe.' },
+      fields: [
+        {
+          name: 'lines',
+          type: 'array',
+          admin: { description: 'Final amounts in € (no VAT is added).' },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                { name: 'label', type: 'text', required: true },
+                { name: 'amount', type: 'number', required: true, min: 0 },
+              ],
+            },
+          ],
+        },
+        { name: 'note', type: 'textarea', admin: { description: 'Shown to the client above the proposal' } },
+        {
+          type: 'row',
+          fields: [
+            { name: 'depositPercent', type: 'number', min: 0, max: 100, admin: { description: 'Empty: from the offering (else 30 %)' } },
+            { name: 'depositAmount', type: 'number', min: 0, admin: { description: 'Fixed deposit in €; overrides the percentage' } },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            { name: 'sentAt', type: 'date', admin: { readOnly: true } },
+            { name: 'acceptedAt', type: 'date', admin: { readOnly: true } },
+            { name: 'acceptedBy', type: 'relationship', relationTo: 'clients', admin: { readOnly: true } },
+          ],
+        },
+      ],
+    },
+    { name: 'payments', type: 'join', collection: 'payments', on: 'project' },
+    {
       name: 'proofing',
       type: 'group',
       admin: { description: 'Previews from "1 Preview" in the project folder' },
@@ -269,6 +332,12 @@ export const Projects: CollectionConfig = {
       type: 'checkbox',
       defaultValue: false,
       admin: { position: 'sidebar', description: 'On save, email every client a sign-in link (valid 7 days)' },
+    },
+    {
+      name: 'sendProposal',
+      type: 'checkbox',
+      defaultValue: false,
+      admin: { position: 'sidebar', description: 'On save, email the proposal to every client (they accept and pay the deposit in the portal)' },
     },
     {
       name: 'syncPreviews',

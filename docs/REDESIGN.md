@@ -556,7 +556,19 @@ in the admin reopens it. Sync: 15-min reconcile, "fetch previews now" on the pro
 webhooks for `Clients/` once the listeners' path filter includes it.
 *Deviations:* offline-safe picks (Background Sync) postponed to Phase 5; extra photos are
 counted and shown, paid in 3c.
-**3c** — Stripe deposit on proposal acceptance.
+**3c ✅ done 2026-10-27** — Proposal on the project (lines in €, note, deposit % from the
+offering or a fixed amount; first line seeded from the inquiry's offering). *Send proposal*
+emails every client a sign-in link and moves the project to *Proposal*. In the portal the
+proposal is a receipt-style card: tick "I accept" → acceptance recorded (time, client,
+activity, email to the photographer) → Stripe Checkout for the deposit (amount computed on
+the server, no tax lines, `metadata.app` marks our sessions). `Payments` + idempotent
+`/api/stripe/webhook` (completed / expired / async succeeded / async failed / refunded;
+status only moves forward; events of other apps on the account are ignored); returning from
+Checkout also asks Stripe directly. Paid deposit → *Booked*, emails to both sides; refunds
+from the Dashboard sync. Without `STRIPE_SECRET_KEY` the portal records the acceptance and
+says payment details follow by email. *Deployed with payments off* — the keys in Infisical
+are the live keys of the account RoutePass uses, so enabling needs the owner's decision and a
+portfolio webhook endpoint.
 **3d** — Plan section (questionnaire, moodboard), messages.
 
 - Magic link, project timeline, Plan section.

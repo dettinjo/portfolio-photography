@@ -168,3 +168,88 @@ export async function sendSelectionNotification(opts: {
     ].join('\n'),
   })
 }
+
+const PROPOSAL = {
+  en: {
+    subject: (p: string) => `Your proposal — ${p}`,
+    body: 'your proposal is ready in your project space. Have a look, and if everything fits, accept it there — the deposit secures your date.',
+    button: 'View my proposal',
+  },
+  de: {
+    subject: (p: string) => `Dein Angebot — ${p}`,
+    body: 'dein Angebot liegt in deinem Projektbereich bereit. Schau es dir in Ruhe an, und wenn alles passt, nimm es dort an — die Anzahlung sichert deinen Termin.',
+    button: 'Angebot ansehen',
+  },
+}
+
+export async function sendProposalEmail(opts: { to: string; name: string; locale: 'en' | 'de'; projectTitle: string; url: string }) {
+  const c = PROPOSAL[opts.locale]
+  const hi = COPY[opts.locale].hi(opts.name)
+  await transporter.sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: c.subject(opts.projectTitle),
+    text: `${hi}\n\n${c.body}\n\n${opts.url}\n\nJoel`,
+    html: `<div style="font-family:sans-serif;max-width:560px;color:#111;line-height:1.5">
+      <p>${e(hi)}</p><p>${e(c.body)}</p>
+      <p style="margin:28px 0"><a href="${e(opts.url)}" style="background:#111;color:#fff;padding:12px 22px;text-decoration:none;display:inline-block">${e(c.button)} →</a></p>
+      <p>Joel</p></div>`,
+  })
+}
+
+const RECEIVED = {
+  en: {
+    subject: (p: string) => `Payment received — ${p}`,
+    deposit: (a: string) => `thank you — your deposit of ${a} arrived, so your date is booked. Stripe sends you the receipt separately.`,
+    other: (a: string) => `thank you — your payment of ${a} arrived. Stripe sends you the receipt separately.`,
+  },
+  de: {
+    subject: (p: string) => `Zahlung erhalten — ${p}`,
+    deposit: (a: string) => `danke — deine Anzahlung über ${a} ist angekommen, dein Termin ist damit gebucht. Die Quittung schickt dir Stripe separat.`,
+    other: (a: string) => `danke — deine Zahlung über ${a} ist angekommen. Die Quittung schickt dir Stripe separat.`,
+  },
+}
+
+export async function sendPaymentReceived(opts: {
+  to: string
+  name: string
+  locale: 'en' | 'de'
+  amount: string
+  kind: string
+  projectTitle: string
+  url: string
+}) {
+  const c = RECEIVED[opts.locale]
+  const hi = COPY[opts.locale].hi(opts.name)
+  const body = opts.kind === 'deposit' ? c.deposit(opts.amount) : c.other(opts.amount)
+  await transporter.sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: c.subject(opts.projectTitle),
+    text: `${hi}\n\n${body}\n\n${opts.url}\n\nJoel`,
+    html: `<div style="font-family:sans-serif;max-width:560px;color:#111;line-height:1.5">
+      <p>${e(hi)}</p><p>${e(body)}</p><p><a href="${e(opts.url)}">${e(opts.url)}</a></p><p>Joel</p></div>`,
+  })
+}
+
+/** To the photographer: money arrived. */
+export async function sendPaymentNotification(opts: { projectTitle: string; label: string; amount: string; livemode: boolean }) {
+  await transporter.sendMail({
+    from: FROM,
+    to: ADMIN_TO,
+    subject: `💶 ${opts.amount} received — ${opts.projectTitle}${opts.livemode ? '' : ' (TEST MODE)'}`,
+    text: `${opts.label}: ${opts.amount} paid via Stripe${opts.livemode ? '' : ' in test mode'}.`,
+  })
+}
+
+/** To the photographer: a client accepted the proposal (and pays by hand when Stripe is off). */
+export async function sendProposalAccepted(opts: { projectTitle: string; client: string; deposit: string; manual: boolean }) {
+  await transporter.sendMail({
+    from: FROM,
+    to: ADMIN_TO,
+    subject: `🤝 Proposal accepted — ${opts.projectTitle}`,
+    text: `${opts.client} accepted the proposal for "${opts.projectTitle}". Deposit: ${opts.deposit}.${
+      opts.manual ? '\n\nOnline payment is not configured — send the payment details by hand.' : '\n\nThey were sent to Stripe Checkout for the deposit.'
+    }`,
+  })
+}
