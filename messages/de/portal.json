@@ -173,6 +173,73 @@
         "partially_refunded": "Teilweise erstattet",
         "refunded": "Erstattet"
       }
+    },
+    "nav": {
+      "overview": "Übersicht",
+      "plan": "Planung",
+      "selection": "Auswahl",
+      "messages": "Nachrichten"
+    },
+    "plan": {
+      "label": "Planung",
+      "title": "lass uns planen",
+      "intro": "Je mehr ich weiß, desto besser werden die Fotos. Beantworte, was du magst — bis zum Shooting kannst du alles jederzeit ändern.",
+      "questions": "Ein paar Fragen",
+      "defaultQuestions": [
+        {
+          "q": "Was ist der Anlass, und wofür werden die Fotos genutzt?",
+          "help": "Website, Social Media, Prints, ein Geschenk…"
+        },
+        {
+          "q": "Wer ist auf den Fotos?",
+          "help": "Namen, wie viele Personen, Haustiere"
+        },
+        {
+          "q": "Gibt es einen Look oder eine Stimmung, die du liebst?",
+          "help": "Links zu Bildern oder Accounts sind willkommen"
+        },
+        {
+          "q": "Gibt es Momente oder Details, die nicht fehlen dürfen?",
+          "help": ""
+        },
+        {
+          "q": "Gibt es etwas, das ich wissen sollte?",
+          "help": "Zeiten, Barrierefreiheit, Dinge, die ich vermeiden soll"
+        }
+      ],
+      "shotList": "Shotlist",
+      "shotListHelp": "Bilder, die ich auf keinen Fall verpassen soll.",
+      "addShot": "Motiv hinzufügen…",
+      "add": "Hinzufügen",
+      "remove": "Entfernen",
+      "save": "Planung speichern",
+      "saving": "Wird gespeichert…",
+      "saved": "Gespeichert ✓",
+      "error": "Das wurde nicht gespeichert — bitte versuch es noch einmal.",
+      "locked": "Das Shooting hat stattgefunden — die Planung ist jetzt nur noch lesbar.",
+      "moodboard": "Moodboard",
+      "moodboardHelp": "Lade Bilder hoch, die die Stimmung zeigen, die du dir wünschst — bis zu 30, JPEG/PNG/WebP, je 15 MB.",
+      "upload": "Bilder hinzufügen",
+      "uploading": "Lade {n} hoch…",
+      "tooBig": "{name} ist zu groß oder kein Bild.",
+      "full": "Das Moodboard ist voll (30 Bilder).",
+      "day": "Der Ablauf",
+      "meetingPoint": "Treffpunkt",
+      "byYou": "du",
+      "deleteImage": "Bild entfernen"
+    },
+    "messages": {
+      "label": "Nachrichten",
+      "title": "schreib mir",
+      "intro": "Fragen, Ideen, Änderungen — schreib hier und ich antworte hier (du bekommst eine E-Mail).",
+      "empty": "Noch keine Nachrichten. Sag hallo!",
+      "placeholder": "Deine Nachricht…",
+      "send": "Senden",
+      "sending": "Wird gesendet…",
+      "error": "Das wurde nicht gesendet — bitte versuch es noch einmal.",
+      "you": "Du",
+      "photoNote": "Notiz zu {file}",
+      "openPhoto": "öffnen"
     }
   }
 }

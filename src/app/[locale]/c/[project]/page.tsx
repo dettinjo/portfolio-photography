@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { SectionLabel } from "@/components/site/SectionLabel";
 import { ProjectTimeline } from "@/components/portal/ProjectTimeline";
 import { ProposalCard } from "@/components/portal/ProposalCard";
+import { ProjectNav } from "@/components/portal/ProjectNav";
 import { SignOut } from "@/components/portal/SignOut";
 import { getClient } from "@/lib/client-session";
 import { formatDate, getClientProject, getClientProjects, getProofing } from "@/lib/portal";
@@ -55,6 +56,8 @@ export default async function ProjectPage({ params, searchParams }: Props) {
           t("label")
         )}
       </SectionLabel>
+
+      <ProjectNav slug={slug} active="overview" hasPreviews={Boolean(proofing?.photos.length)} />
 
       <p className="readout mt-10 text-muted-foreground">{t("home.hi", { name: client.name.split(" ")[0] })}</p>
       <h1 className="display display-xl mt-2 text-6xl lowercase sm:text-8xl">{project.title}</h1>

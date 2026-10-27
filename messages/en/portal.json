@@ -173,6 +173,73 @@
         "partially_refunded": "Partly refunded",
         "refunded": "Refunded"
       }
+    },
+    "nav": {
+      "overview": "Overview",
+      "plan": "Plan",
+      "selection": "Selection",
+      "messages": "Messages"
+    },
+    "plan": {
+      "label": "Plan",
+      "title": "let's plan it",
+      "intro": "The more I know, the better the photos. Answer what you like — you can come back and change it anytime before the shoot.",
+      "questions": "A few questions",
+      "defaultQuestions": [
+        {
+          "q": "What's the occasion, and where will the photos be used?",
+          "help": "Website, social media, prints, a gift…"
+        },
+        {
+          "q": "Who will be in the photos?",
+          "help": "Names, how many people, pets"
+        },
+        {
+          "q": "Is there a look or mood you love?",
+          "help": "Links to images or accounts are welcome"
+        },
+        {
+          "q": "Any must-have moments or details?",
+          "help": ""
+        },
+        {
+          "q": "Anything I should know?",
+          "help": "Timings, accessibility, things to avoid"
+        }
+      ],
+      "shotList": "Shot list",
+      "shotListHelp": "Shots you don't want me to miss.",
+      "addShot": "Add a shot…",
+      "add": "Add",
+      "remove": "Remove",
+      "save": "Save plan",
+      "saving": "Saving…",
+      "saved": "Saved ✓",
+      "error": "That didn't save — please try again.",
+      "locked": "The shoot has happened — the plan is now read-only.",
+      "moodboard": "Moodboard",
+      "moodboardHelp": "Drop in images that capture the feel you're after — up to 30, JPEG/PNG/WebP, 15 MB each.",
+      "upload": "Add images",
+      "uploading": "Uploading {n}…",
+      "tooBig": "{name} is too large or not an image.",
+      "full": "The moodboard is full (30 images).",
+      "day": "The day",
+      "meetingPoint": "Meeting point",
+      "byYou": "you",
+      "deleteImage": "Remove image"
+    },
+    "messages": {
+      "label": "Messages",
+      "title": "talk to me",
+      "intro": "Questions, ideas, changes — write here and I'll answer here (you'll get an email).",
+      "empty": "No messages yet. Say hi!",
+      "placeholder": "Your message…",
+      "send": "Send",
+      "sending": "Sending…",
+      "error": "That didn't send — please try again.",
+      "you": "You",
+      "photoNote": "Note on {file}",
+      "openPhoto": "open"
     }
   }
 }

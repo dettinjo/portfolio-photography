@@ -299,6 +299,54 @@ export const Projects: CollectionConfig = {
     },
     { name: 'payments', type: 'join', collection: 'payments', on: 'project' },
     {
+      name: 'plan',
+      type: 'group',
+      admin: { description: 'Planning together: the client answers and adds a shot list and moodboard in the portal.' },
+      fields: [
+        { name: 'meetingPoint', type: 'text', admin: { description: 'Shown to the client, e.g. "Main entrance, gate B"' } },
+        {
+          name: 'schedule',
+          type: 'array',
+          admin: { description: 'The day, shown to the client' },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                { name: 'time', type: 'text', required: true, admin: { width: '20%' } },
+                { name: 'item', type: 'text', required: true },
+              ],
+            },
+          ],
+        },
+        {
+          name: 'answers',
+          type: 'array',
+          admin: { description: 'From the client' },
+          fields: [
+            { name: 'question', type: 'text', required: true },
+            { name: 'answer', type: 'textarea' },
+          ],
+        },
+        {
+          name: 'shotList',
+          type: 'array',
+          admin: { description: 'Must-have shots — the client and you can both add to it' },
+          fields: [
+            {
+              type: 'row',
+              fields: [
+                { name: 'item', type: 'text', required: true },
+                { name: 'done', type: 'checkbox', defaultValue: false },
+              ],
+            },
+          ],
+        },
+        { name: 'updatedByClientAt', type: 'date', admin: { readOnly: true } },
+      ],
+    },
+    { name: 'files', type: 'join', collection: 'project-files', on: 'project' },
+    { name: 'messages', type: 'join', collection: 'messages', on: 'project' },
+    {
       name: 'proofing',
       type: 'group',
       admin: { description: 'Previews from "1 Preview" in the project folder' },

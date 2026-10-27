@@ -50,6 +50,15 @@ export const Offerings: CollectionConfig = {
         { name: 'revisionRounds', type: 'number', defaultValue: 1 },
       ],
     },
+    {
+      name: 'planQuestions',
+      type: 'array',
+      admin: { description: 'Questions the client answers in the portal under "Plan". Empty: the standard questions.' },
+      fields: [
+        { name: 'question', type: 'text', required: true, localized: true },
+        { name: 'help', type: 'text', localized: true },
+      ],
+    },
     { name: 'order', type: 'number', defaultValue: 0 },
   ],
 }

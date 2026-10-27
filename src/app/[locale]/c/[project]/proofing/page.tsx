@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { SectionLabel } from "@/components/site/SectionLabel";
 import { SignOut } from "@/components/portal/SignOut";
 import { ProofingGallery } from "@/components/portal/ProofingGallery";
+import { ProjectNav } from "@/components/portal/ProjectNav";
 import { getClient } from "@/lib/client-session";
 import { formatDate, getProofing } from "@/lib/portal";
 import { toLocale } from "@/lib/portfolio";
@@ -31,6 +32,7 @@ export default async function ProofingPage({ params }: Props) {
             ← {t("back")}
           </Link>
         </SectionLabel>
+        <ProjectNav slug={slug} active="selection" hasPreviews={proofing.photos.length > 0} />
         <p className="readout mt-10 text-muted-foreground">{proofing.project.title}</p>
         <h1 className="display display-xl mt-2 max-w-[14ch] text-6xl lowercase sm:text-8xl">
           {proofing.submittedAt ? t("sentTitle") : t("title")}
