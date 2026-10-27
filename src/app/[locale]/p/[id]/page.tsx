@@ -97,7 +97,11 @@ export default async function PhotoPage({ params }: Props) {
             {t("viewSeries")}
           </Link>
           <Link
-            href={`/contact?photo=${photo.id}`}
+            href={
+              series.genre
+                ? `/sessions?genre=${series.genre.slug}&photo=${photo.id}#plan`
+                : `/contact?photo=${photo.id}`
+            }
             className="bg-white px-5 py-2.5 text-sm text-black transition hover:bg-rec hover:text-white"
           >
             {t("bookSimilar")}

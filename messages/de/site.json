@@ -5,7 +5,8 @@
       "work": "Arbeiten",
       "about": "Über mich",
       "contact": "Kontakt",
-      "menu": "Menü"
+      "menu": "Menü",
+      "sessions": "Shootings"
     },
     "footer": {
       "tagline": "Fotografie — Events, Motorsport, Porträts und Marken.",
@@ -45,7 +46,7 @@
       "aboutLink": "Mehr über mich",
       "ctaTitle": "Etwas vor der Linse?",
       "ctaText": "Erzähl mir, was du vorhast — ich melde mich persönlich bei dir.",
-      "ctaButton": "Kontakt aufnehmen",
+      "ctaButton": "Shooting planen",
       "kicker": "Fotografie",
       "headlineA": "Ich jage",
       "headlineAccent": "Licht",
@@ -94,6 +95,73 @@
       "intro": "Was Menschen nach unserer Zusammenarbeit sagen.",
       "leave": "Wir haben zusammengearbeitet? Hinterlasse eine Bewertung",
       "label": "Bewertungen"
+    },
+    "sessions": {
+      "metaTitle": "Shootings",
+      "metaDescription": "Wege der Zusammenarbeit — Porträts, Events & Motorsport, Autos & Marken. Plane dein Shooting in vier kurzen Schritten.",
+      "label": "Shootings",
+      "headlineA": "Lass uns",
+      "headlineAccent": "etwas",
+      "headlineB": "zusammen machen.",
+      "intro": "Ein paar Wege der Zusammenarbeit — jeder davon flexibel. Nicht sicher, was passt? Plane unten dein Shooting und ich schlage dir das Richtige vor.",
+      "from": "ab {price}",
+      "onRequest": "auf Anfrage",
+      "included": "Das bekommst du",
+      "facts": {
+        "duration": "Dauer",
+        "delivery": "Lieferung",
+        "deliveryDays": "{count, plural, one {# Tag} other {# Tage}}",
+        "revisions": "Korrekturrunden",
+        "deposit": "Anzahlung",
+        "extra": "Weiteres Foto"
+      },
+      "plan": "Dieses Shooting planen",
+      "addOnsLabel": "Extras",
+      "addOnsTitle": "extras",
+      "empty": "Die Shootings werden gerade vorbereitet — schreib mir gern in der Zwischenzeit.",
+      "planner": {
+        "label": "Plane dein Shooting",
+        "title": "plane dein shooting",
+        "step": "Schritt {n} / {total}",
+        "what": "Was fotografieren wir?",
+        "somethingElse": "Etwas anderes",
+        "somethingElsePlaceholder": "Erzähl es in ein paar Worten",
+        "when": "Wann & wo?",
+        "date": "Datum",
+        "flexible": "Ich bin flexibel",
+        "location": "Ort",
+        "locationPlaceholder": "Stadt oder Ort",
+        "size": "Wie groß wird es?",
+        "sizes": {
+          "small": "Klein — 1–2 Personen oder ein Auto",
+          "medium": "Mittel — eine kleine Gruppe oder ein paar Autos",
+          "large": "Groß — ein Event oder ein ganzer Tag"
+        },
+        "budget": "Budget",
+        "budgets": {
+          "lt200": "bis 200 €",
+          "200-500": "200–500 €",
+          "500-1000": "500–1000 €",
+          "gt1000": "über 1000 €",
+          "unsure": "noch unsicher"
+        },
+        "you": "Wer bist du?",
+        "name": "Name",
+        "email": "E-Mail",
+        "phone": "Telefon (optional)",
+        "message": "Sonst noch etwas?",
+        "messagePlaceholder": "Ideen, Referenzen, Fragen…",
+        "back": "Zurück",
+        "next": "Weiter",
+        "send": "Anfrage senden",
+        "sending": "Wird gesendet…",
+        "privacy": "Deine Angaben werden nur zur Beantwortung deiner Anfrage verwendet.",
+        "successTitle": "angekommen.",
+        "successText": "Danke, {name}! Eine Bestätigung ist auf dem Weg in dein Postfach — ich melde mich innerhalb von zwei Tagen persönlich bei dir.",
+        "error": "Da ist etwas schiefgelaufen. Bitte versuch es noch einmal oder schreib mir über die Kontaktseite.",
+        "required": "Bitte wähle etwas aus oder fülle diesen Schritt aus.",
+        "fromPhoto": "Inspiriert von Foto #{id}"
+      }
     }
   }
 }

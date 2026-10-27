@@ -1,3 +1,5 @@
+"use client";
+
 // Justified photo rows in pure CSS: every item grows in proportion to its
 // aspect ratio, so each row fills the width at one common height and no photo
 // is cropped. The trailing filler keeps the last row from being stretched.
@@ -7,14 +9,15 @@ import { cn } from "@/lib/utils";
 
 interface JustifiedGridProps {
   photos: PhotoView[];
-  hrefFor: (photo: PhotoView) => string;
+  /** Photo links are `${hrefPrefix}${photo.id}`, e.g. "/de/p/" */
+  hrefPrefix: string;
   onOpen?: (index: number) => void;
   /** Load the first n images eagerly (above the fold) */
   eager?: number;
   className?: string;
 }
 
-export function JustifiedGrid({ photos, hrefFor, onOpen, eager = 0, className }: JustifiedGridProps) {
+export function JustifiedGrid({ photos, hrefPrefix, onOpen, eager = 0, className }: JustifiedGridProps) {
   return (
     <div
       className={cn(
@@ -28,7 +31,7 @@ export function JustifiedGrid({ photos, hrefFor, onOpen, eager = 0, className }:
         return (
           <a
             key={photo.id}
-            href={hrefFor(photo)}
+            href={`${hrefPrefix}${photo.id}`}
             onClick={(event) => {
               if (!onOpen || event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return;
               event.preventDefault();

@@ -7,7 +7,7 @@ import { useLocale, useTranslations } from "next-intl";
 import type { PhotoView } from "@/lib/photo-view";
 import { cn } from "@/lib/utils";
 import { JustifiedGrid } from "./JustifiedGrid";
-import { PhotoViewer, photoPath } from "./PhotoViewer";
+import { PhotoViewer, photoPrefix } from "./PhotoViewer";
 
 interface PhotoStreamProps {
   photos: PhotoView[];
@@ -49,7 +49,7 @@ export function PhotoStream({ photos, genres = [], eager = 6 }: PhotoStreamProps
       )}
       <JustifiedGrid
         photos={visible}
-        hrefFor={(p) => photoPath(locale, p.id)}
+        hrefPrefix={photoPrefix(locale)}
         onOpen={setOpen}
         eager={eager}
       />

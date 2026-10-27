@@ -505,7 +505,15 @@ stream with genre filter, series as prints, about line, CTA, "say hi" footer), `
 photo), `/about`, `/contact` (prefilled from "book a shoot like this"), `/kind-words`;
 old `/<album>` URLs redirect permanently; launch genres seeded (Formula 1 → Events &
 Motorsport); sitemap with every photo; bottom tab bar in the installed app.
-**2b** — `/sessions` with Offerings, Plan-your-shoot → Inquiry.
+**2b ✅ done 2026-10-27** — `Offerings` (seeded with D1: Portraits, Events & Motorsport,
+Cars & Brands; Weddings prepared), `sessions-settings` global (add-ons, price note),
+admin-only `Inquiries`; `/sessions` shows an offering only when its genre has a published
+series, each with photos from that genre; four-step "Plan your shoot" →
+`/api/inquiry-submissions` (validation, honeypot, rate limit) → stored inquiry +
+notification + bilingual confirmation; "book a shoot like this" preselects the offering.
+Also fixed: the service worker's precache of `/de/offline` set the language cookie to
+German for every visitor — offline pages are now precached under `/en|de/offline`
+outside the i18n middleware, and the cookie was renamed (`locale`) to reset it.
 **2c** — About/FAQ in the CMS, polish.
 
 - Justified stream, series pages, photo permalinks and shared viewer.
