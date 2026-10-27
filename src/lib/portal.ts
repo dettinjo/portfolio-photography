@@ -333,6 +333,20 @@ export interface DeliveredPhoto {
   large: string
   original: string
   web: string
+  /** The version before the last re-export, for before/after */
+  before: string | null
+}
+
+export interface RevisionItem {
+  id: number
+  photo: number
+  body: string
+  x: number | null
+  y: number | null
+  status: 'draft' | 'requested' | 'done' | 'approved' | 'changes'
+  round: number
+  mine: boolean
+  author: string
 }
 
 export interface Delivery {
@@ -342,13 +356,25 @@ export interface Delivery {
   purgedAt: string | null
   open: boolean
   bytes: number
+  revisions: RevisionItem[]
+  rounds: { included: number; used: number; left: number }
 }
 
-export async function getDelivery(project: Project): Promise<Delivery> {
+export async function getDelivery(project: Project, client?: Client): Promise<Delivery> {
   const { deliveryOpen } = await import('@/lib/delivery')
   const d = project.delivery
   const open = deliveryOpen(project)
-  const empty = { photos: [], deliveredAt: d?.deliveredAt ?? null, expiresAt: d?.expiresAt ?? null, purgedAt: d?.purgedAt ?? null, open, bytes: 0 }
+  const { roundsOf } = await import('@/lib/revisions')
+  const empty = {
+    photos: [],
+    deliveredAt: d?.deliveredAt ?? null,
+    expiresAt: d?.expiresAt ?? null,
+    purgedAt: d?.purgedAt ?? null,
+    open,
+    bytes: 0,
+    revisions: [],
+    rounds: roundsOf(project),
+  }
   if (!open) return empty
   const payload = await getPayloadClient()
   const res = await payload.find({
@@ -361,8 +387,33 @@ export async function getDelivery(project: Project): Promise<Delivery> {
     overrideAccess: true,
   })
   const url = (p: { id: number; version?: string | null }, w: number) => `/api/previews/${p.id}/${p.version}/${w}`
+  const revisions = await payload.find({
+    collection: 'revisions',
+    where: { and: [{ project: { equals: project.id } }, { status: { not_equals: 'changes' } }] },
+    sort: 'createdAt',
+    limit: 0,
+    pagination: false,
+    depth: 0,
+    overrideAccess: true,
+  })
+  const clients = (project.clients ?? []).filter((c): c is Client => typeof c === 'object' && c !== null)
+  const relId = (v: unknown) => (typeof v === 'object' && v !== null ? (v as { id: number }).id : (v as number | null))
   return {
     ...empty,
+    revisions: revisions.docs.map((r) => {
+      const author = relId(r.client)
+      return {
+        id: r.id,
+        photo: relId(r.photo) as number,
+        body: r.body,
+        x: r.x ?? null,
+        y: r.y ?? null,
+        status: r.status,
+        round: r.round,
+        mine: Boolean(client && author === client.id),
+        author: clients.find((c) => c.id === author)?.name.split(' ')[0] ?? 'Joel',
+      }
+    }),
     bytes: res.docs.reduce((sum, p) => sum + (p.bytes ?? 0), 0),
     photos: res.docs.map((p) => ({
       id: p.id,
@@ -376,6 +427,7 @@ export async function getDelivery(project: Project): Promise<Delivery> {
       large: url(p, 1600),
       original: `/api/portal/download/${p.id}/original`,
       web: `/api/portal/download/${p.id}/web`,
+      before: p.previousVersion ? `/api/previews/${p.id}/${p.previousVersion}/1600` : null,
     })),
   }
 }

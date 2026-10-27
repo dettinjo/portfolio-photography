@@ -20,7 +20,7 @@ export default async function PhotosPage({ params }: Props) {
   const project = await findClientProject(client, slug);
   if (!project) notFound();
   const t = await getTranslations("Portal.delivery");
-  const delivery = await getDelivery(project);
+  const delivery = await getDelivery(project, client);
 
   return (
     <>
@@ -61,7 +61,7 @@ export default async function PhotosPage({ params }: Props) {
             </div>
           </div>
           <div className="mt-12">
-            <DeliveryGallery photos={delivery.photos} />
+            <DeliveryGallery slug={slug} photos={delivery.photos} revisions={delivery.revisions} rounds={delivery.rounds} />
           </div>
         </>
       ) : (

@@ -272,10 +272,11 @@ export async function processPhoto(
 }
 
 /** Removes older versions of a photo, and copies left in other locations. */
-export async function removeOtherVersions(fileId: number, keepVersion: string, kind: ImageKind = 'photos') {
+export async function removeOtherVersions(fileId: number, keepVersion: string, kind: ImageKind = 'photos', alsoKeep: (string | null | undefined)[] = []) {
   const dir = photoDir(fileId, undefined, kind)
+  const keep = new Set([keepVersion, ...alsoKeep.filter(Boolean)])
   for (const entry of await readdir(dir).catch(() => [] as string[])) {
-    if (entry !== keepVersion) await rm(path.join(dir, entry), { recursive: true, force: true })
+    if (!keep.has(entry)) await rm(path.join(dir, entry), { recursive: true, force: true })
   }
   await removeFromOtherRoots(fileId, kind)
 }

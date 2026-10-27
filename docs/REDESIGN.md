@@ -601,6 +601,17 @@ into the future restores the gallery from Nextcloud and resets the reminders. A 
 folder is synced right after it is created. *Deviation:* the ZIP is streamed instead of
 built asynchronously — no storage needed, but not resumable.
 
+**4b ✅ done 2026-10-27** — Revision rounds on delivered photos (`revisions` collection;
+rounds from the offering or `revisionRounds.included` on the project). In the gallery
+viewer the client collects change requests (optionally pinned to a spot), then sends them as
+one round → stage *Revisions*, email to the photographer, `_from-client/revisions-round-N.txt`
+with a Lightroom filter line. A re-export of the photo (same file, new etag) marks its
+requests done and keeps the previous version for a before/after slider (only the current and
+the previous version are stored); "done" can also be set by hand in the admin. When the last
+open request of a round is done, the clients get an email. They approve or say "still not
+right" (a new draft for the next round, while rounds are left); with nothing open the
+project returns to *Delivery*.
+
 - Versions and revision approvals; final mirroring, signed downloads, async ZIP.
 - 12-month expiry with 30/7-day reminders, admin extend, purge job.
 - Stripe: balance (with delivery gating), extra images above quota, add-ons, refunds sync.

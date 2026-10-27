@@ -410,6 +410,22 @@ export const Projects: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'revisionRounds',
+      type: 'group',
+      label: 'Revisions',
+      admin: { description: 'Rounds of changes the client can ask for on delivered photos' },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            { name: 'included', type: 'number', min: 0, admin: { description: 'Empty: from the offering (else 1)' } },
+            { name: 'used', type: 'number', defaultValue: 0, min: 0, admin: { description: 'Rounds sent so far — lower it to give one back' } },
+          ],
+        },
+      ],
+    },
+    { name: 'revisions', type: 'join', collection: 'revisions', on: 'project' },
     { name: 'previews', type: 'join', collection: 'photos', on: 'project', admin: { defaultColumns: ['filename', 'purpose', 'status'] } },
     { name: 'picks', type: 'join', collection: 'picks', on: 'project' },
     { name: 'comments', type: 'join', collection: 'comments', on: 'project' },

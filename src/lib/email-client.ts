@@ -342,3 +342,42 @@ export async function sendExpiryReminder(opts: { to: string; name: string; local
     ...buttonMail(COPY[opts.locale].hi(opts.name), c.remindBody(longDate(opts.expiresAt, opts.locale)), opts.url, c.remindButton),
   })
 }
+
+const REVISED = {
+  en: {
+    subject: (p: string) => `Your changes are done — ${p}`,
+    body: (n: number) => `I've made the ${n} changes you asked for. Have a look — slide between before and after, then approve them or tell me what's still not right.`,
+    button: 'Review the changes',
+  },
+  de: {
+    subject: (p: string) => `Deine Änderungen sind fertig — ${p}`,
+    body: (n: number) => `ich habe die ${n} Änderungen umgesetzt, um die du gebeten hast. Schau sie dir an — schieb zwischen vorher und nachher hin und her, dann gib sie frei oder sag mir, was noch nicht passt.`,
+    button: 'Änderungen ansehen',
+  },
+}
+
+export async function sendRevisionsReady(opts: { to: string; name: string; locale: 'en' | 'de'; count: number; projectTitle: string; url: string }) {
+  const c = REVISED[opts.locale]
+  await transporter.sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: c.subject(opts.projectTitle),
+    ...buttonMail(COPY[opts.locale].hi(opts.name), c.body(opts.count), opts.url, c.button),
+  })
+}
+
+/** To the photographer: a round of change requests (with the Lightroom filter line). */
+export async function sendRevisionsRequested(opts: { projectTitle: string; client: string; clientEmail: string; round: number; text: string; folder: string | null; writeError: string | null }) {
+  await transporter.sendMail({
+    from: FROM,
+    to: ADMIN_TO,
+    replyTo: opts.clientEmail,
+    subject: `✏️ Changes, round ${opts.round} — ${opts.projectTitle}`,
+    text: [
+      `${opts.client} sent change requests (round ${opts.round}). Re-export the photos into "2 Final" — the client is told once all are done.`,
+      opts.writeError ? `⚠️ Could not write the list to Nextcloud: ${opts.writeError}` : opts.folder ? `Written to ${opts.folder}/_from-client/revisions-round-${opts.round}.txt.` : '',
+      '',
+      opts.text,
+    ].join('\n'),
+  })
+}
