@@ -74,6 +74,9 @@ export interface Config {
     inquiries: Inquiry;
     albums: Album;
     reviews: Review;
+    clients: Client;
+    projects: Project;
+    activity: Activity;
     media: Media;
     users: User;
     'payload-kv': PayloadKv;
@@ -81,7 +84,11 @@ export interface Config {
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    clients: {
+      projects: 'projects';
+    };
+  };
   collectionsSelect: {
     series: SeriesSelect<false> | SeriesSelect<true>;
     photos: PhotosSelect<false> | PhotosSelect<true>;
@@ -90,6 +97,9 @@ export interface Config {
     inquiries: InquiriesSelect<false> | InquiriesSelect<true>;
     albums: AlbumsSelect<false> | AlbumsSelect<true>;
     reviews: ReviewsSelect<false> | ReviewsSelect<true>;
+    clients: ClientsSelect<false> | ClientsSelect<true>;
+    projects: ProjectsSelect<false> | ProjectsSelect<true>;
+    activity: ActivitySelect<false> | ActivitySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
@@ -426,6 +436,121 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clients".
+ */
+export interface Client {
+  id: number;
+  name: string;
+  email: string;
+  /**
+   * Language of emails and the portal
+   */
+  locale?: ('en' | 'de') | null;
+  phone?: string | null;
+  projects?: {
+    docs?: (number | Project)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  /**
+   * Internal notes
+   */
+  notes?: string | null;
+  lastLoginAt?: string | null;
+  /**
+   * Ends all portal sessions of this client on save
+   */
+  signOutEverywhere?: boolean | null;
+  loginTokenHash?: string | null;
+  loginTokenExpiresAt?: string | null;
+  sessionVersion?: number | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects".
+ */
+export interface Project {
+  id: number;
+  title: string;
+  stage:
+    | 'inquiry'
+    | 'proposal'
+    | 'booked'
+    | 'planning'
+    | 'shoot'
+    | 'sneak-peek'
+    | 'proofing'
+    | 'editing'
+    | 'revisions'
+    | 'delivery'
+    | 'feedback'
+    | 'archive';
+  /**
+   * Portal address: /c/<slug>
+   */
+  slug?: string | null;
+  clients?: (number | Client)[] | null;
+  /**
+   * Fills client, offering, date and place on create
+   */
+  inquiry?: (number | null) | Inquiry;
+  offering?: (number | null) | Offering;
+  shootDate?: string | null;
+  location?: string | null;
+  /**
+   * What happens next, shown to the client. Empty: the standard text for the stage.
+   */
+  nextStep?: string | null;
+  /**
+   * Further dates for the client, e.g. "Previews ready", "Delivery"
+   */
+  keyDates?:
+    | {
+        label: string;
+        date: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Text on preview images. Empty: the client's name.
+   */
+  watermarkText?: string | null;
+  /**
+   * Never shown to the client
+   */
+  internalNotes?: string | null;
+  /**
+   * On save, email every client a sign-in link (valid 7 days)
+   */
+  inviteClients?: boolean | null;
+  ncFolder?: string | null;
+  ncFolderError?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity".
+ */
+export interface Activity {
+  id: number;
+  project?: (number | null) | Project;
+  actor: 'admin' | 'client' | 'system';
+  client?: (number | null) | Client;
+  verb: 'project.created' | 'stage.changed' | 'client.invited' | 'client.login' | 'folder' | 'note';
+  message: string;
+  /**
+   * New stage, for stage changes
+   */
+  stage?: string | null;
+  clientVisible?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "users".
  */
 export interface User {
@@ -501,6 +626,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'reviews';
         value: number | Review;
+      } | null)
+    | ({
+        relationTo: 'clients';
+        value: number | Client;
+      } | null)
+    | ({
+        relationTo: 'projects';
+        value: number | Project;
+      } | null)
+    | ({
+        relationTo: 'activity';
+        value: number | Activity;
       } | null)
     | ({
         relationTo: 'media';
@@ -709,6 +846,69 @@ export interface ReviewsSelect<T extends boolean = true> {
   professionalism?: T;
   value?: T;
   approved?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "clients_select".
+ */
+export interface ClientsSelect<T extends boolean = true> {
+  name?: T;
+  email?: T;
+  locale?: T;
+  phone?: T;
+  projects?: T;
+  notes?: T;
+  lastLoginAt?: T;
+  signOutEverywhere?: T;
+  loginTokenHash?: T;
+  loginTokenExpiresAt?: T;
+  sessionVersion?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "projects_select".
+ */
+export interface ProjectsSelect<T extends boolean = true> {
+  title?: T;
+  stage?: T;
+  slug?: T;
+  clients?: T;
+  inquiry?: T;
+  offering?: T;
+  shootDate?: T;
+  location?: T;
+  nextStep?: T;
+  keyDates?:
+    | T
+    | {
+        label?: T;
+        date?: T;
+        id?: T;
+      };
+  watermarkText?: T;
+  internalNotes?: T;
+  inviteClients?: T;
+  ncFolder?: T;
+  ncFolderError?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity_select".
+ */
+export interface ActivitySelect<T extends boolean = true> {
+  project?: T;
+  actor?: T;
+  client?: T;
+  verb?: T;
+  message?: T;
+  stage?: T;
+  clientVisible?: T;
   updatedAt?: T;
   createdAt?: T;
 }

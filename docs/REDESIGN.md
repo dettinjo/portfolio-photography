@@ -525,6 +525,27 @@ back to the built-in texts.
 - `/about`, `/contact` sheet, `/kind-words`, navigation, design tokens, dark viewing mode.
 
 ### Phase 3 — Client portal
+
+Shipped in slices, each live on its own:
+
+**3a ✅ done 2026-10-27** — `Clients` (no passwords), `Projects` (stage, clients, offering,
+inquiry, date, place, next step, key dates, watermark text, internal notes), `Activity`.
+Creating a project from an inquiry takes over client, offering, date and place; "invite
+clients" emails a 7-day sign-in link. Sign-in by one-time email link (30 min; only a hash
+is stored; the link opens a page with a button so mail scanners cannot use it up) → signed,
+HTTP-only session cookie (30 days; "sign out everywhere" per client). Portal `/c` →
+`/c/<project>`: next step, 12-stage timeline, details, client-visible activity; never
+indexed or cached by the service worker. Project folders `Clients/<date> <slug>/{1 Preview,
+2 Final, _from-client}` are created in Nextcloud; failures show on the project and retry on
+every save. *Deviation:* clients are a plain collection with our own link + cookie session
+instead of a Payload auth collection (Payload has no passwordless login). The startup runner
+now applies data seeds after all schema migrations (the Local API expects the newest schema).
+**Needs** `Lightroom/Clients` shared with `portfolio-sync` (read, edit, create).
+**3b** — preview ingest with watermark → proofing gallery (picks, compare, filters, quota),
+region comments, `selection.txt` write-back.
+**3c** — Stripe deposit on proposal acceptance.
+**3d** — Plan section (questionnaire, moodboard), messages.
+
 - Magic link, project timeline, Plan section.
 - `Clients/<project>/` folder creation; preview ingest → proofing gallery.
 - Proofing v2 (picks, compare, filters, quota, multiple pickers), region comments,

@@ -42,8 +42,13 @@ async function runMigrations(payload: Payload) {
   const done = new Set(applied.map((m) => m.name))
   const batch = Math.max(0, ...applied.map((m) => Number(m.batch) || 0)) + 1
 
-  for (const migration of migrations) {
-    if (done.has(migration.name)) continue
+  // Data seeds ("…_seed_…") use the Local API, which always expects the newest
+  // schema, so they run after every pending schema migration.
+  const isSeed = (name: string) => /_seed_/.test(name)
+  const pending = migrations.filter((m) => !done.has(m.name))
+  const ordered = [...pending.filter((m) => !isSeed(m.name)), ...pending.filter((m) => isSeed(m.name))]
+
+  for (const migration of ordered) {
     payload.logger.info(`Migrating: ${migration.name}`)
     try {
       const start = Date.now()

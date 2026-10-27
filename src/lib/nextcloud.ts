@@ -17,6 +17,13 @@ export const PORTFOLIO_DAV_PATH = (process.env.NEXTCLOUD_PORTFOLIO_PATH || "Ligh
 );
 
 /**
+ * Client projects live below this folder (Clients/<date> <name>/…). The sync
+ * account needs write access here to create project folders and write
+ * selections back.
+ */
+export const CLIENTS_DAV_PATH = (process.env.NEXTCLOUD_CLIENTS_PATH || "Lightroom/Clients").replace(/^\/+|\/+$/g, "");
+
+/**
  * Webhook events report paths in the folder owner's namespace
  * ("/<owner>/files/Lightroom/Portfolio/…"), which differs from the sync
  * account's view when the folder is shared to a dedicated user.
@@ -136,6 +143,21 @@ export async function downloadFile(relPath: string): Promise<Buffer> {
   });
   if (!res.ok) throw new Error(`GET ${relPath} failed: ${res.status} ${res.statusText}`);
   return Buffer.from(await res.arrayBuffer());
+}
+
+/** Creates a folder; an existing folder is fine. Throws if the parent is missing or not writable. */
+export async function createFolder(relPath: string): Promise<"created" | "exists"> {
+  const res = await fetch(davUrl(relPath), {
+    method: "MKCOL",
+    headers: { Authorization: makeAuth() },
+    cache: "no-store",
+    signal: AbortSignal.timeout(15_000),
+  });
+  if (res.status === 201) return "created";
+  if (res.status === 405) return "exists";
+  if (res.status === 409) throw new Error(`MKCOL ${relPath}: parent folder missing`);
+  if (res.status === 403 || res.status === 401) throw new Error(`MKCOL ${relPath}: no write access (${res.status})`);
+  throw new Error(`MKCOL ${relPath} failed: ${res.status} ${res.statusText}`);
 }
 
 /**
