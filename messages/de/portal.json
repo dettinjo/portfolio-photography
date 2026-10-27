@@ -260,6 +260,41 @@
       "previous": "Vorheriges Foto",
       "next": "Nächstes Foto",
       "zipHint": "Große Downloads können etwas dauern — lass die Seite offen, bis er fertig ist."
+    },
+    "revisions": {
+      "rounds": "Runde {used} von {included} genutzt",
+      "roundsLeft": "{left, plural, one {Noch # Korrekturrunde} other {Noch # Korrekturrunden}}",
+      "collected": "{count, plural, one {# Änderung gesammelt} other {# Änderungen gesammelt}}",
+      "send": "Änderungen senden",
+      "sending": "Wird gesendet…",
+      "sent": "Runde {round} gesendet — ich bin dran. Du bekommst eine E-Mail, sobald alles fertig ist.",
+      "toReview": "{count, plural, one {# Änderung zum Ansehen bereit} other {# Änderungen zum Ansehen bereit}}",
+      "noneLeft": "Alle enthaltenen Korrekturrunden sind genutzt. Du brauchst noch etwas?",
+      "writeMe": "Schreib mir",
+      "request": "Änderung wünschen",
+      "requestHelp": "Was soll ich ändern? Tippe auf das Foto, um deine Notiz an eine Stelle zu heften.",
+      "placeholder": "z. B. etwas wärmer, das Schild links entfernen…",
+      "add": "Zu meinen Änderungen",
+      "pin": "An eine Stelle heften",
+      "pinHint": "Tippe auf die Stelle im Foto",
+      "removePin": "Markierung entfernen",
+      "status": {
+        "draft": "Noch nicht gesendet",
+        "requested": "Gewünscht",
+        "done": "Fertig — bitte ansehen",
+        "approved": "Freigegeben"
+      },
+      "approve": "Freigeben",
+      "notRight": "Passt noch nicht",
+      "notRightPlaceholder": "Was passt noch nicht?",
+      "submitAgain": "Für die nächste Runde vormerken",
+      "delete": "Entfernen",
+      "before": "Vorher",
+      "after": "Nachher",
+      "revised": "Überarbeitet",
+      "changes": "Änderungen",
+      "error": "Das hat nicht geklappt — bitte versuch es noch einmal.",
+      "confirm": "{count} Änderungen als Runde {round} senden? Danach kannst du dieser Runde nichts mehr hinzufügen."
     }
   }
 }

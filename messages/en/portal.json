@@ -260,6 +260,41 @@
       "previous": "Previous photo",
       "next": "Next photo",
       "zipHint": "Large downloads can take a while — keep this page open until it's done."
+    },
+    "revisions": {
+      "rounds": "Round {used} of {included} used",
+      "roundsLeft": "{left, plural, one {# revision round left} other {# revision rounds left}}",
+      "collected": "{count, plural, one {# change collected} other {# changes collected}}",
+      "send": "Send changes",
+      "sending": "Sending…",
+      "sent": "Round {round} sent — I'm on it. You'll get an email when it's done.",
+      "toReview": "{count, plural, one {# change ready to review} other {# changes ready to review}}",
+      "noneLeft": "All included revision rounds are used. Need more?",
+      "writeMe": "Write me",
+      "request": "Request a change",
+      "requestHelp": "What should I change? Tap the photo to pin your note to a spot.",
+      "placeholder": "e.g. a little warmer, remove the sign on the left…",
+      "add": "Add to my changes",
+      "pin": "Pin to a spot",
+      "pinHint": "Tap the photo where the change belongs",
+      "removePin": "Remove pin",
+      "status": {
+        "draft": "Not sent yet",
+        "requested": "Requested",
+        "done": "Done — please review",
+        "approved": "Approved"
+      },
+      "approve": "Approve",
+      "notRight": "Still not right",
+      "notRightPlaceholder": "What's still not right?",
+      "submitAgain": "Add to next round",
+      "delete": "Remove",
+      "before": "Before",
+      "after": "After",
+      "revised": "Revised",
+      "changes": "Changes",
+      "error": "That didn't work — please try again.",
+      "confirm": "Send {count} changes as round {round}? After that you can't add to this round."
     }
   }
 }

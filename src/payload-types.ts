@@ -82,6 +82,7 @@ export interface Config {
     'stripe-events': StripeEvent;
     'project-files': ProjectFile;
     messages: Message;
+    revisions: Revision;
     activity: Activity;
     media: Media;
     users: User;
@@ -98,6 +99,7 @@ export interface Config {
       payments: 'payments';
       files: 'project-files';
       messages: 'messages';
+      revisions: 'revisions';
       previews: 'photos';
       picks: 'picks';
       comments: 'comments';
@@ -119,6 +121,7 @@ export interface Config {
     'stripe-events': StripeEventsSelect<false> | StripeEventsSelect<true>;
     'project-files': ProjectFilesSelect<false> | ProjectFilesSelect<true>;
     messages: MessagesSelect<false> | MessagesSelect<true>;
+    revisions: RevisionsSelect<false> | RevisionsSelect<true>;
     activity: ActivitySelect<false> | ActivitySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -279,6 +282,11 @@ export interface Photo {
    * Text burned into the preview
    */
   watermark?: string | null;
+  /**
+   * Finals: the version before the last re-export (kept for before/after)
+   */
+  previousVersion?: string | null;
+  revisedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -453,6 +461,24 @@ export interface Project {
      * Files deleted from the server
      */
     purgedAt?: string | null;
+  };
+  /**
+   * Rounds of changes the client can ask for on delivered photos
+   */
+  revisionRounds?: {
+    /**
+     * Empty: from the offering (else 1)
+     */
+    included?: number | null;
+    /**
+     * Rounds sent so far — lower it to give one back
+     */
+    used?: number | null;
+  };
+  revisions?: {
+    docs?: (number | Revision)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
   };
   previews?: {
     docs?: (number | Photo)[];
@@ -686,6 +712,32 @@ export interface Message {
    */
   client?: (number | null) | Client;
   body: string;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * Set a request to "Done" by hand if no new export is needed.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "revisions".
+ */
+export interface Revision {
+  id: number;
+  project: number | Project;
+  photo: number | Photo;
+  client?: (number | null) | Client;
+  body: string;
+  status: 'draft' | 'requested' | 'done' | 'approved' | 'changes';
+  round: number;
+  x?: number | null;
+  y?: number | null;
+  /**
+   * Photo version the request refers to
+   */
+  versionRequested?: string | null;
+  requestedAt?: string | null;
+  doneAt?: string | null;
+  reviewedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -971,6 +1023,10 @@ export interface PayloadLockedDocument {
         value: number | Message;
       } | null)
     | ({
+        relationTo: 'revisions';
+        value: number | Revision;
+      } | null)
+    | ({
         relationTo: 'activity';
         value: number | Activity;
       } | null)
@@ -1085,6 +1141,8 @@ export interface PhotosSelect<T extends boolean = true> {
   placeholder?: T;
   color?: T;
   watermark?: T;
+  previousVersion?: T;
+  revisedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1300,6 +1358,13 @@ export interface ProjectsSelect<T extends boolean = true> {
         reminder7SentAt?: T;
         purgedAt?: T;
       };
+  revisionRounds?:
+    | T
+    | {
+        included?: T;
+        used?: T;
+      };
+  revisions?: T;
   previews?: T;
   picks?: T;
   comments?: T;
@@ -1413,6 +1478,26 @@ export interface MessagesSelect<T extends boolean = true> {
   project?: T;
   client?: T;
   body?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "revisions_select".
+ */
+export interface RevisionsSelect<T extends boolean = true> {
+  project?: T;
+  photo?: T;
+  client?: T;
+  body?: T;
+  status?: T;
+  round?: T;
+  x?: T;
+  y?: T;
+  versionRequested?: T;
+  requestedAt?: T;
+  doneAt?: T;
+  reviewedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

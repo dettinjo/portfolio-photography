@@ -143,6 +143,8 @@ export const Photos: CollectionConfig = {
         { name: 'placeholder', type: 'text', admin: { readOnly: true } },
         { name: 'color', type: 'text', admin: { readOnly: true } },
         { name: 'watermark', type: 'text', admin: { readOnly: true, description: 'Text burned into the preview' } },
+        { name: 'previousVersion', type: 'text', admin: { readOnly: true, description: 'Finals: the version before the last re-export (kept for before/after)' } },
+        { name: 'revisedAt', type: 'date', admin: { readOnly: true } },
       ],
     },
   ],

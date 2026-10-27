@@ -20,7 +20,9 @@ export async function GET(req: NextRequest, { params }: Params) {
   const payload = await getPayloadClient()
   const photo = await payload.findByID({ collection: 'photos', id: Number(id), depth: 0, overrideAccess: true }).catch(() => null)
   const purpose = photo?.purpose
-  if (!photo || (purpose !== 'preview' && purpose !== 'final') || photo.status !== 'ready' || photo.version !== version || !photo.project) {
+  // Finals also serve the version before the last re-export (before/after)
+  const knownVersion = photo?.version === version || (purpose === 'final' && photo?.previousVersion === version)
+  if (!photo || (purpose !== 'preview' && purpose !== 'final') || photo.status !== 'ready' || !knownVersion || !photo.project) {
     return notFound()
   }
   const projectId = typeof photo.project === 'object' ? photo.project.id : photo.project

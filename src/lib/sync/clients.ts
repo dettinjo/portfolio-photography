@@ -207,6 +207,9 @@ async function syncImage(payload: Payload, projectId: number, file: DavEntry, or
     return
   }
 
+  // A re-export of a delivered photo: keep the version before it for before/after
+  const prior = purpose === 'final' && photo.status === 'ready' && photo.version && photo.version !== version ? photo.version : null
+  const previousVersion = prior ?? (photo.status === 'ready' ? photo.previousVersion : null) ?? null
   try {
     const result = await processPhoto(await downloadFile(file.path), fileId, version, { kind, watermark: label, originalName: file.name })
     await payload.update({
@@ -217,6 +220,8 @@ async function syncImage(payload: Payload, projectId: number, file: DavEntry, or
         etag: file.etag,
         version,
         watermark: label ?? null,
+        previousVersion,
+        ...(prior && { revisedAt: new Date().toISOString() }),
         width: result.width,
         height: result.height,
         widths: result.widths,
@@ -229,7 +234,7 @@ async function syncImage(payload: Payload, projectId: number, file: DavEntry, or
       },
       overrideAccess: true,
     })
-    await removeOtherVersions(fileId, version, kind)
+    await removeOtherVersions(fileId, version, kind, [previousVersion])
   } catch (err) {
     await payload.update({
       collection: 'photos',
@@ -284,7 +289,28 @@ async function syncFinals(payload: Payload, project: Project, folderPath: string
   }
 
   if (files.length && !project.delivery?.deliveredAt) await announceDelivery(payload, project)
+  await markRevisionsDone(payload, project)
   return errors
+}
+
+/** Requested changes whose photo has a newer version now are done. */
+async function markRevisionsDone(payload: Payload, project: Project) {
+  const open = await payload.find({
+    collection: 'revisions',
+    where: { and: [{ project: { equals: project.id } }, { status: { equals: 'requested' } }] },
+    limit: 0,
+    pagination: false,
+    depth: 1,
+    overrideAccess: true,
+  })
+  if (!open.docs.length) return
+  // The Revisions hook tells the clients once the last open request is done
+  for (const r of open.docs) {
+    const photo = typeof r.photo === 'object' ? r.photo : null
+    if (photo?.status === 'ready' && photo.version && photo.version !== r.versionRequested) {
+      await payload.update({ collection: 'revisions', id: r.id, data: { status: 'done', doneAt: new Date().toISOString() }, overrideAccess: true })
+    }
+  }
 }
 
 const addMonths = (date: Date, months: number) => {
