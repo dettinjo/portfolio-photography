@@ -22,6 +22,7 @@ import { debounce } from './queue'
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/tiff'])
 const DEBOUNCE_MS = Number(process.env.SYNC_DEBOUNCE_MS ?? 60_000)
 export const PREVIEW_FOLDER = '1 Preview'
+export const FINAL_FOLDER = '2 Final'
 
 const relId = (value: unknown) =>
   typeof value === 'object' && value !== null ? (value as { id: number }).id : (value as number | null | undefined)
@@ -68,7 +69,7 @@ export async function reconcileClients(payload: Payload): Promise<string[]> {
 
 export async function syncClientFolder(payload: Payload, folder: DavEntry): Promise<string[]> {
   const project = await projectForFolder(payload, folder)
-  return syncPreviews(payload, project, folder.path)
+  return [...(await syncPreviews(payload, project, folder.path)), ...(await syncFinals(payload, project, folder.path))]
 }
 
 async function projectForFolder(payload: Payload, folder: DavEntry): Promise<Project> {
@@ -174,24 +175,30 @@ async function syncPreviews(payload: Payload, project: Project, folderPath: stri
 }
 
 async function syncPreview(payload: Payload, projectId: number, file: DavEntry, label: string, order: number) {
+  return syncImage(payload, projectId, file, order, 'preview', label)
+}
+
+async function syncImage(payload: Payload, projectId: number, file: DavEntry, order: number, purpose: 'preview' | 'final', label: string | null) {
+  const kind = purpose === 'preview' ? 'previews' : 'finals'
   const fileId = file.fileId as number
-  const version = versionFor(file.etag, label)
+  const version = versionFor(file.etag, label ?? '')
   const existing = await payload.find({ collection: 'photos', where: { ncFileId: { equals: fileId } }, limit: 1, depth: 0, overrideAccess: true })
   const photo =
     existing.docs[0] ??
     (await payload.create({
       collection: 'photos',
-      data: { purpose: 'preview', project: projectId, visibility: 'hidden', filename: file.name, ncFileId: fileId, ncPath: file.path, status: 'pending', order },
+      data: { purpose, project: projectId, visibility: 'hidden', filename: file.name, ncFileId: fileId, ncPath: file.path, status: 'pending', order },
       overrideAccess: true,
     }))
 
-  const place = { purpose: 'preview' as const, project: projectId, series: null, visibility: 'hidden' as const, filename: file.name, ncPath: file.path, order }
+  const place = { purpose, project: projectId, series: null, visibility: 'hidden' as const, filename: file.name, ncPath: file.path, order, bytes: file.size }
   const needsProcessing =
     photo.version !== version ||
-    photo.purpose !== 'preview' ||
+    photo.purpose !== purpose ||
     photo.status === 'pending' ||
     photo.status === 'failed' ||
-    !hasProcessedFiles(fileId, version, 'previews')
+    photo.status === 'expired' ||
+    !hasProcessedFiles(fileId, version, kind)
 
   if (!needsProcessing) {
     if (photo.status === 'missing' || relId(photo.project) !== projectId || photo.ncPath !== file.path || photo.order !== order) {
@@ -201,7 +208,7 @@ async function syncPreview(payload: Payload, projectId: number, file: DavEntry, 
   }
 
   try {
-    const result = await processPhoto(await downloadFile(file.path), fileId, version, { kind: 'previews', watermark: label })
+    const result = await processPhoto(await downloadFile(file.path), fileId, version, { kind, watermark: label, originalName: file.name })
     await payload.update({
       collection: 'photos',
       id: photo.id,
@@ -209,7 +216,7 @@ async function syncPreview(payload: Payload, projectId: number, file: DavEntry, 
         ...place,
         etag: file.etag,
         version,
-        watermark: label,
+        watermark: label ?? null,
         width: result.width,
         height: result.height,
         widths: result.widths,
@@ -222,7 +229,7 @@ async function syncPreview(payload: Payload, projectId: number, file: DavEntry, 
       },
       overrideAccess: true,
     })
-    await removeOtherVersions(fileId, version, 'previews')
+    await removeOtherVersions(fileId, version, kind)
   } catch (err) {
     await payload.update({
       collection: 'photos',
@@ -231,6 +238,99 @@ async function syncPreview(payload: Payload, projectId: number, file: DavEntry, 
       overrideAccess: true,
     })
     throw err
+  }
+}
+
+// ── Finals ────────────────────────────────────────────────────────────────
+
+/** Months a delivered gallery stays online (decision D5). */
+export const DELIVERY_MONTHS = 12
+
+async function syncFinals(payload: Payload, project: Project, folderPath: string): Promise<string[]> {
+  // Expired galleries stay deleted until the photographer extends them
+  if (project.delivery?.purgedAt) return []
+  const entries = await listFolder(`${folderPath}/${FINAL_FOLDER}`)
+  const files = entries
+    .filter((e) => !e.isCollection && IMAGE_TYPES.has(e.contentType) && e.fileId)
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }))
+  const errors: string[] = []
+  for (const [order, file] of files.entries()) {
+    try {
+      await syncImage(payload, project.id, file, order, 'final', null)
+    } catch (err) {
+      errors.push(`${file.path}: ${(err as Error).message}`)
+    }
+  }
+
+  const present = files.map((f) => f.fileId as number)
+  const vanished = await payload.find({
+    collection: 'photos',
+    where: {
+      and: [
+        { project: { equals: project.id } },
+        { purpose: { equals: 'final' } },
+        { ncFileId: { not_in: present.length ? present : [-1] } },
+        { status: { not_in: ['missing', 'expired'] } },
+      ],
+    },
+    limit: 0,
+    pagination: false,
+    depth: 0,
+    overrideAccess: true,
+  })
+  for (const p of vanished.docs) {
+    await payload.update({ collection: 'photos', id: p.id, data: { status: 'missing' }, overrideAccess: true })
+    await removeAllVersions(p.ncFileId, 'finals')
+  }
+
+  if (files.length && !project.delivery?.deliveredAt) await announceDelivery(payload, project)
+  return errors
+}
+
+const addMonths = (date: Date, months: number) => {
+  const d = new Date(date)
+  d.setMonth(d.getMonth() + months)
+  return d
+}
+
+/** First finals of a project: delivery date, 12-month expiry, stage Delivery, emails. */
+async function announceDelivery(payload: Payload, project: Project) {
+  const ready = await payload.count({
+    collection: 'photos',
+    where: { and: [{ project: { equals: project.id } }, { purpose: { equals: 'final' } }, { status: { equals: 'ready' } }] },
+    overrideAccess: true,
+  })
+  if (!ready.totalDocs) return
+  const now = new Date()
+  const expiresAt = project.delivery?.expiresAt ?? addMonths(now, DELIVERY_MONTHS).toISOString()
+  const stage = isStage(project.stage) ? project.stage : 'proposal'
+  await payload.update({
+    collection: 'projects',
+    id: project.id,
+    data: {
+      delivery: { ...project.delivery, deliveredAt: now.toISOString(), expiresAt },
+      ...(stageIndex(stage) < stageIndex('delivery') && { stage: 'delivery' }),
+    },
+    context: { skipFolders: true },
+    overrideAccess: true,
+  })
+  await payload.create({
+    collection: 'activity',
+    data: { project: project.id, actor: 'system', verb: 'note', clientVisible: true, message: `${ready.totalDocs} final photos delivered` },
+    overrideAccess: true,
+  })
+  const { sendDeliveryEmail } = await import('@/lib/email-client')
+  for (const client of await projectClients(payload, project)) {
+    const locale = client.locale === 'de' ? 'de' : 'en'
+    await sendDeliveryEmail({
+      to: client.email,
+      name: client.name.split(' ')[0],
+      locale,
+      count: ready.totalDocs,
+      projectTitle: project.title,
+      expiresAt,
+      url: siteUrl(`/c/${project.slug}/photos`, locale),
+    }).catch((err) => console.error(`[sync] delivery email to ${client.email} failed:`, err))
   }
 }
 

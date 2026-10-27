@@ -286,3 +286,59 @@ export async function sendClientUpdateToAdmin(opts: { client: string; clientEmai
     text: `${opts.client}:\n\n${opts.body}\n\nAnswer in the admin (Inbox → Messages, project "${opts.projectTitle}"):\n${opts.adminUrl}`,
   })
 }
+
+const DELIVERY = {
+  en: {
+    subject: (p: string) => `Your photos are here — ${p}`,
+    body: (n: number, until: string) =>
+      `your ${n} final photos are ready. Download them in full resolution — one by one or all at once. The gallery stays online until ${until}; please keep a copy of your own.`,
+    button: 'See my photos',
+    remindSubject: (p: string, d: number) => `Your gallery closes in ${d} days — ${p}`,
+    remindBody: (until: string) =>
+      `a friendly reminder: your gallery stays online until ${until}. If you haven't yet, download your photos now — after that date they are removed from the website.`,
+    remindButton: 'Download my photos',
+  },
+  de: {
+    subject: (p: string) => `Deine Fotos sind da — ${p}`,
+    body: (n: number, until: string) =>
+      `deine ${n} fertigen Fotos sind bereit. Lade sie in voller Auflösung herunter — einzeln oder alle auf einmal. Die Galerie bleibt bis zum ${until} online; bitte speichere dir eine eigene Kopie.`,
+    button: 'Meine Fotos ansehen',
+    remindSubject: (p: string, d: number) => `Deine Galerie schließt in ${d} Tagen — ${p}`,
+    remindBody: (until: string) =>
+      `eine kurze Erinnerung: Deine Galerie ist noch bis zum ${until} online. Falls noch nicht geschehen, lade deine Fotos jetzt herunter — danach werden sie von der Website entfernt.`,
+    remindButton: 'Fotos herunterladen',
+  },
+}
+
+const longDate = (iso: string, locale: 'en' | 'de') =>
+  new Intl.DateTimeFormat(locale === 'de' ? 'de-DE' : 'en-GB', { dateStyle: 'long', timeZone: 'Europe/Berlin' }).format(new Date(iso))
+
+function buttonMail(hi: string, body: string, url: string, button: string) {
+  return {
+    text: `${hi}\n\n${body}\n\n${url}\n\nJoel`,
+    html: `<div style="font-family:sans-serif;max-width:560px;color:#111;line-height:1.5">
+      <p>${e(hi)}</p><p>${e(body)}</p>
+      <p style="margin:28px 0"><a href="${e(url)}" style="background:#111;color:#fff;padding:12px 22px;text-decoration:none;display:inline-block">${e(button)} →</a></p>
+      <p>Joel</p></div>`,
+  }
+}
+
+export async function sendDeliveryEmail(opts: { to: string; name: string; locale: 'en' | 'de'; count: number; projectTitle: string; expiresAt: string; url: string }) {
+  const c = DELIVERY[opts.locale]
+  await transporter.sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: c.subject(opts.projectTitle),
+    ...buttonMail(COPY[opts.locale].hi(opts.name), c.body(opts.count, longDate(opts.expiresAt, opts.locale)), opts.url, c.button),
+  })
+}
+
+export async function sendExpiryReminder(opts: { to: string; name: string; locale: 'en' | 'de'; days: number; projectTitle: string; expiresAt: string; url: string }) {
+  const c = DELIVERY[opts.locale]
+  await transporter.sendMail({
+    from: FROM,
+    to: opts.to,
+    subject: c.remindSubject(opts.projectTitle, opts.days),
+    ...buttonMail(COPY[opts.locale].hi(opts.name), c.remindBody(longDate(opts.expiresAt, opts.locale)), opts.url, c.remindButton),
+  })
+}

@@ -12,19 +12,22 @@ import exifr from 'exifr'
 export const PHOTO_WIDTHS = [480, 960, 1600, 2400]
 /** Client previews: smaller, WebP only, watermarked (decision D4). */
 export const PREVIEW_WIDTHS = [480, 960, 1600, 2048]
+/** Delivered finals: gallery sizes; the original and a web-size JPEG are kept beside them. */
+export const FINAL_WIDTHS = [480, 960, 1600]
+export const WEB_SIZE = 2048
 
 /**
  * Portfolio photos and client previews are kept apart: portfolio files are
  * served publicly by /api/photos, previews only by /api/previews after an
  * access check — they must never be reachable through the public route.
  */
-export type ImageKind = 'photos' | 'previews'
+export type ImageKind = 'photos' | 'previews' | 'finals'
 
 // Processed images are regenerable, so any writable location works. Candidates
 // in order of preference; the first one the server can write to is used.
 const rootCandidates = (kind: ImageKind = 'photos') =>
   [
-    kind === 'photos' ? process.env.PHOTO_DIR : process.env.PREVIEW_DIR,
+    kind === 'photos' ? process.env.PHOTO_DIR : kind === 'previews' ? process.env.PREVIEW_DIR : process.env.FINALS_DIR,
     path.join(process.env.MEDIA_DIR ?? '/app/public/media', kind),
     process.env.IMAGE_CACHE_DIR && path.join(process.env.IMAGE_CACHE_DIR, kind),
   ].filter((p): p is string => Boolean(p))
@@ -195,14 +198,18 @@ export interface ProcessOptions {
   kind?: ImageKind
   /** Text burned into every derivative (previews only) */
   watermark?: string | null
+  /** Finals: file name of the original, kept byte for byte as original.<ext> */
+  originalName?: string
 }
+
+export const originalFileName = (name: string) => `original${(path.extname(name) || '.jpg').toLowerCase()}`
 
 /** Processes `buffer` and writes the derivatives to photoDir(fileId, version, kind). */
 export async function processPhoto(
   buffer: Buffer,
   fileId: number,
   version: string,
-  { kind = 'photos', watermark: label }: ProcessOptions = {},
+  { kind = 'photos', watermark: label, originalName }: ProcessOptions = {},
 ): Promise<ProcessedPhoto> {
   // rotate() applies the EXIF orientation, so width/height are as displayed
   let oriented = await sharp(buffer, { failOn: 'error' }).rotate().toBuffer({ resolveWithObject: true })
@@ -224,13 +231,24 @@ export async function processPhoto(
   const tmpDir = `${finalDir}.tmp-${process.pid}-${Date.now()}`
   await mkdir(tmpDir, { recursive: true })
   try {
-    const widths = targetWidths(width, kind === 'previews' ? PREVIEW_WIDTHS : PHOTO_WIDTHS)
+    const widths = targetWidths(width, kind === 'previews' ? PREVIEW_WIDTHS : kind === 'finals' ? FINAL_WIDTHS : PHOTO_WIDTHS)
     for (const w of widths) {
       const resized = base().resize({ width: w, withoutEnlargement: true })
       await writeFile(path.join(tmpDir, `${w}.webp`), await resized.clone().webp({ quality: 82 }).toBuffer())
       if (kind === 'photos') {
         await writeFile(path.join(tmpDir, `${w}.avif`), await resized.clone().avif({ quality: 55, effort: 0 }).toBuffer())
       }
+    }
+    if (kind === 'finals') {
+      // The delivery itself: the exported file untouched, plus a web-size copy for sharing
+      await writeFile(path.join(tmpDir, originalFileName(originalName ?? 'original.jpg')), buffer)
+      await writeFile(
+        path.join(tmpDir, 'web.jpg'),
+        await base()
+          .resize({ width: WEB_SIZE, height: WEB_SIZE, fit: 'inside', withoutEnlargement: true })
+          .jpeg({ quality: 88, mozjpeg: true })
+          .toBuffer(),
+      )
     }
     await rm(finalDir, { recursive: true, force: true })
     await rename(tmpDir, finalDir)

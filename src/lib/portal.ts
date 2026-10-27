@@ -318,3 +318,75 @@ export async function hasPreviews(projectId: number) {
   })
   return res.totalDocs > 0
 }
+
+// ── Delivery ──────────────────────────────────────────────────────────────
+
+export interface DeliveredPhoto {
+  id: number
+  filename: string
+  width: number
+  height: number
+  placeholder: string | null
+  color: string | null
+  src: string
+  srcSet: string
+  large: string
+  original: string
+  web: string
+}
+
+export interface Delivery {
+  photos: DeliveredPhoto[]
+  deliveredAt: string | null
+  expiresAt: string | null
+  purgedAt: string | null
+  open: boolean
+  bytes: number
+}
+
+export async function getDelivery(project: Project): Promise<Delivery> {
+  const { deliveryOpen } = await import('@/lib/delivery')
+  const d = project.delivery
+  const open = deliveryOpen(project)
+  const empty = { photos: [], deliveredAt: d?.deliveredAt ?? null, expiresAt: d?.expiresAt ?? null, purgedAt: d?.purgedAt ?? null, open, bytes: 0 }
+  if (!open) return empty
+  const payload = await getPayloadClient()
+  const res = await payload.find({
+    collection: 'photos',
+    where: { and: [{ project: { equals: project.id } }, { purpose: { equals: 'final' } }, { status: { equals: 'ready' } }] },
+    sort: ['order', 'filename'],
+    limit: 0,
+    pagination: false,
+    depth: 0,
+    overrideAccess: true,
+  })
+  const url = (p: { id: number; version?: string | null }, w: number) => `/api/previews/${p.id}/${p.version}/${w}`
+  return {
+    ...empty,
+    bytes: res.docs.reduce((sum, p) => sum + (p.bytes ?? 0), 0),
+    photos: res.docs.map((p) => ({
+      id: p.id,
+      filename: p.filename,
+      width: p.width ?? 1600,
+      height: p.height ?? 1067,
+      placeholder: p.placeholder ?? null,
+      color: p.color ?? null,
+      src: url(p, 960),
+      srcSet: [480, 960, 1600].map((w) => `${url(p, w)} ${w}w`).join(', '),
+      large: url(p, 1600),
+      original: `/api/portal/download/${p.id}/original`,
+      web: `/api/portal/download/${p.id}/web`,
+    })),
+  }
+}
+
+export const formatBytes = (bytes: number, locale: 'en' | 'de') => {
+  const units = ['B', 'KB', 'MB', 'GB']
+  let n = bytes
+  let i = 0
+  while (n >= 1000 && i < units.length - 1) {
+    n /= 1000
+    i++
+  }
+  return `${new Intl.NumberFormat(locale === 'de' ? 'de-DE' : 'en-GB', { maximumFractionDigits: n < 10 && i > 1 ? 1 : 0 }).format(n)} ${units[i]}`
+}

@@ -1,11 +1,13 @@
-// Serves watermarked client previews: /api/previews/<photoId>/<version>/<width>
+// Serves private project images: /api/previews/<photoId>/<version>/<width>
+// — watermarked previews, and delivered finals while the gallery is open.
 // Only to the clients of the photo's project and to signed-in admins. Kept
 // apart from /api/photos, which is public.
 import { type NextRequest } from 'next/server'
 import { readdir, readFile } from 'fs/promises'
 import { getPayloadClient } from '@/lib/payload'
-import { getClient } from '@/lib/client-session'
 import { findPhotoDir } from '@/lib/sync/process'
+import { projectViewer } from '@/lib/project-access'
+import { deliveryOpen } from '@/lib/delivery'
 
 type Params = { params: Promise<{ id: string; version: string; width: string }> }
 
@@ -17,26 +19,22 @@ export async function GET(req: NextRequest, { params }: Params) {
 
   const payload = await getPayloadClient()
   const photo = await payload.findByID({ collection: 'photos', id: Number(id), depth: 0, overrideAccess: true }).catch(() => null)
-  if (!photo || photo.purpose !== 'preview' || photo.status !== 'ready' || photo.version !== version || !photo.project) {
+  const purpose = photo?.purpose
+  if (!photo || (purpose !== 'preview' && purpose !== 'final') || photo.status !== 'ready' || photo.version !== version || !photo.project) {
     return notFound()
   }
   const projectId = typeof photo.project === 'object' ? photo.project.id : photo.project
 
   // Access: an admin, or a client of this project. Unauthorised requests get
   // the same 404 as missing ones, so ids cannot be probed.
-  const { user } = await payload.auth({ headers: req.headers }).catch(() => ({ user: null }))
-  if (!user) {
-    const client = await getClient()
-    if (!client) return notFound()
-    const allowed = await payload.count({
-      collection: 'projects',
-      where: { and: [{ id: { equals: projectId } }, { clients: { in: [client.id] } }] },
-      overrideAccess: true,
-    })
-    if (!allowed.totalDocs) return notFound()
+  const viewer = await projectViewer(req, projectId)
+  if (!viewer) return notFound()
+  if (purpose === 'final' && !viewer.admin) {
+    const project = await payload.findByID({ collection: 'projects', id: projectId, depth: 0, overrideAccess: true })
+    if (!deliveryOpen(project)) return notFound()
   }
 
-  const dir = findPhotoDir(photo.ncFileId, version, 'previews')
+  const dir = findPhotoDir(photo.ncFileId, version, purpose === 'final' ? 'finals' : 'previews')
   if (!dir) return notFound()
   const available = (await readdir(dir).catch(() => [] as string[]))
     .filter((f) => f.endsWith('.webp'))

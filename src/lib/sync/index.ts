@@ -55,6 +55,20 @@ export function startSync() {
   console.log('[sync] Nextcloud sync started')
 }
 
+let housekeepingStarted = false
+/** Delivered galleries: reminders and expiry, shortly after start and every 6 hours. Independent of the sync. */
+export function startHousekeeping() {
+  if (housekeepingStarted || process.env.HOUSEKEEPING_DISABLED === 'true') return
+  housekeepingStarted = true
+  const run = () =>
+    debounce('delivery', 0, 'delivery housekeeping', async () => {
+      const { runDeliveryHousekeeping } = await import('@/lib/delivery')
+      await runDeliveryHousekeeping(await getPayloadClient())
+    })
+  setTimeout(run, Number(process.env.HOUSEKEEPING_FIRST_RUN_MS ?? 60_000)).unref()
+  setInterval(run, Number(process.env.HOUSEKEEPING_INTERVAL_MS ?? 6 * 60 * 60 * 1000)).unref()
+}
+
 // ── Reconcile ─────────────────────────────────────────────────────────────
 
 export async function reconcile(payload: Payload) {

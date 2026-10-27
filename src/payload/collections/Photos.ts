@@ -1,11 +1,11 @@
 import type { CollectionConfig, Where } from 'payload'
 
-// Client previews are never public, whatever their visibility says
+// Client previews and finals are never public, whatever their visibility says
 const publiclyVisible: Where = {
   and: [
     { status: { equals: 'ready' } },
     { visibility: { equals: 'public' } },
-    { purpose: { not_equals: 'preview' } },
+    { purpose: { equals: 'portfolio' } },
   ],
 }
 
@@ -37,6 +37,7 @@ export const Photos: CollectionConfig = {
           options: [
             { label: 'Portfolio', value: 'portfolio' },
             { label: 'Client preview', value: 'preview' },
+            { label: 'Final (delivered)', value: 'final' },
           ],
           admin: { readOnly: true },
         },
@@ -121,6 +122,7 @@ export const Photos: CollectionConfig = {
             { label: 'Ready', value: 'ready' },
             { label: 'Failed', value: 'failed' },
             { label: 'Missing in Nextcloud', value: 'missing' },
+            { label: 'Expired (files deleted)', value: 'expired' },
           ],
           admin: { readOnly: true },
         },
@@ -134,6 +136,7 @@ export const Photos: CollectionConfig = {
           type: 'text',
           admin: { readOnly: true, description: 'Changes whenever the file is re-exported.' },
         },
+        { name: 'bytes', type: 'number', admin: { readOnly: true, description: 'Size of the original file' } },
         { name: 'width', type: 'number', admin: { readOnly: true } },
         { name: 'height', type: 'number', admin: { readOnly: true } },
         { name: 'widths', type: 'number', hasMany: true, admin: { readOnly: true } },

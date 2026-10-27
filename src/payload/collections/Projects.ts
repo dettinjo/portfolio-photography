@@ -123,6 +123,19 @@ export const Projects: CollectionConfig = {
           }
           req.context.sendProposal = true
         }
+        // Extended into the future: reminders start over, an expired gallery comes back
+        const newExpiry = data.delivery?.expiresAt ? new Date(data.delivery.expiresAt).getTime() : null
+        const oldExpiry = originalDoc?.delivery?.expiresAt ? new Date(originalDoc.delivery.expiresAt).getTime() : null
+        if (operation === 'update' && newExpiry && newExpiry !== oldExpiry && newExpiry > Date.now()) {
+          const days = (newExpiry - Date.now()) / 86_400_000
+          data.delivery = {
+            ...data.delivery,
+            ...(days > 30 && { reminder30SentAt: null }),
+            ...(days > 7 && { reminder7SentAt: null }),
+            ...(data.delivery?.purgedAt && { purgedAt: null }),
+          }
+          if (originalDoc?.delivery?.purgedAt) data.syncPreviews = true
+        }
         // Fetch previews now; a new watermark text means re-rendering them
         if (data.syncPreviews || (operation === 'update' && (data.watermarkText ?? '') !== (originalDoc?.watermarkText ?? ''))) {
           req.context.syncPreviews = true
@@ -371,7 +384,33 @@ export const Projects: CollectionConfig = {
         },
       ],
     },
-    { name: 'previews', type: 'join', collection: 'photos', on: 'project', admin: { defaultColumns: ['filename', 'status'] } },
+    {
+      name: 'delivery',
+      type: 'group',
+      admin: { description: 'Finals from "2 Final": online for 12 months after delivery, then deleted from the server (they stay in Nextcloud).' },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            { name: 'deliveredAt', type: 'date', admin: { readOnly: true } },
+            {
+              name: 'expiresAt',
+              type: 'date',
+              admin: { description: 'Move it later to extend the gallery — an expired gallery is restored from Nextcloud.' },
+            },
+          ],
+        },
+        {
+          type: 'row',
+          fields: [
+            { name: 'reminder30SentAt', type: 'date', admin: { readOnly: true } },
+            { name: 'reminder7SentAt', type: 'date', admin: { readOnly: true } },
+            { name: 'purgedAt', type: 'date', admin: { readOnly: true, description: 'Files deleted from the server' } },
+          ],
+        },
+      ],
+    },
+    { name: 'previews', type: 'join', collection: 'photos', on: 'project', admin: { defaultColumns: ['filename', 'purpose', 'status'] } },
     { name: 'picks', type: 'join', collection: 'picks', on: 'project' },
     { name: 'comments', type: 'join', collection: 'comments', on: 'project' },
     { name: 'internalNotes', type: 'textarea', admin: { description: 'Never shown to the client' } },
@@ -391,7 +430,7 @@ export const Projects: CollectionConfig = {
       name: 'syncPreviews',
       type: 'checkbox',
       defaultValue: false,
-      admin: { position: 'sidebar', description: 'On save, fetch new previews from Nextcloud now (otherwise every 15 min)' },
+      admin: { position: 'sidebar', description: 'On save, fetch new previews and finals from Nextcloud now (otherwise every 15 min)' },
     },
     { name: 'ncFolder', label: 'Nextcloud folder', type: 'text', admin: { readOnly: true, position: 'sidebar' } },
     { name: 'ncFolderId', type: 'number', index: true, admin: { readOnly: true, position: 'sidebar' } },
@@ -411,4 +450,9 @@ async function createFolders(payload: Payload, project: Project) {
   await payload
     .update({ collection: 'projects', id: project.id, data, context: { skipFolders: true }, overrideAccess: true })
     .catch((err) => payload.logger.error({ err }, '[projects] could not store folder state'))
+  // The folder may already hold photos (created by hand, or a sync request came in before it existed)
+  if (data.ncFolder) {
+    const { scheduleProjectSync } = await import('../../lib/sync/clients')
+    scheduleProjectSync(project.id, 2000)
+  }
 }

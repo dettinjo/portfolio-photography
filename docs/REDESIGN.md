@@ -588,6 +588,19 @@ client with a link to the thread.
 - Stripe: proposal acceptance → deposit Checkout, webhook, `Payments`, Booked stage.
 
 ### Phase 4 — Delivery & feedback
+
+**4a ✅ done 2026-10-27** — `Clients/<project>/2 Final` → finals mirrored to the storage box
+(`MEDIA_DIR/finals/<fileId>/<version>/`: the original byte for byte, a 2048 px web JPEG and
+unwatermarked gallery sizes), served only to the project's clients/admins. First finals →
+stage *Delivery*, `deliveredAt`, `expiresAt` = +12 months (D5), email to every client.
+Portal tab *Your photos*: gallery + viewer, single downloads (full resolution / web size,
+UTF-8 file names) and "download all" as a ZIP streamed while it is built (stored, ZIP64; no
+temp files). Housekeeping (independent of the sync, every 6 h): reminders at 30 and 7 days;
+on expiry the server copies are deleted (photos *expired*, `purgedAt`); moving `expiresAt`
+into the future restores the gallery from Nextcloud and resets the reminders. A project's
+folder is synced right after it is created. *Deviation:* the ZIP is streamed instead of
+built asynchronously — no storage needed, but not resumable.
+
 - Versions and revision approvals; final mirroring, signed downloads, async ZIP.
 - 12-month expiry with 30/7-day reminders, admin extend, purge job.
 - Stripe: balance (with delivery gating), extra images above quota, add-ons, refunds sync.

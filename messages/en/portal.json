@@ -178,7 +178,8 @@
       "overview": "Overview",
       "plan": "Plan",
       "selection": "Selection",
-      "messages": "Messages"
+      "messages": "Messages",
+      "photos": "Your photos"
     },
     "plan": {
       "label": "Plan",
@@ -240,6 +241,25 @@
       "you": "You",
       "photoNote": "Note on {file}",
       "openPhoto": "open"
+    },
+    "delivery": {
+      "label": "Delivery",
+      "title": "your photos",
+      "intro": "Here they are! Download them in full resolution — or the web size, ready for sharing.",
+      "until": "Online until {date} — please keep a copy of your own.",
+      "allOriginal": "Download all · full resolution",
+      "allWeb": "All · web size",
+      "size": "{count} photos · {size}",
+      "original": "Full resolution",
+      "web": "Web size",
+      "expired": "This gallery closed on {date}. Write me if you need your photos again.",
+      "notYet": "Your final photos aren't here yet — you'll get an email as soon as they are.",
+      "card": "{count} final photos are ready for you.",
+      "open": "To my photos",
+      "close": "Close",
+      "previous": "Previous photo",
+      "next": "Next photo",
+      "zipHint": "Large downloads can take a while — keep this page open until it's done."
     }
   }
 }

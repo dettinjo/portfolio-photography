@@ -6,7 +6,7 @@ import { getPayload, type Payload } from 'payload'
 import type { PostgresAdapter } from '@payloadcms/db-postgres'
 import config from '@payload-config'
 import { migrations } from './migrations'
-import { startSync } from './lib/sync'
+import { startHousekeeping, startSync } from './lib/sync'
 
 export async function initPayload() {
   try {
@@ -14,6 +14,7 @@ export async function initPayload() {
     if (process.env.NODE_ENV === 'production') await runMigrations(payload)
     console.log('[instrumentation] Payload initialised')
     startSync()
+    startHousekeeping()
   } catch (err) {
     console.error('[instrumentation] Payload init failed:', err)
   }
