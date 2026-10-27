@@ -1,0 +1,97 @@
+{
+  "Portal": {
+    "metaTitle": "Client area",
+    "label": "Client area",
+    "login": {
+      "title": "your project",
+      "intro": "Enter the email address you booked with and I'll send you a link to sign in. No password needed.",
+      "email": "Email",
+      "submit": "Send me a link",
+      "sending": "Sending…",
+      "sentTitle": "check your inbox",
+      "sentText": "If {email} belongs to a project, a sign-in link is on its way. It works once and for 30 minutes.",
+      "again": "Use another address",
+      "error": "Something went wrong — please try again in a moment.",
+      "expired": "This link has expired or was already used. Ask for a new one below.",
+      "signedOut": "You're signed out. See you soon!",
+      "noProject": "No project yet? Plan your shoot →"
+    },
+    "verify": {
+      "title": "one click and you're in",
+      "text": "Click the button to open your project space.",
+      "button": "Sign in",
+      "missing": "This link is incomplete. Ask for a new one."
+    },
+    "home": {
+      "hi": "hi {name}",
+      "projects": "Your projects",
+      "empty": "No projects here yet — once we've planned your shoot, it shows up here.",
+      "signOut": "Sign out"
+    },
+    "project": {
+      "now": "now",
+      "nextStep": "Next step",
+      "timeline": "Timeline",
+      "details": "Details",
+      "shoot": "Shoot",
+      "location": "Where",
+      "offering": "Session",
+      "activity": "What happened",
+      "movedTo": "Moved to {stage}",
+      "back": "All projects",
+      "questions": "Questions? Just reply to any of my emails —",
+      "write": "or write me here",
+      "notFound": "This project doesn't exist or isn't yours."
+    },
+    "stages": {
+      "inquiry": {
+        "label": "Inquiry",
+        "next": "I'm reading your request and will get back to you shortly."
+      },
+      "proposal": {
+        "label": "Proposal",
+        "next": "Your proposal is on its way or already in your inbox. Once you accept it, your date is booked."
+      },
+      "booked": {
+        "label": "Booked",
+        "next": "Your date is booked. Next, we'll plan the details together."
+      },
+      "planning": {
+        "label": "Planning",
+        "next": "We're planning the shoot — place, schedule and ideas. Tell me anything that comes to mind."
+      },
+      "shoot": {
+        "label": "Shoot",
+        "next": "Shoot day! Afterwards I'll pick the best frames for your sneak peek."
+      },
+      "sneak-peek": {
+        "label": "Sneak peek",
+        "next": "A first selection is ready — have a look and tell me what you think."
+      },
+      "proofing": {
+        "label": "Selection",
+        "next": "Pick your favourites from the previews — those are the ones I'll edit."
+      },
+      "editing": {
+        "label": "Editing",
+        "next": "I'm editing your photos. You'll hear from me as soon as they're ready."
+      },
+      "revisions": {
+        "label": "Revisions",
+        "next": "Your edits are ready to review — approve them or tell me what to change."
+      },
+      "delivery": {
+        "label": "Delivery",
+        "next": "Your final photos are ready to download. The gallery stays online for 12 months."
+      },
+      "feedback": {
+        "label": "Feedback",
+        "next": "How was it? I'd love to hear your thoughts."
+      },
+      "archive": {
+        "label": "Archive",
+        "next": "This project is complete — thank you for working with me!"
+      }
+    }
+  }
+}

@@ -1,0 +1,97 @@
+{
+  "Portal": {
+    "metaTitle": "Kundenbereich",
+    "label": "Kundenbereich",
+    "login": {
+      "title": "dein projekt",
+      "intro": "Gib die E-Mail-Adresse ein, mit der du gebucht hast, und ich schicke dir einen Link zum Anmelden. Kein Passwort nötig.",
+      "email": "E-Mail",
+      "submit": "Link schicken",
+      "sending": "Wird gesendet…",
+      "sentTitle": "schau in dein postfach",
+      "sentText": "Wenn {email} zu einem Projekt gehört, ist ein Anmeldelink unterwegs. Er funktioniert einmal und 30 Minuten lang.",
+      "again": "Andere Adresse verwenden",
+      "error": "Da ist etwas schiefgelaufen — bitte versuch es gleich noch einmal.",
+      "expired": "Dieser Link ist abgelaufen oder wurde schon benutzt. Fordere unten einfach einen neuen an.",
+      "signedOut": "Du bist abgemeldet. Bis bald!",
+      "noProject": "Noch kein Projekt? Plane dein Shooting →"
+    },
+    "verify": {
+      "title": "ein klick und du bist drin",
+      "text": "Klick auf den Button, um deinen Projektbereich zu öffnen.",
+      "button": "Anmelden",
+      "missing": "Dieser Link ist unvollständig. Fordere einen neuen an."
+    },
+    "home": {
+      "hi": "hallo {name}",
+      "projects": "Deine Projekte",
+      "empty": "Hier gibt es noch keine Projekte — sobald wir dein Shooting geplant haben, erscheint es hier.",
+      "signOut": "Abmelden"
+    },
+    "project": {
+      "now": "jetzt",
+      "nextStep": "Nächster Schritt",
+      "timeline": "Ablauf",
+      "details": "Details",
+      "shoot": "Shooting",
+      "location": "Wo",
+      "offering": "Paket",
+      "activity": "Was passiert ist",
+      "movedTo": "Weiter zu: {stage}",
+      "back": "Alle Projekte",
+      "questions": "Fragen? Antworte einfach auf eine meiner E-Mails —",
+      "write": "oder schreib mir hier",
+      "notFound": "Dieses Projekt gibt es nicht oder es gehört nicht zu dir."
+    },
+    "stages": {
+      "inquiry": {
+        "label": "Anfrage",
+        "next": "Ich lese deine Anfrage und melde mich in Kürze bei dir."
+      },
+      "proposal": {
+        "label": "Angebot",
+        "next": "Dein Angebot ist unterwegs oder schon in deinem Postfach. Sobald du es annimmst, ist dein Termin gebucht."
+      },
+      "booked": {
+        "label": "Gebucht",
+        "next": "Dein Termin ist gebucht. Als Nächstes planen wir gemeinsam die Details."
+      },
+      "planning": {
+        "label": "Planung",
+        "next": "Wir planen das Shooting — Ort, Ablauf und Ideen. Erzähl mir alles, was dir einfällt."
+      },
+      "shoot": {
+        "label": "Shooting",
+        "next": "Shooting-Tag! Danach suche ich die besten Bilder für deinen Sneak Peek aus."
+      },
+      "sneak-peek": {
+        "label": "Sneak Peek",
+        "next": "Eine erste Auswahl ist fertig — schau sie dir an und sag mir, wie sie dir gefällt."
+      },
+      "proofing": {
+        "label": "Auswahl",
+        "next": "Wähle deine Favoriten aus den Vorschauen — genau die bearbeite ich."
+      },
+      "editing": {
+        "label": "Bearbeitung",
+        "next": "Ich bearbeite deine Fotos. Du hörst von mir, sobald sie fertig sind."
+      },
+      "revisions": {
+        "label": "Korrekturen",
+        "next": "Deine Bilder sind bereit zur Durchsicht — gib sie frei oder sag mir, was ich ändern soll."
+      },
+      "delivery": {
+        "label": "Lieferung",
+        "next": "Deine fertigen Fotos stehen zum Download bereit. Die Galerie bleibt 12 Monate online."
+      },
+      "feedback": {
+        "label": "Feedback",
+        "next": "Wie war es für dich? Ich freue mich auf deine Rückmeldung."
+      },
+      "archive": {
+        "label": "Archiv",
+        "next": "Dieses Projekt ist abgeschlossen — danke für die Zusammenarbeit!"
+      }
+    }
+  }
+}

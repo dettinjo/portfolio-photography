@@ -15,7 +15,8 @@
       "privacy": "Privacy",
       "sayHi": "say hi",
       "sayHiSub": "Got an idea, a date or a question? Write me.",
-      "madeBy": "Shot & built by {name}"
+      "madeBy": "Shot & built by {name}",
+      "clientLogin": "Client login"
     },
     "viewer": {
       "close": "Close",

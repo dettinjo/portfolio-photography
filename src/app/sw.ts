@@ -5,7 +5,7 @@
 // - the app shell (Next.js static assets, precached at build)
 // - photos (immutable URLs, cache-first)
 // - public pages (network-first, so content stays fresh; used when offline)
-// Admin, API responses and client approval pages are never cached.
+// Admin, API responses, the client area and approval pages are never cached.
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { CacheFirst, ExpirationPlugin, NetworkFirst, Serwist } from "serwist";
 
@@ -17,7 +17,7 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-const PRIVATE_PATHS = /^\/(?:(?:en|de)\/)?(?:admin|api|approve|dashboard)(?:\/|$)/;
+const PRIVATE_PATHS = /^\/(?:(?:en|de)\/)?(?:admin|api|approve|dashboard|c)(?:\/|$)/;
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,

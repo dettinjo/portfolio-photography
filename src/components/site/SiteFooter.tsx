@@ -19,6 +19,7 @@ export async function SiteFooter({ name }: { name: string }) {
           <span>{t("madeBy", { name })} · {new Date().getFullYear()}</span>
           <div className="flex flex-wrap gap-x-6 gap-y-2">
             <Link href="/kind-words" className="hover:text-foreground">{t("kindWords")}</Link>
+            <Link href="/c" className="hover:text-foreground">{t("clientLogin")}</Link>
             {instagram && (
               <a href={`https://instagram.com/${instagram}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground">
                 Instagram ↗

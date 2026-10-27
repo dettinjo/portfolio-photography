@@ -13,6 +13,8 @@ export default function robots(): MetadataRoute.Robots {
         // Disallow all utility, auth, and approval paths
         disallow: [
           "/approve/",
+          "/c/",
+          "/de/c/",
           "/connect/",
           "/dashboard/",
           "/leave-a-review/",

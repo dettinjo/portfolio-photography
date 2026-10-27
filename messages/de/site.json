@@ -15,7 +15,8 @@
       "privacy": "Datenschutz",
       "sayHi": "sag hallo",
       "sayHiSub": "Eine Idee, ein Termin oder eine Frage? Schreib mir.",
-      "madeBy": "Fotografiert & gebaut von {name}"
+      "madeBy": "Fotografiert & gebaut von {name}",
+      "clientLogin": "Kundenlogin"
     },
     "viewer": {
       "close": "Schließen",
