@@ -3,6 +3,9 @@ import { StudioHeader } from "@/components/studio/StudioHeader";
 import { ApproveReview, InquiryToProject, ReplyBox } from "@/components/studio/StudioActions";
 import { PushToggle } from "@/components/portal/PushToggle";
 import { getInbox, requireAdminPage } from "@/lib/studio";
+import { DemoPanel } from "@/components/studio/DemoPanel";
+import { demoState } from "@/lib/demo";
+import { getPayloadClient } from "@/lib/payload";
 
 export const metadata = { title: "Inbox" };
 
@@ -25,6 +28,7 @@ function Section({ title, count, children }: { title: string; count: number; chi
 export default async function StudioInbox() {
   await requireAdminPage("/studio");
   const inbox = await getInbox();
+  const demo = await demoState(await getPayloadClient());
   const empty = <p className="text-muted-foreground">Nothing waiting.</p>;
 
   return (
@@ -120,6 +124,7 @@ export default async function StudioInbox() {
           </ul>
         ) : empty}
       </Section>
+      <DemoPanel state={demo} />
     </>
   );
 }
