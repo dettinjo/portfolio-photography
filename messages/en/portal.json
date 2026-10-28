@@ -140,7 +140,9 @@
       "previewsTitle": "Your previews",
       "previewsText": "{count} previews are ready for you.",
       "noPreviews": "No previews yet — you'll get an email as soon as they're ready.",
-      "keys": "← → to browse · P to pick · Esc to close"
+      "keys": "← → to browse · P to pick · Esc to close",
+      "offlinePending": "{count, plural, one {# pick waits} other {# picks wait}} on this phone — sent as soon as you're online",
+      "offlineSubmit": "You're offline — your picks are safe on this phone. Send the selection once you're back online."
     },
     "proposal": {
       "label": "Proposal",
@@ -409,6 +411,15 @@
       "next": "Next",
       "goneTitle": "link expired",
       "gone": "This link doesn't work anymore — it was switched off or the gallery is no longer online. Ask the person who sent it to you."
+    },
+    "offline": {
+      "save": "Save on this phone",
+      "hint": "{count} photos — then the gallery opens without a connection, too.",
+      "saving": "Saving {done} / {total}",
+      "saved": "Saved on this phone · {count} photos",
+      "update": "Update",
+      "remove": "Remove",
+      "error": "Saving didn't work — maybe there isn't enough space, or the connection dropped."
     }
   }
 }

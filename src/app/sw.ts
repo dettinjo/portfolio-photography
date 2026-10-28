@@ -5,9 +5,12 @@
 // - the app shell (Next.js static assets, precached at build)
 // - photos (immutable URLs, cache-first)
 // - public pages (network-first, so content stays fresh; used when offline)
-// Admin, API responses, the client area and approval pages are never cached.
+// Admin, API responses, the client area and approval pages are never cached —
+// except galleries a client explicitly saves for offline viewing (lib/offline):
+// those are only read from their own cache when the network fails.
 import type { PrecacheEntry, SerwistGlobalConfig } from "serwist";
 import { CacheFirst, ExpirationPlugin, NetworkFirst, Serwist } from "serwist";
+import { OFFLINE_CACHE, canonicalImage, metaKey, type OfflineMeta } from "@/lib/offline";
 
 declare global {
   interface WorkerGlobalScope extends SerwistGlobalConfig {
@@ -19,12 +22,50 @@ declare const self: ServiceWorkerGlobalScope;
 
 const PRIVATE_PATHS = /^\/(?:(?:en|de)\/)?(?:admin|api|approve|dashboard|c|s|studio)(?:\/|$)/;
 
+/** A saved gallery's page or image, if it is saved and not past its end date. */
+async function fromOfflineCopy(request: Request, url: URL): Promise<Response | undefined> {
+  const cache = await caches.open(OFFLINE_CACHE);
+  const image = canonicalImage(url.pathname);
+  if (image) return cache.match(image);
+  if (request.mode !== "navigate") return undefined;
+  const meta = await cache.match(metaKey(url.pathname));
+  if (!meta) return undefined;
+  const info = (await meta.json()) as OfflineMeta;
+  if (info.expiresAt && new Date(info.expiresAt).getTime() < Date.now()) {
+    await Promise.all([cache.delete(metaKey(url.pathname)), cache.delete(info.page), ...info.images.map((i) => cache.delete(i))]);
+    return undefined;
+  }
+  return cache.match(info.page, { ignoreVary: true, ignoreSearch: true });
+}
+
+const offlineFallback = (url: URL): Promise<Response | undefined> => serwist.matchPrecache(/^\/de(\/|$)/.test(url.pathname) ? "/de/offline" : "/en/offline");
+
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,
   skipWaiting: true,
   clientsClaim: true,
   navigationPreload: true,
   runtimeCaching: [
+    {
+      // Private pages and images: always from the network; a saved offline copy
+      // only when the network fails
+      matcher: ({ request, url, sameOrigin }) =>
+        sameOrigin &&
+        (url.pathname.startsWith("/api/previews/") || (request.mode === "navigate" && /^\/(?:(?:en|de)\/)?c\//.test(url.pathname))),
+      handler: {
+        handle: async ({ request, url, event }): Promise<Response> => {
+          try {
+            const preload = request.mode === "navigate" ? await (event as FetchEvent).preloadResponse : undefined;
+            return (preload as Response | undefined) ?? (await fetch(request));
+          } catch (err) {
+            const copy = await fromOfflineCopy(request, url);
+            if (copy) return copy;
+            if (request.mode === "navigate") return (await offlineFallback(url)) ?? Response.error();
+            throw err;
+          }
+        },
+      },
+    },
     {
       matcher: ({ url, sameOrigin }) => sameOrigin && url.pathname.startsWith("/api/photos/"),
       handler: new CacheFirst({

@@ -4,6 +4,7 @@ import { Link } from "@/i18n/navigation";
 import { SectionLabel } from "@/components/site/SectionLabel";
 import { SignOut } from "@/components/portal/SignOut";
 import { ProofingGallery } from "@/components/portal/ProofingGallery";
+import { SaveOffline } from "@/components/portal/SaveOffline";
 import { ProjectNav } from "@/components/portal/ProjectNav";
 import { getClient } from "@/lib/client-session";
 import { formatDate, getProofing } from "@/lib/portal";
@@ -45,6 +46,14 @@ export default async function ProofingPage({ params }: Props) {
               : t("noPreviews")}
         </p>
 
+        {proofing.photos.length > 0 && !proofing.submittedAt && (
+          <SaveOffline
+            path={`${locale === "de" ? "/de" : ""}/c/${slug}/proofing`}
+            images={proofing.photos.map((p) => p.large)}
+            title={proofing.project.title}
+            expiresAt={null}
+          />
+        )}
         {proofing.photos.length > 0 && (
           <ProofingGallery
             slug={slug}

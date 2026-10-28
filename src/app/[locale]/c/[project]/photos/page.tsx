@@ -10,6 +10,7 @@ import { findClientProject, formatBytes, formatDate, getDelivery } from "@/lib/p
 import { toLocale } from "@/lib/portfolio";
 import { BalanceCard } from "@/components/portal/BalanceCard";
 import { ShareLinks } from "@/components/portal/ShareLinks";
+import { SaveOffline } from "@/components/portal/SaveOffline";
 import { getPayloadClient } from "@/lib/payload";
 import { refreshOpenPayments } from "@/lib/payments";
 import { stripeEnabled } from "@/lib/stripe";
@@ -95,6 +96,12 @@ export default async function PhotosPage({ params, searchParams }: Props) {
             )}
           </div>
           {locked && delivery.billing && <BalanceCard billing={delivery.billing} slug={slug} locale={loc} online={stripeEnabled()} delivered />}
+          <SaveOffline
+            path={`${locale === "de" ? "/de" : ""}/c/${slug}/photos`}
+            images={delivery.photos.map((p) => p.large)}
+            title={project.title}
+            expiresAt={delivery.expiresAt}
+          />
           <div className="mt-12">
             <DeliveryGallery slug={slug} photos={delivery.photos} revisions={delivery.revisions} rounds={delivery.rounds} />
           </div>
