@@ -27,6 +27,7 @@ import { PushSubscriptions } from './src/payload/collections/PushSubscriptions'
 import { ShareLinks } from './src/payload/collections/ShareLinks'
 import { SyncStatus } from './src/payload/globals/SyncStatus'
 import { SessionsSettings } from './src/payload/globals/SessionsSettings'
+import { BillingSettings } from './src/payload/globals/BillingSettings'
 import { AboutPage } from './src/payload/globals/AboutPage'
 import { Offerings } from './src/payload/collections/Offerings'
 import { Inquiries } from './src/payload/collections/Inquiries'
@@ -62,7 +63,7 @@ export default buildConfig({
     admin: '/admin',
   },
   collections: [Series, Photos, Genres, Offerings, Inquiries, Albums, Reviews, Clients, Projects, Picks, Comments, Payments, StripeEvents, ProjectFiles, Messages, Revisions, Feedback, PushSubscriptions, ShareLinks, Activity, Media, Users],
-  globals: [SyncStatus, SessionsSettings, AboutPage],
+  globals: [SyncStatus, SessionsSettings, AboutPage, BillingSettings],
   localization: {
     locales: [
       { label: 'English', code: 'en' },

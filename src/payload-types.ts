@@ -146,11 +146,13 @@ export interface Config {
     'sync-status': SyncStatus;
     'sessions-settings': SessionsSetting;
     'about-page': AboutPage;
+    'billing-settings': BillingSetting;
   };
   globalsSelect: {
     'sync-status': SyncStatusSelect<false> | SyncStatusSelect<true>;
     'sessions-settings': SessionsSettingsSelect<false> | SessionsSettingsSelect<true>;
     'about-page': AboutPageSelect<false> | AboutPageSelect<true>;
+    'billing-settings': BillingSettingsSelect<false> | BillingSettingsSelect<true>;
   };
   locale: 'en' | 'de';
   widgets: {
@@ -359,7 +361,7 @@ export interface Project {
    */
   proposal?: {
     /**
-     * Final amounts in € (no VAT is added).
+     * Final amounts in € (VAT, if any, is included — see Billing settings).
      */
     lines?:
       | {
@@ -1870,6 +1872,23 @@ export interface AboutPage {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "billing-settings".
+ */
+export interface BillingSetting {
+  id: number;
+  /**
+   * Only the note under proposals changes; amounts are always final.
+   */
+  taxMode: 'none' | 'smallBusiness' | 'vat';
+  /**
+   * Percent, included in the prices
+   */
+  vatRate?: number | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "sync-status_select".
  */
 export interface SyncStatusSelect<T extends boolean = true> {
@@ -1922,6 +1941,17 @@ export interface AboutPageSelect<T extends boolean = true> {
         onSessions?: T;
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "billing-settings_select".
+ */
+export interface BillingSettingsSelect<T extends boolean = true> {
+  taxMode?: T;
+  vatRate?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

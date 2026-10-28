@@ -298,7 +298,7 @@ export const Projects: CollectionConfig = {
         {
           name: 'lines',
           type: 'array',
-          admin: { description: 'Final amounts in € (no VAT is added).' },
+          admin: { description: 'Final amounts in € (VAT, if any, is included — see Billing settings).' },
           fields: [
             {
               type: 'row',

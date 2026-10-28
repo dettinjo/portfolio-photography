@@ -4,6 +4,7 @@ import { formatDate } from "@/lib/portal";
 import { formatCents } from "@/lib/proposal";
 import type { Locale } from "@/lib/portfolio";
 import { AcceptProposal } from "./AcceptProposal";
+import { taxNote } from "@/lib/tax";
 
 // The proposal as a receipt-like slip: lines, total, deposit, and the one
 // action that books the date.
@@ -12,6 +13,7 @@ export async function ProposalCard({ project, locale, online }: { project: Porta
   const p = project.proposal;
   if (!p) return null;
   const money = (c: number) => formatCents(c, locale);
+  const tax = await taxNote(p.totalCents, locale === "de" ? "de" : "en");
   const deposit = project.payments.find((x) => x.kind === "deposit" && ["paid", "processing", "partially_refunded"].includes(x.status));
 
   return (
@@ -40,7 +42,7 @@ export async function ProposalCard({ project, locale, online }: { project: Porta
           </div>
         </dl>
         <p className="readout mt-4 text-neutral-500">
-          {t("rest")} {t("noVat")}
+          {t("rest")} {tax}
         </p>
 
         {deposit ? (

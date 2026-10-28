@@ -63,7 +63,10 @@ export function startHousekeeping() {
   const run = () =>
     debounce('delivery', 0, 'delivery housekeeping', async () => {
       const { runDeliveryHousekeeping } = await import('@/lib/delivery')
-      await runDeliveryHousekeeping(await getPayloadClient())
+      const { reconcileOpenPayments } = await import('@/lib/payments')
+      const payload = await getPayloadClient()
+      await runDeliveryHousekeeping(payload)
+      await reconcileOpenPayments(payload)
     })
   setTimeout(run, Number(process.env.HOUSEKEEPING_FIRST_RUN_MS ?? 60_000)).unref()
   setInterval(run, Number(process.env.HOUSEKEEPING_INTERVAL_MS ?? 6 * 60 * 60 * 1000)).unref()
