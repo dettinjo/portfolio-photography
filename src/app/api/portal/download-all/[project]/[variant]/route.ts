@@ -9,10 +9,13 @@ import archiver from 'archiver'
 import { getPayloadClient } from '@/lib/payload'
 import { projectViewer } from '@/lib/project-access'
 import { deliveryOpen } from '@/lib/delivery'
+import { downloadsLocked } from '@/lib/billing'
 import { findPhotoDir, originalFileName } from '@/lib/sync/process'
 import { attachment, webName } from '@/lib/download'
 
 type Params = { params: Promise<{ project: string; variant: string }> }
+// The finals can be viewed, but downloads wait for the balance
+const balanceDue = () => new Response('The downloads open once the balance is paid', { status: 402, headers: { 'Cache-Control': 'no-store' } })
 const notFound = () => new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } })
 
 export async function GET(req: NextRequest, { params }: Params) {
@@ -25,6 +28,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   if (!project) return notFound()
   const viewer = await projectViewer(req, project.id)
   if (!viewer || (!viewer.admin && !deliveryOpen(project))) return notFound()
+  if (!viewer.admin && (await downloadsLocked(payload, project))) return balanceDue()
 
   const finals = await payload.find({
     collection: 'photos',

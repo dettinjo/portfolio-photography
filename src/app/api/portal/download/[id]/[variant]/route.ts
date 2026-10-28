@@ -7,10 +7,13 @@ import { Readable } from 'stream'
 import { getPayloadClient } from '@/lib/payload'
 import { projectViewer } from '@/lib/project-access'
 import { deliveryOpen } from '@/lib/delivery'
+import { downloadsLocked } from '@/lib/billing'
 import { findPhotoDir, originalFileName } from '@/lib/sync/process'
 import { attachment, webName } from '@/lib/download'
 
 type Params = { params: Promise<{ id: string; variant: string }> }
+// The finals can be viewed, but downloads wait for the balance
+const balanceDue = () => new Response('The downloads open once the balance is paid', { status: 402, headers: { 'Cache-Control': 'no-store' } })
 const notFound = () => new Response('Not found', { status: 404, headers: { 'Cache-Control': 'no-store' } })
 
 export async function GET(req: NextRequest, { params }: Params) {
@@ -25,6 +28,7 @@ export async function GET(req: NextRequest, { params }: Params) {
   if (!viewer) return notFound()
   const project = await payload.findByID({ collection: 'projects', id: projectId, depth: 0, overrideAccess: true })
   if (!viewer.admin && !deliveryOpen(project)) return notFound()
+  if (!viewer.admin && (await downloadsLocked(payload, project))) return balanceDue()
 
   const dir = findPhotoDir(photo.ncFileId, photo.version, 'finals')
   if (!dir) return notFound()

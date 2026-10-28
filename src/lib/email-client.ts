@@ -202,11 +202,13 @@ const RECEIVED = {
     subject: (p: string) => `Payment received — ${p}`,
     deposit: (a: string) => `thank you — your deposit of ${a} arrived, so your date is booked. Stripe sends you the receipt separately.`,
     other: (a: string) => `thank you — your payment of ${a} arrived. Stripe sends you the receipt separately.`,
+    balance: (a: string) => `thank you — your payment of ${a} arrived and the balance is settled. Your photos can now be downloaded. Stripe sends you the receipt separately.`,
   },
   de: {
     subject: (p: string) => `Zahlung erhalten — ${p}`,
     deposit: (a: string) => `danke — deine Anzahlung über ${a} ist angekommen, dein Termin ist damit gebucht. Die Quittung schickt dir Stripe separat.`,
     other: (a: string) => `danke — deine Zahlung über ${a} ist angekommen. Die Quittung schickt dir Stripe separat.`,
+    balance: (a: string) => `danke — deine Zahlung über ${a} ist angekommen, damit ist alles bezahlt. Deine Fotos kannst du jetzt herunterladen. Die Quittung schickt dir Stripe separat.`,
   },
 }
 
@@ -221,7 +223,7 @@ export async function sendPaymentReceived(opts: {
 }) {
   const c = RECEIVED[opts.locale]
   const hi = COPY[opts.locale].hi(opts.name)
-  const body = opts.kind === 'deposit' ? c.deposit(opts.amount) : c.other(opts.amount)
+  const body = opts.kind === 'deposit' ? c.deposit(opts.amount) : opts.kind === 'balance' ? c.balance(opts.amount) : c.other(opts.amount)
   await transporter.sendMail({
     from: FROM,
     to: opts.to,
@@ -293,6 +295,7 @@ const DELIVERY = {
     body: (n: number, until: string) =>
       `your ${n} final photos are ready. Download them in full resolution — one by one or all at once. The gallery stays online until ${until}; please keep a copy of your own.`,
     button: 'See my photos',
+    balance: (a: string) => `The downloads open as soon as the balance of ${a} is paid — you can pay right in the gallery.`,
     remindSubject: (p: string, d: number) => `Your gallery closes in ${d} days — ${p}`,
     remindBody: (until: string) =>
       `a friendly reminder: your gallery stays online until ${until}. If you haven't yet, download your photos now — after that date they are removed from the website.`,
@@ -303,6 +306,7 @@ const DELIVERY = {
     body: (n: number, until: string) =>
       `deine ${n} fertigen Fotos sind bereit. Lade sie in voller Auflösung herunter — einzeln oder alle auf einmal. Die Galerie bleibt bis zum ${until} online; bitte speichere dir eine eigene Kopie.`,
     button: 'Meine Fotos ansehen',
+    balance: (a: string) => `Die Downloads werden frei, sobald die Restzahlung von ${a} da ist — bezahlen kannst du direkt in der Galerie.`,
     remindSubject: (p: string, d: number) => `Deine Galerie schließt in ${d} Tagen — ${p}`,
     remindBody: (until: string) =>
       `eine kurze Erinnerung: Deine Galerie ist noch bis zum ${until} online. Falls noch nicht geschehen, lade deine Fotos jetzt herunter — danach werden sie von der Website entfernt.`,
@@ -317,19 +321,30 @@ function buttonMail(hi: string, body: string, url: string, button: string) {
   return {
     text: `${hi}\n\n${body}\n\n${url}\n\nJoel`,
     html: `<div style="font-family:sans-serif;max-width:560px;color:#111;line-height:1.5">
-      <p>${e(hi)}</p><p>${e(body)}</p>
+      <p>${e(hi)}</p>${body.split('\n\n').map((x) => `<p>${e(x)}</p>`).join('')}
       <p style="margin:28px 0"><a href="${e(url)}" style="background:#111;color:#fff;padding:12px 22px;text-decoration:none;display:inline-block">${e(button)} →</a></p>
       <p>Joel</p></div>`,
   }
 }
 
-export async function sendDeliveryEmail(opts: { to: string; name: string; locale: 'en' | 'de'; count: number; projectTitle: string; expiresAt: string; url: string }) {
+export async function sendDeliveryEmail(opts: {
+  to: string
+  name: string
+  locale: 'en' | 'de'
+  count: number
+  projectTitle: string
+  expiresAt: string
+  url: string
+  /** Formatted balance when the downloads wait for it */
+  balance?: string | null
+}) {
   const c = DELIVERY[opts.locale]
+  const body = [c.body(opts.count, longDate(opts.expiresAt, opts.locale)), ...(opts.balance ? [c.balance(opts.balance)] : [])].join('\n\n')
   await transporter.sendMail({
     from: FROM,
     to: opts.to,
     subject: c.subject(opts.projectTitle),
-    ...buttonMail(COPY[opts.locale].hi(opts.name), c.body(opts.count, longDate(opts.expiresAt, opts.locale)), opts.url, c.button),
+    ...buttonMail(COPY[opts.locale].hi(opts.name), body, opts.url, c.button),
   })
 }
 

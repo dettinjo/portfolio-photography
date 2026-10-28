@@ -123,6 +123,11 @@ export const Projects: CollectionConfig = {
           }
           req.context.sendProposal = true
         }
+        if (operation === 'update' && data.billing?.balancePaidAt && !originalDoc?.billing?.balancePaidAt) {
+          req.context.balanceSettled = true
+        } else if (operation === 'update' && data.billing && !data.billing.balancePaidAt && originalDoc?.billing?.balancePaidAt) {
+          req.context.balanceReopened = true
+        }
         // Extended into the future: reminders start over, an expired gallery comes back
         const newExpiry = data.delivery?.expiresAt ? new Date(data.delivery.expiresAt).getTime() : null
         const oldExpiry = originalDoc?.delivery?.expiresAt ? new Date(originalDoc.delivery.expiresAt).getTime() : null
@@ -196,6 +201,18 @@ export const Projects: CollectionConfig = {
           delete req.context.sendProposal
           const { notifyProposal } = await import('../../lib/proposal-mail')
           await notifyProposal(payload, project, req)
+        }
+
+        if (req.context.balanceSettled) {
+          delete req.context.balanceSettled
+          await log(payload, req, { project: project.id, verb: 'note', clientVisible: true, message: 'Balance settled' })
+          const { onBalanceSettled } = await import('../../lib/payments')
+          await onBalanceSettled(project)
+        }
+
+        if (req.context.balanceReopened) {
+          delete req.context.balanceReopened
+          await log(payload, req, { project: project.id, verb: 'note', message: 'Balance marked as open again' })
         }
 
         if (req.context.syncPreviews) {
@@ -310,6 +327,31 @@ export const Projects: CollectionConfig = {
         },
       ],
     },
+    {
+      name: 'billing',
+      type: 'group',
+      label: 'Balance',
+      admin: { description: 'The rest after the deposit: proposal total + extra photos − payments. Clients pay it in the portal.' },
+      fields: [
+        {
+          type: 'row',
+          fields: [
+            {
+              name: 'gateDownloads',
+              type: 'checkbox',
+              defaultValue: true,
+              label: 'Downloads wait for the balance',
+              admin: { description: 'Clients can view the finals, but download them only once the balance is paid' },
+            },
+            {
+              name: 'balancePaidAt',
+              type: 'date',
+              admin: { description: 'Paid by bank transfer or cash: set a date to open the downloads. Clear it to undo.' },
+            },
+          ],
+        },
+      ],
+    },
     { name: 'payments', type: 'join', collection: 'payments', on: 'project' },
     {
       name: 'plan',
@@ -369,6 +411,12 @@ export const Projects: CollectionConfig = {
           fields: [
             { name: 'quota', type: 'number', min: 0, admin: { description: 'Photos included. Empty: from the offering' } },
             { name: 'extraPrice', type: 'number', min: 0, admin: { description: '€ per extra photo. Empty: from the offering' } },
+            {
+              name: 'extras',
+              type: 'number',
+              min: 0,
+              admin: { description: 'Extra photos added to the balance. Set when the selection is sent; lower it to waive them.' },
+            },
           ],
         },
         {

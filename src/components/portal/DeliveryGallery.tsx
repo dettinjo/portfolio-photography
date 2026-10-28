@@ -111,14 +111,16 @@ export function DeliveryGallery({ slug, photos, revisions: initial, rounds: init
                   <Pencil className="h-3 w-3" /> {review ? r("revised") : pending.length || r("revised")}
                 </span>
               )}
-              <a
-                href={p.original}
-                download
-                aria-label={`${t("original")}: ${p.filename}`}
-                className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-neutral-900 opacity-0 shadow transition hover:bg-rec hover:text-white focus:opacity-100 group-hover:opacity-100"
-              >
-                <Download className="h-4 w-4" />
-              </a>
+              {p.original && (
+                <a
+                  href={p.original}
+                  download
+                  aria-label={`${t("original")}: ${p.filename}`}
+                  className="absolute right-2 top-2 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-neutral-900 opacity-0 shadow transition hover:bg-rec hover:text-white focus:opacity-100 group-hover:opacity-100"
+                >
+                  <Download className="h-4 w-4" />
+                </a>
+              )}
             </div>
           );
         })}
@@ -314,14 +316,16 @@ function Viewer({ slug, photos, index, go, close, items, canRequest, onItem, onR
             <X className="h-5 w-5" />
           </button>
         </div>
-        <div className="flex gap-2 border-b border-white/10 p-4">
-          <a href={photo.original} download className="readout flex items-center gap-1.5 bg-white px-3 py-1.5 text-neutral-900 transition hover:bg-rec hover:text-white">
-            <Download className="h-3.5 w-3.5" /> {t("original")}
-          </a>
-          <a href={photo.web} download className="readout flex items-center gap-1.5 border border-white/40 px-3 py-1.5 transition hover:border-white">
-            {t("web")}
-          </a>
-        </div>
+        {photo.original && photo.web && (
+          <div className="flex gap-2 border-b border-white/10 p-4">
+            <a href={photo.original} download className="readout flex items-center gap-1.5 bg-white px-3 py-1.5 text-neutral-900 transition hover:bg-rec hover:text-white">
+              <Download className="h-3.5 w-3.5" /> {t("original")}
+            </a>
+            <a href={photo.web} download className="readout flex items-center gap-1.5 border border-white/40 px-3 py-1.5 transition hover:border-white">
+              {t("web")}
+            </a>
+          </div>
+        )}
 
         <div className="min-h-0 flex-1 overflow-y-auto p-4">
           {items.length > 0 && (

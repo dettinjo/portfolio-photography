@@ -1,6 +1,7 @@
 // Data for the client portal (/c). Every read is scoped to the signed-in client.
 import 'server-only'
 import type { Client, Offering, Project } from '@/payload-types'
+import { type Billing, getBilling } from '@/lib/billing'
 import { getPayloadClient } from '@/lib/payload'
 import type { Locale } from '@/lib/portfolio'
 import { isStage, type Stage } from '@/lib/stages'
@@ -331,8 +332,9 @@ export interface DeliveredPhoto {
   src: string
   srcSet: string
   large: string
-  original: string
-  web: string
+  /** Download links; null while the downloads wait for the balance */
+  original: string | null
+  web: string | null
   /** The version before the last re-export, for before/after */
   before: string | null
   /** The client agreed that it may be published */
@@ -360,6 +362,7 @@ export interface Delivery {
   bytes: number
   revisions: RevisionItem[]
   rounds: { included: number; used: number; left: number }
+  billing: Billing | null
 }
 
 export async function getDelivery(project: Project, client?: Client): Promise<Delivery> {
@@ -376,9 +379,12 @@ export async function getDelivery(project: Project, client?: Client): Promise<De
     bytes: 0,
     revisions: [],
     rounds: roundsOf(project),
+    billing: null as Billing | null,
   }
   if (!open) return empty
   const payload = await getPayloadClient()
+  const billing = await getBilling(payload, project)
+  const locked = billing.locked
   const res = await payload.find({
     collection: 'photos',
     where: { and: [{ project: { equals: project.id } }, { purpose: { equals: 'final' } }, { status: { equals: 'ready' } }] },
@@ -402,6 +408,7 @@ export async function getDelivery(project: Project, client?: Client): Promise<De
   const relId = (v: unknown) => (typeof v === 'object' && v !== null ? (v as { id: number }).id : (v as number | null))
   return {
     ...empty,
+    billing,
     revisions: revisions.docs.map((r) => {
       const author = relId(r.client)
       return {
@@ -427,8 +434,8 @@ export async function getDelivery(project: Project, client?: Client): Promise<De
       src: url(p, 960),
       srcSet: [480, 960, 1600].map((w) => `${url(p, w)} ${w}w`).join(', '),
       large: url(p, 1600),
-      original: `/api/portal/download/${p.id}/original`,
-      web: `/api/portal/download/${p.id}/web`,
+      original: locked ? null : `/api/portal/download/${p.id}/original`,
+      web: locked ? null : `/api/portal/download/${p.id}/web`,
       before: p.previousVersion ? `/api/previews/${p.id}/${p.previousVersion}/1600` : null,
       consent: p.publishConsent === 'yes',
     })),

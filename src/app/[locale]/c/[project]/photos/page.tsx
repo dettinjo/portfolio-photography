@@ -8,19 +8,34 @@ import { DeliveryGallery } from "@/components/portal/DeliveryGallery";
 import { getClient } from "@/lib/client-session";
 import { findClientProject, formatBytes, formatDate, getDelivery } from "@/lib/portal";
 import { toLocale } from "@/lib/portfolio";
+import { BalanceCard } from "@/components/portal/BalanceCard";
+import { getPayloadClient } from "@/lib/payload";
+import { refreshOpenPayments } from "@/lib/payments";
+import { stripeEnabled } from "@/lib/stripe";
 
-type Props = { params: Promise<{ locale: string; project: string }> };
+type Props = {
+  params: Promise<{ locale: string; project: string }>;
+  searchParams: Promise<{ payment?: string }>;
+};
 
-export default async function PhotosPage({ params }: Props) {
+export default async function PhotosPage({ params, searchParams }: Props) {
   const { locale, project: slug } = await params;
   setRequestLocale(locale);
   const loc = toLocale(locale);
   const client = await getClient();
   if (!client) redirect(`${locale === "de" ? "/de" : ""}/c/login`);
-  const project = await findClientProject(client, slug);
+  let project = await findClientProject(client, slug);
   if (!project) notFound();
+  const { payment } = await searchParams;
+  // Back from Stripe Checkout: confirm with Stripe directly in case the webhook is slower
+  if (payment === "success") {
+    await refreshOpenPayments(await getPayloadClient(), project.id);
+    project = (await findClientProject(client, slug)) ?? project;
+  }
   const t = await getTranslations("Portal.delivery");
+  const b = await getTranslations("Portal.balance");
   const delivery = await getDelivery(project, client);
+  const locked = Boolean(delivery.billing?.locked);
 
   return (
     <>
@@ -29,6 +44,11 @@ export default async function PhotosPage({ params }: Props) {
       </SectionLabel>
       <ProjectNav slug={slug} projectId={project.id} active="photos" />
       <h1 className="display display-xl mt-10 text-6xl lowercase sm:text-8xl">{t("title")}</h1>
+
+      {payment === "success" && (
+        <p className="mt-8 border-l-2 border-rec pl-4" role="status">{locked ? b("success") : b("settled")}</p>
+      )}
+      {payment === "cancelled" && <p className="mt-8 border-l-2 border-border pl-4" role="status">{b("cancelled")}</p>}
 
       {delivery.open && delivery.photos.length ? (
         <>
@@ -42,24 +62,27 @@ export default async function PhotosPage({ params }: Props) {
                 </p>
               )}
             </div>
-            <div className="md:justify-self-end">
-              <div className="flex flex-wrap items-center gap-3">
-                <a
-                  href={`/api/portal/download-all/${slug}/original`}
-                  download
-                  className="flex items-center gap-2 bg-foreground px-5 py-3 text-background transition hover:bg-rec hover:text-white"
-                >
-                  <Download className="h-4 w-4" /> {t("allOriginal")}
-                </a>
-                <a href={`/api/portal/download-all/${slug}/web`} download className="link-slide pb-0.5">
-                  {t("allWeb")}
-                </a>
+            {!locked && (
+              <div className="md:justify-self-end">
+                <div className="flex flex-wrap items-center gap-3">
+                  <a
+                    href={`/api/portal/download-all/${slug}/original`}
+                    download
+                    className="flex items-center gap-2 bg-foreground px-5 py-3 text-background transition hover:bg-rec hover:text-white"
+                  >
+                    <Download className="h-4 w-4" /> {t("allOriginal")}
+                  </a>
+                  <a href={`/api/portal/download-all/${slug}/web`} download className="link-slide pb-0.5">
+                    {t("allWeb")}
+                  </a>
+                </div>
+                <p className="readout mt-3 text-muted-foreground">
+                  {t("size", { count: delivery.photos.length, size: formatBytes(delivery.bytes, loc) })} · {t("zipHint")}
+                </p>
               </div>
-              <p className="readout mt-3 text-muted-foreground">
-                {t("size", { count: delivery.photos.length, size: formatBytes(delivery.bytes, loc) })} · {t("zipHint")}
-              </p>
-            </div>
+            )}
           </div>
+          {locked && delivery.billing && <BalanceCard billing={delivery.billing} slug={slug} locale={loc} online={stripeEnabled()} delivered />}
           <div className="mt-12">
             <DeliveryGallery slug={slug} photos={delivery.photos} revisions={delivery.revisions} rounds={delivery.rounds} />
           </div>

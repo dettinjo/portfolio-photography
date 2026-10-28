@@ -8,6 +8,9 @@ import { getPayloadClient } from '@/lib/payload'
 import { findPhotoDir } from '@/lib/sync/process'
 import { projectViewer } from '@/lib/project-access'
 import { deliveryOpen } from '@/lib/delivery'
+import { downloadsLocked } from '@/lib/billing'
+
+const LOCKED_MAX_WIDTH = 960
 
 type Params = { params: Promise<{ id: string; version: string; width: string }> }
 
@@ -31,9 +34,12 @@ export async function GET(req: NextRequest, { params }: Params) {
   // the same 404 as missing ones, so ids cannot be probed.
   const viewer = await projectViewer(req, projectId)
   if (!viewer) return notFound()
+  // While the balance is open, finals are shown at screen size only
+  let cap = Infinity
   if (purpose === 'final' && !viewer.admin) {
     const project = await payload.findByID({ collection: 'projects', id: projectId, depth: 0, overrideAccess: true })
     if (!deliveryOpen(project)) return notFound()
+    if (await downloadsLocked(payload, project)) cap = LOCKED_MAX_WIDTH
   }
 
   const dir = findPhotoDir(photo.ncFileId, version, purpose === 'final' ? 'finals' : 'previews')
@@ -43,14 +49,15 @@ export async function GET(req: NextRequest, { params }: Params) {
     .map((f) => Number(f.slice(0, -5)))
     .sort((a, b) => a - b)
   if (!available.length) return notFound()
-  const requested = Number(width)
-  const w = available.find((a) => a >= requested) ?? available[available.length - 1]
+  const requested = Math.min(Number(width), cap)
+  const allowed = available.filter((a) => a <= cap)
+  const w = allowed.find((a) => a >= requested) ?? allowed[allowed.length - 1] ?? available[0]
 
   return new Response(new Uint8Array(await readFile(`${dir}/${w}.webp`)), {
     headers: {
       'Content-Type': 'image/webp',
       // Private: browsers may keep it, shared caches must not
-      'Cache-Control': 'private, max-age=86400',
+      'Cache-Control': cap === Infinity ? 'private, max-age=86400' : 'private, no-store',
       'X-Robots-Tag': 'noindex',
     },
   })
