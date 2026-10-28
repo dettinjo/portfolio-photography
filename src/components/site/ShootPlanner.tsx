@@ -4,6 +4,7 @@
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
+import { AvailabilityCalendar } from "@/components/site/AvailabilityCalendar";
 
 interface PlannerOffering {
   id: number;
@@ -156,14 +157,7 @@ export function ShootPlanner({ offerings, initialOffering, photoId }: ShootPlann
             <legend className="display text-4xl sm:text-5xl">{t("when")}</legend>
             <div className="mt-8 grid gap-8 sm:grid-cols-2">
               <Field label={t("date")} htmlFor="plan-date">
-                <input
-                  id="plan-date"
-                  type="date"
-                  value={date}
-                  min={new Date().toISOString().slice(0, 10)}
-                  onChange={(e) => setDate(e.target.value)}
-                  className="w-full border-b border-foreground bg-transparent py-3 text-xl outline-none focus:border-rec"
-                />
+                <AvailabilityCalendar value={date} onChange={setDate} />
                 <label className="mt-4 flex cursor-pointer items-center gap-3">
                   <input
                     type="checkbox"

@@ -166,7 +166,14 @@
         "successText": "Thanks, {name}! A confirmation is on its way to your inbox — I'll get back to you personally within two days.",
         "error": "Something went wrong. Please try again, or write to me via the contact page.",
         "required": "Please choose or fill in this step.",
-        "fromPhoto": "Inspired by photo #{id}"
+        "fromPhoto": "Inspired by photo #{id}",
+        "calendar": {
+          "previous": "Previous month",
+          "next": "Next month",
+          "busy": "booked",
+          "free": "everything else: probably free",
+          "busyNote": "I'm already booked that day — ask anyway, sometimes a second slot works."
+        }
       },
       "faqLabel": "Good to know",
       "faqTitle": "questions?",

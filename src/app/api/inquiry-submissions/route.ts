@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { clientIp, isEmail, rateLimit, singleLine } from '@/lib/security'
 import { sendInquiryConfirmation, sendInquiryNotification } from '@/lib/email-inquiry'
+import { isBusy } from '@/lib/availability'
 import { pushAdmins } from '@/lib/push'
 
 const SIZES = ['small', 'medium', 'large'] as const
@@ -92,6 +93,7 @@ export async function POST(req: NextRequest) {
       kind: inquiry.kind ?? undefined,
       date,
       dateFlexible: Boolean(body.dateFlexible),
+      dateBusy: date ? await isBusy(date).catch(() => false) : false,
       location: inquiry.location ?? undefined,
       size,
       budget: budget ? BUDGET_LABEL[budget] : undefined,

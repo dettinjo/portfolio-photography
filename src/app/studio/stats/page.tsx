@@ -4,6 +4,7 @@ import { getPayloadClient } from "@/lib/payload";
 import { getStats, type MonthPoint } from "@/lib/stats";
 import { formatCents } from "@/lib/proposal";
 import { STAGE_LABELS } from "@/lib/stages";
+import { getAvailability } from "@/lib/availability";
 
 export const metadata = { title: "Stats" };
 export const dynamic = "force-dynamic";
@@ -67,6 +68,9 @@ export default async function StudioStats() {
   const s = await getStats(await getPayloadClient());
   const { totals: t, galleries: g, feeling: f } = s;
   const maxStage = Math.max(1, ...s.pipeline.map((p) => p.count));
+  const today = new Date();
+  const cal = await getAvailability(today, new Date(today.getTime() + 182 * 86_400_000));
+  const feedText = { ok: "connected", missing: "not set — only project dates", failed: "can't be read — check the address" }[cal.feed];
 
   return (
     <>
@@ -133,6 +137,13 @@ export default async function StudioStats() {
           <Figure label="ZIP downloads" value={String(g.zipDownloads)} />
           <Figure label="Guest links" value={String(g.guestLinks)} />
           <Figure label="Guest views" value={String(g.guestViews)} />
+        </dl>
+      </Section>
+
+      <Section title="Calendar">
+        <dl className="grid grid-cols-2 gap-x-6 gap-y-6 sm:grid-cols-4">
+          <Figure label="Busy days ahead" value={String(cal.busy.length)} note="next 6 months" />
+          <Figure label="Calendar feed" value={cal.feed === "ok" ? "✓" : "—"} note={feedText} />
         </dl>
       </Section>
 
