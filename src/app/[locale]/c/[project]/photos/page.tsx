@@ -9,6 +9,7 @@ import { getClient } from "@/lib/client-session";
 import { findClientProject, formatBytes, formatDate, getDelivery } from "@/lib/portal";
 import { toLocale } from "@/lib/portfolio";
 import { BalanceCard } from "@/components/portal/BalanceCard";
+import { ShareLinks } from "@/components/portal/ShareLinks";
 import { getPayloadClient } from "@/lib/payload";
 import { refreshOpenPayments } from "@/lib/payments";
 import { stripeEnabled } from "@/lib/stripe";
@@ -36,6 +37,17 @@ export default async function PhotosPage({ params, searchParams }: Props) {
   const b = await getTranslations("Portal.balance");
   const delivery = await getDelivery(project, client);
   const locked = Boolean(delivery.billing?.locked);
+  const shared = delivery.open
+    ? await (await getPayloadClient()).find({
+        collection: "share-links",
+        where: { and: [{ project: { equals: project.id } }, { revokedAt: { exists: false } }] },
+        sort: "createdAt",
+        limit: 50,
+        depth: 0,
+        overrideAccess: true,
+      })
+    : null;
+  const links = (shared?.docs ?? []).map((l) => ({ id: l.id, label: l.label, token: l.token, downloads: Boolean(l.downloads), views: l.views ?? 0 }));
 
   return (
     <>
@@ -86,6 +98,7 @@ export default async function PhotosPage({ params, searchParams }: Props) {
           <div className="mt-12">
             <DeliveryGallery slug={slug} photos={delivery.photos} revisions={delivery.revisions} rounds={delivery.rounds} />
           </div>
+          <ShareLinks slug={slug} links={links} />
         </>
       ) : (
         <p className="mt-6 max-w-xl text-lg text-muted-foreground">

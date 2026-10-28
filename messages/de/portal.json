@@ -377,6 +377,38 @@
       "error": "Das hat nicht geklappt — bitte versuch es gleich noch einmal.",
       "success": "Danke! Deine Zahlung wird gerade bestätigt — die Downloads werden gleich frei.",
       "cancelled": "Zahlung abgebrochen — kein Problem, du kannst jederzeit zahlen."
+    },
+    "share": {
+      "label": "Teilen",
+      "title": "zeig sie herum",
+      "intro": "Erstelle einen Link für Familie, Freunde oder Gäste. Sie sehen die Fotos ohne Anmeldung — sonst nichts vom Projekt. Du kannst einen Link jederzeit abschalten; alle Links enden, wenn die Galerie offline geht.",
+      "name": "Für wen ist er?",
+      "placeholder": "z. B. Familie, Hochzeitsgäste",
+      "allowDownloads": "Downloads erlauben (Webgröße)",
+      "create": "Link erstellen",
+      "copy": "Link kopieren",
+      "copied": "Kopiert",
+      "off": "Abschalten",
+      "confirmOff": "„{label}“ abschalten? Der Link funktioniert dann sofort nicht mehr.",
+      "viewOnly": "Nur ansehen",
+      "withDownloads": "Downloads in Webgröße",
+      "views": "{count, plural, =0 {noch nicht geöffnet} one {einmal geöffnet} other {# Mal geöffnet}}",
+      "error": "Das hat nicht geklappt — bitte versuch es gleich noch einmal."
+    },
+    "guest": {
+      "metaTitle": "Geteilte Galerie",
+      "label": "Geteilte Galerie",
+      "shared": "Fotos, die mit dir geteilt wurden.",
+      "sharedBy": "{name} hat diese Fotos mit dir geteilt.",
+      "until": "Online bis {date}",
+      "all": "Alle herunterladen · Webgröße",
+      "download": "Herunterladen",
+      "open": "Foto {n}",
+      "close": "Schließen",
+      "previous": "Zurück",
+      "next": "Weiter",
+      "goneTitle": "link abgelaufen",
+      "gone": "Dieser Link funktioniert nicht mehr — er wurde abgeschaltet oder die Galerie ist nicht mehr online. Frag die Person, die ihn dir geschickt hat."
     }
   }
 }

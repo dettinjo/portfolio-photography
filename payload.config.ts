@@ -24,6 +24,7 @@ import { Messages } from './src/payload/collections/Messages'
 import { Revisions } from './src/payload/collections/Revisions'
 import { Feedback } from './src/payload/collections/Feedback'
 import { PushSubscriptions } from './src/payload/collections/PushSubscriptions'
+import { ShareLinks } from './src/payload/collections/ShareLinks'
 import { SyncStatus } from './src/payload/globals/SyncStatus'
 import { SessionsSettings } from './src/payload/globals/SessionsSettings'
 import { AboutPage } from './src/payload/globals/AboutPage'
@@ -60,7 +61,7 @@ export default buildConfig({
   routes: {
     admin: '/admin',
   },
-  collections: [Series, Photos, Genres, Offerings, Inquiries, Albums, Reviews, Clients, Projects, Picks, Comments, Payments, StripeEvents, ProjectFiles, Messages, Revisions, Feedback, PushSubscriptions, Activity, Media, Users],
+  collections: [Series, Photos, Genres, Offerings, Inquiries, Albums, Reviews, Clients, Projects, Picks, Comments, Payments, StripeEvents, ProjectFiles, Messages, Revisions, Feedback, PushSubscriptions, ShareLinks, Activity, Media, Users],
   globals: [SyncStatus, SessionsSettings, AboutPage],
   localization: {
     locales: [

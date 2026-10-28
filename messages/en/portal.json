@@ -377,6 +377,38 @@
       "error": "That didn't work — please try again in a moment.",
       "success": "Thank you! Your payment is being confirmed — the downloads open in a moment.",
       "cancelled": "Payment cancelled — no problem, you can pay whenever you're ready."
+    },
+    "share": {
+      "label": "Share",
+      "title": "show them around",
+      "intro": "Make a link for family, friends or guests. They see the photos without signing in — nothing else of the project. Switch a link off at any time; all links end when the gallery goes offline.",
+      "name": "Who is it for?",
+      "placeholder": "e.g. Family, Wedding guests",
+      "allowDownloads": "Allow downloads (web size)",
+      "create": "Create link",
+      "copy": "Copy link",
+      "copied": "Copied",
+      "off": "Switch off",
+      "confirmOff": "Switch off \"{label}\"? The link stops working right away.",
+      "viewOnly": "View only",
+      "withDownloads": "Web-size downloads",
+      "views": "{count, plural, =0 {not opened yet} one {opened once} other {opened # times}}",
+      "error": "That didn't work — please try again in a moment."
+    },
+    "guest": {
+      "metaTitle": "Shared gallery",
+      "label": "Shared gallery",
+      "shared": "Photos shared with you.",
+      "sharedBy": "{name} shared these photos with you.",
+      "until": "Online until {date}",
+      "all": "Download all · web size",
+      "download": "Download",
+      "open": "Photo {n}",
+      "close": "Close",
+      "previous": "Previous",
+      "next": "Next",
+      "goneTitle": "link expired",
+      "gone": "This link doesn't work anymore — it was switched off or the gallery is no longer online. Ask the person who sent it to you."
     }
   }
 }
