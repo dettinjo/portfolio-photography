@@ -242,3 +242,29 @@ export async function onBalanceSettled(project: Project) {
     `balance-${project.id}`,
   )
 }
+
+/** Housekeeping: Checkouts still open or processing after a while are checked with Stripe (a lost webhook must not leave them stuck). */
+export async function reconcileOpenPayments(payload: Payload) {
+  const stripe = getStripe()
+  if (!stripe) return
+  const open = await payload.find({
+    collection: 'payments',
+    where: {
+      and: [
+        { status: { in: ['open', 'processing'] } },
+        { stripeSessionId: { exists: true } },
+        { updatedAt: { less_than: new Date(Date.now() - 30 * 60_000).toISOString() } },
+      ],
+    },
+    limit: 100,
+    depth: 0,
+    overrideAccess: true,
+  })
+  for (const p of open.docs) {
+    try {
+      await applyCheckoutSession(payload, await stripe.checkout.sessions.retrieve(p.stripeSessionId as string))
+    } catch (err) {
+      console.error(`[payments] reconcile of payment ${p.id} failed:`, err)
+    }
+  }
+}

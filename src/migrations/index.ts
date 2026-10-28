@@ -15,6 +15,7 @@ import * as migration_20261027_212045_phase4d_feedback_reviews from './20261027_
 import * as migration_20261028_102219_phase4e_push from './20261028_102219_phase4e_push';
 import * as migration_20261028_143646_phase4c_balance from './20261028_143646_phase4c_balance';
 import * as migration_20261028_161935_phase5a_share_links from './20261028_161935_phase5a_share_links';
+import * as migration_20261028_194659_phase5e_billing_settings from './20261028_194659_phase5e_billing_settings';
 
 export const migrations = [
   {
@@ -100,6 +101,11 @@ export const migrations = [
   {
     up: migration_20261028_161935_phase5a_share_links.up,
     down: migration_20261028_161935_phase5a_share_links.down,
-    name: '20261028_161935_phase5a_share_links'
+    name: '20261028_161935_phase5a_share_links',
+  },
+  {
+    up: migration_20261028_194659_phase5e_billing_settings.up,
+    down: migration_20261028_194659_phase5e_billing_settings.down,
+    name: '20261028_194659_phase5e_billing_settings'
   },
 ];

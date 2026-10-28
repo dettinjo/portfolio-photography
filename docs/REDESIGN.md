@@ -709,6 +709,12 @@ page. Picks made without a connection wait in `localStorage` (latest intent per 
 right away, survive reloads, are sent when the connection returns (refused ones revert), and
 the selection can only be sent once they are through. Comments still need a connection.
 
+**5e ✅ done 2026-10-28** — Loose ends from §7.5/§15: a `Billing` global (`taxMode`
+none · smallBusiness · vat + rate; default none per D6) that only changes the note under
+proposals (§ 19 UStG text, or the included VAT share); and housekeeping now re-checks Stripe
+Checkouts still open/processing after 30 minutes, so a lost webhook cannot leave a payment
+stuck (other apps' sessions on the shared account stay ignored).
+
 ---
 
 ## 14. Decisions
