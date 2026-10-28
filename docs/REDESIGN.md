@@ -667,6 +667,17 @@ Payload's CSRF check needs. *Needs* write access on `Lightroom/Portfolio` for po
 
 ### Phase 5 — Extras
 - Offline galleries, calendar availability, statistics, Stripe Invoicing evaluation.
+- Guest share links (§7.2).
+
+**5a ✅ done 2026-10-28** — Guest links to a delivered gallery (`share-links`). On *Your
+photos* a client creates named links ("Family", "Wedding guests"), view-only or with web-size
+downloads, copies or shares them, and switches them off; activity and a push to the
+photographer record it. `/s/<token>` (no sign-in, `noindex`, `no-referrer`, not cached by the
+service worker) shows the finals at most 1600 px via `/api/share/<token>/<photo>/<width>`,
+plus per-photo and ZIP downloads (`/api/share/<token>/zip`, web size only) when allowed. A
+link dies when revoked, when the gallery expires, and downloads also wait for the balance
+(then 960 px). Tokens: 24 random bytes. `/studio` shows the number of active links.
+*Deferred:* PIN-protected links and the "picker" role.
 
 ---
 

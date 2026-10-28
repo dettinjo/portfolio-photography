@@ -29,9 +29,10 @@ export default async function StudioProject({ params }: { params: Promise<{ id: 
       payload.count({ collection: "photos", where: { and: [where, { purpose: { equals: "final" } }, { status: { equals: "ready" } }] }, overrideAccess: true }),
       payload.count({ collection: "picks", where, overrideAccess: true }),
       payload.count({ collection: "revisions", where: { and: [where, { status: { equals: "requested" } }] }, overrideAccess: true }),
+      payload.count({ collection: "share-links", where: { and: [where, { revokedAt: { exists: false } }] }, overrideAccess: true }),
     ]),
   ]);
-  const [previews, finals, picks, changes] = counts.map((c) => c.totalDocs);
+  const [previews, finals, picks, changes, guestLinks] = counts.map((c) => c.totalDocs);
   const clients = (project.clients ?? []).filter((c) => typeof c === "object" && c) as { id: number; name: string; email: string }[];
   const facts: [string, string | number | null | undefined][] = [
     // A date without a time (00:00 UTC) is shown without one
@@ -44,6 +45,7 @@ export default async function StudioProject({ params }: { params: Promise<{ id: 
     ["Finals", finals],
     ["Open changes", changes],
     ["Gallery until", project.delivery?.expiresAt?.slice(0, 10)],
+    ["Guest links", guestLinks || null],
   ];
   const thread = [...messages.docs].reverse();
   const billing = await getBilling(payload, project);

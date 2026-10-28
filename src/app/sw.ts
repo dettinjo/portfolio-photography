@@ -17,7 +17,7 @@ declare global {
 
 declare const self: ServiceWorkerGlobalScope;
 
-const PRIVATE_PATHS = /^\/(?:(?:en|de)\/)?(?:admin|api|approve|dashboard|c|studio)(?:\/|$)/;
+const PRIVATE_PATHS = /^\/(?:(?:en|de)\/)?(?:admin|api|approve|dashboard|c|s|studio)(?:\/|$)/;
 
 const serwist = new Serwist({
   precacheEntries: self.__SW_MANIFEST,

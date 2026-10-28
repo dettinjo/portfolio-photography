@@ -85,6 +85,7 @@ export interface Config {
     revisions: Revision;
     feedback: Feedback;
     'push-subscriptions': PushSubscription;
+    'share-links': ShareLink;
     activity: Activity;
     media: Media;
     users: User;
@@ -128,6 +129,7 @@ export interface Config {
     revisions: RevisionsSelect<false> | RevisionsSelect<true>;
     feedback: FeedbackSelect<false> | FeedbackSelect<true>;
     'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
+    'share-links': ShareLinksSelect<false> | ShareLinksSelect<true>;
     activity: ActivitySelect<false> | ActivitySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -1015,6 +1017,32 @@ export interface User {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "share-links".
+ */
+export interface ShareLink {
+  id: number;
+  project: number | Project;
+  createdBy?: (number | null) | Client;
+  label: string;
+  /**
+   * Link: /s/<token>
+   */
+  token: string;
+  /**
+   * Guests may download the web size
+   */
+  downloads?: boolean | null;
+  /**
+   * Set to switch the link off
+   */
+  revokedAt?: string | null;
+  views?: number | null;
+  lastViewedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "activity".
  */
 export interface Activity {
@@ -1127,6 +1155,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'push-subscriptions';
         value: number | PushSubscription;
+      } | null)
+    | ({
+        relationTo: 'share-links';
+        value: number | ShareLink;
       } | null)
     | ({
         relationTo: 'activity';
@@ -1646,6 +1678,22 @@ export interface PushSubscriptionsSelect<T extends boolean = true> {
   device?: T;
   locale?: T;
   lastUsedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "share-links_select".
+ */
+export interface ShareLinksSelect<T extends boolean = true> {
+  project?: T;
+  createdBy?: T;
+  label?: T;
+  token?: T;
+  downloads?: T;
+  revokedAt?: T;
+  views?: T;
+  lastViewedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
