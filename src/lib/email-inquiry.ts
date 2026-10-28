@@ -13,6 +13,8 @@ export interface InquiryMail {
   kind?: string
   date?: string
   dateFlexible: boolean
+  /** The date is already busy (projects or calendar) — only told to the photographer */
+  dateBusy?: boolean
   location?: string
   size?: string
   budget?: string
@@ -67,7 +69,7 @@ const table = (r: [string, string][]) =>
     .join('')}</table>`
 
 export async function sendInquiryNotification(i: InquiryMail) {
-  const r = rows(i, COPY.en)
+  const r = rows(i, COPY.en).map(([k, v]): [string, string] => [k, k === COPY.en.labels.when && i.dateBusy ? `${v} · ⚠ already busy in your calendar` : v])
   await transporter.sendMail({
     from: FROM,
     to: ADMIN_TO,

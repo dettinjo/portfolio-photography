@@ -166,7 +166,14 @@
         "successText": "Danke, {name}! Eine Bestätigung ist auf dem Weg in dein Postfach — ich melde mich innerhalb von zwei Tagen persönlich bei dir.",
         "error": "Da ist etwas schiefgelaufen. Bitte versuch es noch einmal oder schreib mir über die Kontaktseite.",
         "required": "Bitte wähle etwas aus oder fülle diesen Schritt aus.",
-        "fromPhoto": "Inspiriert von Foto #{id}"
+        "fromPhoto": "Inspiriert von Foto #{id}",
+        "calendar": {
+          "previous": "Vorheriger Monat",
+          "next": "Nächster Monat",
+          "busy": "gebucht",
+          "free": "alles andere: wahrscheinlich frei",
+          "busyNote": "An dem Tag bin ich schon gebucht — frag trotzdem, manchmal passt ein zweiter Termin."
+        }
       },
       "faqLabel": "Gut zu wissen",
       "faqTitle": "fragen?",

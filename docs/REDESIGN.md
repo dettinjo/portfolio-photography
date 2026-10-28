@@ -686,6 +686,18 @@ excluded); projects by stage, inquiries/projects by offering, galleries online /
 within 30 days, ZIP downloads, guest links and views, average feedback and review scores.
 Plain CSS bar charts with text alternatives; visitor numbers stay in Umami.
 
+**5c ✅ done 2026-10-28** — Calendar availability. The planner's date step is a month calendar
+(Monday first, up to 18 months ahead) that marks booked days but keeps them selectable with an
+"ask anyway" note. `/api/availability?from=YYYY-MM&months=N` returns day keys only, from
+(a) shoot dates of projects from *Proposal* on (archive excluded) and (b) an optional private
+iCal feed `AVAILABILITY_ICS_URL` (`ical.js@2.2.1`: recurrences, exceptions, cancelled and
+transparent events, time zones). Timed events count when they fill ≥ `AVAILABILITY_MIN_HOURS`
+(default 4) of a Berlin day. A Nextcloud feed on the same host uses the sync user — share the
+calendar read-only with `portfolio-sync` and use
+`…/remote.php/dav/calendars/portfolio-sync/<calendar>_shared_by_<owner>?export`. Feed cached
+15 min; on failure the last good copy is used for up to a day, else project dates only. The
+inquiry email to the photographer flags a busy date; `/studio/stats` shows the feed status.
+
 ---
 
 ## 14. Decisions
