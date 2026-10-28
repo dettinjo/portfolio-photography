@@ -101,7 +101,7 @@ export async function POST(req: NextRequest) {
     await Promise.all([
       sendInquiryNotification(mail).catch((err) => console.error('[inquiries] notification failed:', err)),
       sendInquiryConfirmation(mail).catch((err) => console.error('[inquiries] confirmation failed:', err)),
-      pushAdmins('📷 New shoot request', [name, mail.offering ?? mail.kind].filter(Boolean).join(' — '), `/admin/collections/inquiries/${inquiry.id}`, 'inquiry'),
+      pushAdmins('📷 New shoot request', [name, mail.offering ?? mail.kind].filter(Boolean).join(' — '), '/studio', 'inquiry'),
     ])
 
     return NextResponse.json({ ok: true })

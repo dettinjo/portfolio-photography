@@ -631,7 +631,21 @@ project overview (on iPhone it explains Home Screen first). Clients: proposal, p
 delivery, changes done, reply from the photographer. Photographer: inquiry, contact message,
 client message, selection, change requests, proposal accepted, payment, feedback, review.
 Best effort next to the emails; expired subscriptions (404/410) are removed. Photographer
-notifications open the admin until `/studio` exists (4f).
+notifications open the matching `/studio` page.
+
+**4f ✅ done 2026-10-28** — `/studio`, the photographer's phone app (own root layout, English,
+noindex, outside the i18n middleware and the service-worker cache; Payload admin login,
+redirect back after sign-in). *Inbox*: messages to answer (with reply), new inquiries
+(→ project in one tap), open change requests, reviews to publish, recent feedback, push
+toggle. *Projects*: grouped by stage; detail with stage switch, fetch photos, invite clients,
+upload, facts (folder, previews, picks, finals, open changes, gallery expiry), conversation
+with reply, activity. *Upload*: to a project's `1 Preview` / `2 Final` or a portfolio series
+(also a new one; "_" for a draft) — files go to Nextcloud (single drop zone), then the sync
+runs; a project without folder gets one on the spot; a read-only share gives a clear
+message. Manifest shortcuts (Inbox, Upload) and a Web Share Target (`/studio/share`, Android):
+shared photos wait up to a day until a destination is picked. The share route verifies the
+`SameSite=Lax` login cookie itself because the share sheet posts without the Origin header
+Payload's CSRF check needs. *Needs* write access on `Lightroom/Portfolio` for portfolio uploads.
 
 - Versions and revision approvals; final mirroring, signed downloads, async ZIP.
 - 12-month expiry with 30/7-day reminders, admin extend, purge job.

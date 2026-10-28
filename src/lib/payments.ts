@@ -190,7 +190,7 @@ async function onPaid(payload: Payload, payment: Payment) {
     overrideAccess: true,
   })
 
-  await pushAdmins(`💶 ${amount} received`, `${payment.label}${payment.livemode ? '' : ' (test mode)'}`, `/admin/collections/projects/${projectId}`)
+  await pushAdmins(`💶 ${amount} received`, `${payment.label}${payment.livemode ? '' : ' (test mode)'}`, `/studio/projects/${projectId}`)
   const clientId = relId(payment.client)
   const client = (project.clients ?? []).find((c): c is Client => typeof c === 'object' && c?.id === clientId)
   await Promise.allSettled([

@@ -6,5 +6,5 @@ export default createMiddleware(routing);
 export const config = {
   // Exclude: _next, api, Payload admin, static files, and the offline pages the
   // service worker precaches (fetching them must not set the language cookie).
-  matcher: ["/((?!_next|api|admin|en/offline|de/offline|.*\\..*).*)"],
+  matcher: ["/((?!_next|api|admin|studio|en/offline|de/offline|.*\\..*).*)"],
 };

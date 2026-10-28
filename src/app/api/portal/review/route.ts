@@ -58,6 +58,6 @@ export async function POST(req: NextRequest) {
     data: { project: project.id, actor: 'client', client: client.id, verb: 'note', clientVisible: true, message: `Review written by ${client.name.split(' ')[0]}` },
     overrideAccess: true,
   })
-  await pushAdmins(`⭐ Review from ${name}`, quote.slice(0, 140), '/admin/collections/reviews')
+  await pushAdmins(`⭐ Review from ${name}`, quote.slice(0, 140), '/studio')
   return json({ ok: true, consented })
 }
