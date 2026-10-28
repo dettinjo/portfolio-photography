@@ -3,7 +3,8 @@
 // The client's selection: justified grid with ♥ per photo, filters, a counter
 // against the included number, two-up compare, and a fullscreen viewer where
 // notes can be pinned to a spot on the photo. Picks save immediately
-// (optimistic, reverted on failure); "send" locks the selection.
+// (optimistic). Without a connection they wait on the device and are sent when
+// it is back; a refused pick is reverted. "send" locks the selection.
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { ChevronLeft, ChevronRight, Columns2, Heart, MapPin, MessageCircle, X } from "lucide-react";
@@ -24,10 +25,31 @@ interface Props {
   locked: boolean;
 }
 
+class HttpError extends Error {}
+
 async function post(url: string, body: unknown, method = "POST") {
   const res = await fetch(url, { method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
-  if (!res.ok) throw new Error(String(res.status));
+  if (!res.ok) throw new HttpError(String(res.status));
   return res.json();
+}
+
+// Picks made offline: photo id → picked, the latest intent wins
+type Queue = Record<string, boolean>;
+const queueKey = (slug: string) => `picks-queue:${slug}`;
+function readQueue(slug: string): Queue {
+  try {
+    return JSON.parse(localStorage.getItem(queueKey(slug)) ?? "{}") as Queue;
+  } catch {
+    return {};
+  }
+}
+function writeQueue(slug: string, q: Queue) {
+  try {
+    if (Object.keys(q).length) localStorage.setItem(queueKey(slug), JSON.stringify(q));
+    else localStorage.removeItem(queueKey(slug));
+  } catch {
+    // Storage blocked: the pick then simply is not kept
+  }
 }
 
 const bg = (p: ProofPhoto) =>
@@ -46,6 +68,49 @@ export function ProofingGallery({ slug, photos, pickedBy, mine, comments: initia
   const [confirming, setConfirming] = useState(false);
   const [sending, setSending] = useState(false);
   const [locked, setLocked] = useState(initiallyLocked);
+  const [pending, setPending] = useState(0);
+  const flushing = useRef(false);
+
+  const applyPick = useCallback((id: number, on: boolean) => {
+    setPicked((s) => {
+      const copy = new Set(s);
+      if (on) copy.add(id);
+      else copy.delete(id);
+      return copy;
+    });
+  }, []);
+
+  // Send what waited on the device; stop at the first network failure
+  const flush = useCallback(async () => {
+    if (flushing.current) return;
+    flushing.current = true;
+    try {
+      for (const [id, on] of Object.entries(readQueue(slug))) {
+        try {
+          await post("/api/portal/picks", { project: slug, photo: Number(id), picked: on });
+        } catch (err) {
+          if (!(err instanceof HttpError)) break;
+          applyPick(Number(id), !on); // refused (e.g. selection already sent)
+        }
+        const q = readQueue(slug);
+        if (q[id] === on) delete q[id];
+        writeQueue(slug, q);
+      }
+    } finally {
+      flushing.current = false;
+      setPending(Object.keys(readQueue(slug)).length);
+    }
+  }, [slug, applyPick]);
+
+  // Picks made offline earlier (the page may come from the offline copy) count right away
+  useEffect(() => {
+    const q = readQueue(slug);
+    for (const [id, on] of Object.entries(q)) applyPick(Number(id), on);
+    setPending(Object.keys(q).length);
+    if (navigator.onLine) void flush();
+    window.addEventListener("online", flush);
+    return () => window.removeEventListener("online", flush);
+  }, [slug, applyPick, flush]);
 
   // Other pickers' choices stay as loaded; mine follow the local state
   const others = useMemo(() => {
@@ -69,26 +134,30 @@ export function ProofingGallery({ slug, photos, pickedBy, mine, comments: initia
     async (id: number) => {
       if (locked) return;
       const next = !picked.has(id);
-      setPicked((s) => {
-        const copy = new Set(s);
-        if (next) copy.add(id);
-        else copy.delete(id);
-        return copy;
-      });
+      applyPick(id, next);
+      const queued = readQueue(slug);
+      if (Object.keys(queued).length) {
+        // Keep the order: once something waits, new picks wait behind it
+        writeQueue(slug, { ...queued, [id]: next });
+        setPending(Object.keys(readQueue(slug)).length);
+        void flush();
+        return;
+      }
       try {
         await post("/api/portal/picks", { project: slug, photo: id, picked: next });
         setError(false);
-      } catch {
-        setError(true);
-        setPicked((s) => {
-          const copy = new Set(s);
-          if (next) copy.delete(id);
-          else copy.add(id);
-          return copy;
-        });
+      } catch (err) {
+        if (err instanceof HttpError) {
+          setError(true);
+          applyPick(id, !next);
+          return;
+        }
+        // No connection: keep the pick on the device
+        writeQueue(slug, { ...readQueue(slug), [id]: next });
+        setPending(Object.keys(readQueue(slug)).length);
       }
     },
-    [locked, picked, slug],
+    [locked, picked, slug, applyPick, flush],
   );
 
   async function addComment(photo: number, body: string, pin: { x: number; y: number } | null) {
@@ -114,6 +183,13 @@ export function ProofingGallery({ slug, photos, pickedBy, mine, comments: initia
 
   async function submit() {
     setSending(true);
+    await flush();
+    if (Object.keys(readQueue(slug)).length) {
+      // Offline picks must reach the server before the selection is sent
+      setError(true);
+      setSending(false);
+      return;
+    }
     try {
       await post("/api/portal/submit", { project: slug });
       setLocked(true);
@@ -190,9 +266,15 @@ export function ProofingGallery({ slug, photos, pickedBy, mine, comments: initia
         </div>
         {compare && <p className="readout mt-2 text-rec">{t("compareHint")}</p>}
         {extra > 0 && extraPrice && <p className="readout mt-2 text-rec">{t("extraNote", { extra, price: extraPrice })}</p>}
+        {pending > 0 && (
+          <p className="readout mt-2 text-muted-foreground" role="status">
+            <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-rec align-middle" aria-hidden />
+            {t("offlinePending", { count: pending })}
+          </p>
+        )}
         {error && (
           <p role="alert" className="mt-2 text-sm text-rec">
-            {t("error")}
+            {pending > 0 ? t("offlineSubmit") : t("error")}
           </p>
         )}
       </div>

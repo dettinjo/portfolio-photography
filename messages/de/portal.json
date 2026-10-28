@@ -140,7 +140,9 @@
       "previewsTitle": "Deine Vorschauen",
       "previewsText": "{count} Vorschauen sind für dich bereit.",
       "noPreviews": "Noch keine Vorschauen — du bekommst eine E-Mail, sobald sie fertig sind.",
-      "keys": "← → blättern · P auswählen · Esc schließen"
+      "keys": "← → blättern · P auswählen · Esc schließen",
+      "offlinePending": "{count, plural, one {# Herz wartet} other {# Herzen warten}} auf diesem Handy — sie werden gesendet, sobald du online bist",
+      "offlineSubmit": "Du bist offline — deine Herzen sind auf diesem Handy sicher. Sende die Auswahl, sobald du wieder online bist."
     },
     "proposal": {
       "label": "Angebot",
@@ -409,6 +411,15 @@
       "next": "Weiter",
       "goneTitle": "link abgelaufen",
       "gone": "Dieser Link funktioniert nicht mehr — er wurde abgeschaltet oder die Galerie ist nicht mehr online. Frag die Person, die ihn dir geschickt hat."
+    },
+    "offline": {
+      "save": "Auf diesem Handy speichern",
+      "hint": "{count} Fotos — dann öffnet sich die Galerie auch ohne Verbindung.",
+      "saving": "Speichere {done} / {total}",
+      "saved": "Auf diesem Handy gespeichert · {count} Fotos",
+      "update": "Aktualisieren",
+      "remove": "Entfernen",
+      "error": "Speichern hat nicht geklappt — vielleicht ist zu wenig Platz frei oder die Verbindung ist abgebrochen."
     }
   }
 }

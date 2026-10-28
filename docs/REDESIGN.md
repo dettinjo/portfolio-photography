@@ -666,8 +666,8 @@ Payload's CSRF check needs. *Needs* write access on `Lightroom/Portfolio` for po
 - Web Push; `/studio` with share target and phone upload to Nextcloud.
 
 ### Phase 5 — Extras
-- Offline galleries, calendar availability, statistics, Stripe Invoicing evaluation.
-- Guest share links (§7.2).
+- Offline galleries, calendar availability, statistics, Stripe Invoicing evaluation. ✅ (Stripe Invoicing not needed: invoices stay external, §7.5)
+- Guest share links (§7.2). ✅
 
 **5a ✅ done 2026-10-28** — Guest links to a delivered gallery (`share-links`). On *Your
 photos* a client creates named links ("Family", "Wedding guests"), view-only or with web-size
@@ -697,6 +697,17 @@ calendar read-only with `portfolio-sync` and use
 `…/remote.php/dav/calendars/portfolio-sync/<calendar>_shared_by_<owner>?export`. Feed cached
 15 min; on failure the last good copy is used for up to a day, else project dates only. The
 inquiry email to the photographer flags a busy date; `/studio/stats` shows the feed status.
+
+**5d ✅ done 2026-10-28** — Offline. *Selection* and *Your photos* get "Save on this phone":
+the page and one image per photo (canonical key `/api/previews/<id>/<version>/offline`) go
+into the `offline-galleries` cache with a meta entry holding the gallery's end date (`lib/offline`).
+The service worker still always goes to the network for `/c/…` pages and `/api/previews/…`
+and only falls back to a saved copy when that fails (else the offline page); expired copies
+are deleted on access. Nothing is cached unless the client asks; signing out clears the cache
+and unsent picks; a redirect while saving (session ended) aborts instead of storing the login
+page. Picks made without a connection wait in `localStorage` (latest intent per photo), count
+right away, survive reloads, are sent when the connection returns (refused ones revert), and
+the selection can only be sent once they are through. Comments still need a connection.
 
 ---
 
