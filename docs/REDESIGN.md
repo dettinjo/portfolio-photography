@@ -679,6 +679,13 @@ link dies when revoked, when the gallery expires, and downloads also wait for th
 (then 960 px). Tokens: 24 random bytes. `/studio` shows the number of active links.
 *Deferred:* PIN-protected links and the "picker" role.
 
+**5b ✅ done 2026-10-28** — `/studio/stats` (new tab): last 12 months of inquiries (share that
+became projects), bookings (first move to *Booked*, from the activity log), money received
+(net of refunds, by payment date) and still open (balances of accepted proposals, archive
+excluded); projects by stage, inquiries/projects by offering, galleries online / closing
+within 30 days, ZIP downloads, guest links and views, average feedback and review scores.
+Plain CSS bar charts with text alternatives; visitor numbers stay in Umami.
+
 ---
 
 ## 14. Decisions

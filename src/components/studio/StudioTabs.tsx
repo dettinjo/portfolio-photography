@@ -2,20 +2,21 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FolderKanban, ImageUp, Inbox } from "lucide-react";
+import { BarChart3, FolderKanban, ImageUp, Inbox } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const TABS = [
   { href: "/studio", label: "Inbox", icon: Inbox, match: (p: string) => p === "/studio" },
   { href: "/studio/projects", label: "Projects", icon: FolderKanban, match: (p: string) => p.startsWith("/studio/projects") },
   { href: "/studio/upload", label: "Upload", icon: ImageUp, match: (p: string) => p.startsWith("/studio/upload") },
+  { href: "/studio/stats", label: "Stats", icon: BarChart3, match: (p: string) => p.startsWith("/studio/stats") },
 ];
 
 export function StudioTabs() {
   const path = usePathname() ?? "/studio";
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 pb-[env(safe-area-inset-bottom)] backdrop-blur">
-      <ul className="mx-auto grid max-w-2xl grid-cols-3">
+      <ul className="mx-auto grid max-w-2xl grid-cols-4">
         {TABS.map(({ href, label, icon: Icon, match }) => {
           const active = match(path);
           return (
