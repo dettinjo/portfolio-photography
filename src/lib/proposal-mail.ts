@@ -8,6 +8,13 @@ import { sendProposalEmail } from './email-client'
 const relId = (v: unknown) => (typeof v === 'object' && v !== null ? (v as { id: number }).id : (v as number))
 
 export async function notifyProposal(payload: Payload, project: Project, req: PayloadRequest) {
+  const { pushProjectClients } = await import('./push')
+  await pushProjectClients(
+    project,
+    { en: { title: 'Your proposal is ready', body: project.title }, de: { title: 'Dein Angebot ist da', body: project.title } },
+    '#proposal',
+    'proposal',
+  )
   for (const id of (project.clients ?? []).map(relId)) {
     const client = await payload.findByID({ collection: 'clients', id, depth: 0, req, overrideAccess: true })
     const locale = client.locale === 'de' ? 'de' : 'en'

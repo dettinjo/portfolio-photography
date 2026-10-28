@@ -11,6 +11,7 @@ import { formatCents, proposalSummary } from '@/lib/proposal'
 import { siteUrl } from '@/lib/client-tokens'
 import { isStage, stageIndex } from '@/lib/stages'
 import { sendPaymentNotification, sendPaymentReceived } from '@/lib/email-client'
+import { pushAdmins } from '@/lib/push'
 
 type Status = Payment['status']
 const RANK: Record<Status, number> = { open: 0, expired: 1, failed: 1, processing: 2, paid: 3, partially_refunded: 4, refunded: 5 }
@@ -189,6 +190,7 @@ async function onPaid(payload: Payload, payment: Payment) {
     overrideAccess: true,
   })
 
+  await pushAdmins(`💶 ${amount} received`, `${payment.label}${payment.livemode ? '' : ' (test mode)'}`, `/admin/collections/projects/${projectId}`)
   const clientId = relId(payment.client)
   const client = (project.clients ?? []).find((c): c is Client => typeof c === 'object' && c?.id === clientId)
   await Promise.allSettled([

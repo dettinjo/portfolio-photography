@@ -7,6 +7,7 @@ import { json, portalRequest } from '@/lib/portal-api'
 import { RATING_KEYS, applyConsent, stars } from '@/lib/reviews'
 import { isStage, stageIndex } from '@/lib/stages'
 import { singleLine } from '@/lib/security'
+import { pushAdmins } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   const r = await portalRequest(req, 10)
@@ -57,5 +58,6 @@ export async function POST(req: NextRequest) {
     data: { project: project.id, actor: 'client', client: client.id, verb: 'note', clientVisible: true, message: `Review written by ${client.name.split(' ')[0]}` },
     overrideAccess: true,
   })
+  await pushAdmins(`⭐ Review from ${name}`, quote.slice(0, 140), '/admin/collections/reviews')
   return json({ ok: true, consented })
 }

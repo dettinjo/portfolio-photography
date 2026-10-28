@@ -8,6 +8,7 @@ import { formatCents, proposalSummary } from '@/lib/proposal'
 import { PaymentError, startDepositCheckout } from '@/lib/payments'
 import { stripeEnabled } from '@/lib/stripe'
 import { sendProposalAccepted } from '@/lib/email-client'
+import { pushAdmins } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   const r = await portalRequest(req, 10)
@@ -41,6 +42,7 @@ export async function POST(req: NextRequest) {
       deposit: formatCents(summary.depositCents, 'en'),
       manual,
     }).catch((err) => console.error('[proposal] email failed:', err))
+    await pushAdmins('🤝 Proposal accepted', `${client.name}: ${project.title}`, `/admin/collections/projects/${project.id}`)
   }
 
   if (manual) return json({ ok: true, manual: true })

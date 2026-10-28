@@ -50,6 +50,10 @@ services:
       # Stripe (deposits). Empty = payments off: proposals are accepted and paid by hand
       - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY:-}
       - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET:-}
+      # Web Push (VAPID). Empty = notifications off
+      - VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY:-}
+      - VAPID_PRIVATE_KEY=${VAPID_PRIVATE_KEY:-}
+      - VAPID_SUBJECT=${VAPID_SUBJECT:-mailto:admin@joeldettinger.de}
       - NEXTCLOUD_WEBHOOK_PATH_PREFIX=${NEXTCLOUD_WEBHOOK_PATH_PREFIX:-}
       - NEXTCLOUD_WEBHOOK_SECRET=${NEXTCLOUD_WEBHOOK_SECRET:-}
       - UMAMI_INTERNAL_URL=${UMAMI_INTERNAL_URL}

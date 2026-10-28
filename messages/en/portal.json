@@ -349,6 +349,15 @@
       "open": "Write a review",
       "may": "May show",
       "private": "Private"
+    },
+    "push": {
+      "on": "Notifications on",
+      "off": "Notify me on this device",
+      "turnOff": "Turn off",
+      "ios": "On iPhone: add this site to your Home Screen first (Share → Add to Home Screen), then turn notifications on there.",
+      "denied": "Notifications are blocked in your browser settings.",
+      "error": "That didn't work — please try again.",
+      "help": "I'll tell you when previews, photos or messages are waiting."
     }
   }
 }

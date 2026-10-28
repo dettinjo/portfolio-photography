@@ -4,6 +4,7 @@ import { getPayloadClient } from '@/lib/payload'
 import { json, portalRequest } from '@/lib/portal-api'
 import { sendClientUpdateToAdmin } from '@/lib/email-client'
 import { siteUrl } from '@/lib/client-tokens'
+import { pushAdmins } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   const r = await portalRequest(req, 30)
@@ -28,6 +29,7 @@ export async function POST(req: NextRequest) {
     adminUrl: siteUrl(`/admin/collections/messages/create`, 'en'),
   }).catch((err) => console.error('[messages] email failed:', err))
 
+  await pushAdmins(`💬 ${client.name.split(' ')[0]}`, text.slice(0, 140), `/admin/collections/projects/${project.id}`, `messages-${project.id}`)
   return json({
     message: { id: created.id, body: text, mine: true, author: client.name.split(' ')[0], fromPhotographer: false, createdAt: created.createdAt },
   })

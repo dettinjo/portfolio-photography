@@ -5,6 +5,7 @@ import { json, portalRequest } from '@/lib/portal-api'
 import { stars } from '@/lib/reviews'
 import { sendClientUpdateToAdmin } from '@/lib/email-client'
 import { siteUrl } from '@/lib/client-tokens'
+import { pushAdmins } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   const r = await portalRequest(req, 20)
@@ -31,5 +32,6 @@ export async function POST(req: NextRequest) {
     body: comment || '(no comment)',
     adminUrl: siteUrl('/admin/collections/feedback', 'en'),
   }).catch((err) => console.error('[feedback] email failed:', err))
+  await pushAdmins(`${'★'.repeat(rating)}${'☆'.repeat(5 - rating)} ${client.name.split(' ')[0]}`, comment.slice(0, 140) || project.title, '/admin/collections/feedback')
   return json({ ok: true })
 }

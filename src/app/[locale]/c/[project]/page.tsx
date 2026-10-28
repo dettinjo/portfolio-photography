@@ -6,6 +6,7 @@ import { ProjectTimeline } from "@/components/portal/ProjectTimeline";
 import { ProposalCard } from "@/components/portal/ProposalCard";
 import { ProjectNav } from "@/components/portal/ProjectNav";
 import { FeedbackCard } from "@/components/portal/FeedbackCard";
+import { PushToggle } from "@/components/portal/PushToggle";
 import { stageIndex } from "@/lib/stages";
 import { SignOut } from "@/components/portal/SignOut";
 import { getClient } from "@/lib/client-session";
@@ -73,6 +74,7 @@ export default async function ProjectPage({ params, searchParams }: Props) {
       </SectionLabel>
 
       <ProjectNav slug={slug} projectId={project.id} active="overview" />
+      <PushToggle className="mt-6" />
 
       <p className="readout mt-10 text-muted-foreground">{t("home.hi", { name: client.name.split(" ")[0] })}</p>
       <h1 className="display display-xl mt-2 text-6xl lowercase sm:text-8xl">{project.title}</h1>
