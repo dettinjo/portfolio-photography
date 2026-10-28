@@ -358,6 +358,25 @@
       "denied": "Benachrichtigungen sind in deinen Browser-Einstellungen blockiert.",
       "error": "Das hat nicht geklappt — bitte versuch es noch einmal.",
       "help": "Ich sage dir Bescheid, wenn Vorschauen, Fotos oder Nachrichten auf dich warten."
+    },
+    "balance": {
+      "label": "Restzahlung",
+      "title": "der rest",
+      "total": "Angebot",
+      "extras": "{count} zusätzliche Fotos × {price}",
+      "paid": "Bisher bezahlt",
+      "pending": "Unterwegs",
+      "due": "Noch offen",
+      "locked": "Ansehen kannst du schon alles — die Downloads werden frei, sobald die Restzahlung da ist.",
+      "before": "Der Rest ist vor der Lieferung der Fotos fällig.",
+      "pay": "{amount} bezahlen",
+      "manual": "Die Zahlungsdetails schicke ich dir — sobald das Geld da ist, schalte ich die Downloads frei.",
+      "processing": "Deine Zahlung ist unterwegs — Überweisungen können ein paar Tage dauern. Die Downloads werden frei, sobald sie angekommen ist.",
+      "settled": "Alles bezahlt — danke!",
+      "working": "Einen Moment…",
+      "error": "Das hat nicht geklappt — bitte versuch es gleich noch einmal.",
+      "success": "Danke! Deine Zahlung wird gerade bestätigt — die Downloads werden gleich frei.",
+      "cancelled": "Zahlung abgebrochen — kein Problem, du kannst jederzeit zahlen."
     }
   }
 }

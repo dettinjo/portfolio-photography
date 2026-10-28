@@ -5,7 +5,7 @@ import { NextRequest } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { json, portalRequest } from '@/lib/portal-api'
 import { formatCents, proposalSummary } from '@/lib/proposal'
-import { PaymentError, startDepositCheckout } from '@/lib/payments'
+import { PaymentError, startCheckout } from '@/lib/payments'
 import { stripeEnabled } from '@/lib/stripe'
 import { sendProposalAccepted } from '@/lib/email-client'
 import { pushAdmins } from '@/lib/push'
@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
 
   if (manual) return json({ ok: true, manual: true })
   try {
-    const url = await startDepositCheckout(payload, project, client, locale)
+    const url = await startCheckout(payload, project, client, locale)
     return json({ ok: true, url })
   } catch (err) {
     if (err instanceof PaymentError) return json({ error: err.message }, 409)

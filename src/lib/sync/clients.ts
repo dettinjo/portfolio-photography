@@ -346,12 +346,20 @@ async function announceDelivery(payload: Payload, project: Project) {
     data: { project: project.id, actor: 'system', verb: 'note', clientVisible: true, message: `${ready.totalDocs} final photos delivered` },
     overrideAccess: true,
   })
+  const { getBilling } = await import('@/lib/billing')
+  const { formatCents } = await import('@/lib/proposal')
+  const billing = await getBilling(payload, project)
   await pushProjectClients(
     project,
-    {
-      en: { title: 'Your photos are here', body: `${ready.totalDocs} final photos are ready to download.` },
-      de: { title: 'Deine Fotos sind da', body: `${ready.totalDocs} fertige Fotos stehen zum Download bereit.` },
-    },
+    billing.locked
+      ? {
+          en: { title: 'Your photos are here', body: `${ready.totalDocs} final photos are ready to view.` },
+          de: { title: 'Deine Fotos sind da', body: `${ready.totalDocs} fertige Fotos sind bereit.` },
+        }
+      : {
+          en: { title: 'Your photos are here', body: `${ready.totalDocs} final photos are ready to download.` },
+          de: { title: 'Deine Fotos sind da', body: `${ready.totalDocs} fertige Fotos stehen zum Download bereit.` },
+        },
     '/photos',
     'delivery',
   )
@@ -366,6 +374,7 @@ async function announceDelivery(payload: Payload, project: Project) {
       projectTitle: project.title,
       expiresAt,
       url: siteUrl(`/c/${project.slug}/photos`, locale),
+      balance: billing.locked ? formatCents(billing.dueCents, locale) : null,
     }).catch((err) => console.error(`[sync] delivery email to ${client.email} failed:`, err))
   }
 }

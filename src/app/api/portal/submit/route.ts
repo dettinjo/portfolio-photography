@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
     collection: 'projects',
     id: project.id,
     data: {
-      proofing: { ...project.proofing, submittedAt: sentAt.toISOString() },
+      proofing: { ...project.proofing, submittedAt: sentAt.toISOString(), extras: files.extra },
       ...(stageIndex(stage) < stageIndex('editing') && { stage: 'editing' }),
     },
     context: { skipFolders: true },

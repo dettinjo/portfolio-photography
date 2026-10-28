@@ -84,6 +84,23 @@ export function ProjectButton({ projectId, action, label, done }: { projectId: n
   );
 }
 
+export function BalanceToggle({ projectId, paid }: { projectId: number; paid: boolean }) {
+  const { state, run, error } = useAction();
+  return (
+    <span className="inline-flex items-center gap-2">
+      <button
+        type="button"
+        disabled={state === "busy"}
+        onClick={() => run(() => post("/api/studio/project", { id: projectId, action: "balance", paid: !paid }))}
+        className={cn(btn, !paid && "border-foreground")}
+      >
+        {state === "busy" ? "…" : paid ? "Undo “balance paid”" : "Mark balance paid"}
+      </button>
+      {error && <span role="alert" className="text-sm text-rec">{error}</span>}
+    </span>
+  );
+}
+
 export function ApproveReview({ id }: { id: number }) {
   const { state, run, error } = useAction();
   return (

@@ -1,4 +1,4 @@
-// Deposits via Stripe Checkout (decision D2). The site creates the Checkout
+// Deposit and balance via Stripe Checkout (decision D2). The site creates the Checkout
 // with server-computed amounts; results arrive by webhook and, as a fallback,
 // when the client returns from Checkout. Every update only moves a payment
 // forward, so repeated or out-of-order events are harmless.
@@ -11,7 +11,8 @@ import { formatCents, proposalSummary } from '@/lib/proposal'
 import { siteUrl } from '@/lib/client-tokens'
 import { isStage, stageIndex } from '@/lib/stages'
 import { sendPaymentNotification, sendPaymentReceived } from '@/lib/email-client'
-import { pushAdmins } from '@/lib/push'
+import { pushAdmins, pushProjectClients } from '@/lib/push'
+import { getBilling } from '@/lib/billing'
 
 type Status = Payment['status']
 const RANK: Record<Status, number> = { open: 0, expired: 1, failed: 1, processing: 2, paid: 3, partially_refunded: 4, refunded: 5 }
@@ -19,54 +20,69 @@ const relId = (v: unknown) => (typeof v === 'object' && v !== null ? (v as { id:
 
 export class PaymentError extends Error {}
 
-export async function startDepositCheckout(
+const LABEL = {
+  deposit: { en: 'Deposit', de: 'Anzahlung' },
+  balance: { en: 'Balance', de: 'Restzahlung' },
+} as const
+
+/** Starts a Stripe Checkout for the deposit or the balance; returns its URL. */
+export async function startCheckout(
   payload: Payload,
   project: Project,
   client: Client,
   locale: 'en' | 'de',
+  kind: 'deposit' | 'balance' = 'deposit',
 ): Promise<string> {
   const stripe = getStripe()
   if (!stripe) throw new PaymentError('Payments are not configured')
-  const summary = proposalSummary(project)
-  if (!summary || summary.depositCents < 50) throw new PaymentError('No deposit to pay')
 
   const existing = await payload.find({
     collection: 'payments',
-    where: { and: [{ project: { equals: project.id } }, { kind: { equals: 'deposit' } }] },
+    where: { project: { equals: project.id } },
     limit: 0,
     pagination: false,
     depth: 0,
     overrideAccess: true,
   })
-  if (existing.docs.some((p) => ['paid', 'processing', 'partially_refunded'].includes(p.status))) {
-    throw new PaymentError('The deposit is already paid')
+  let amount: number
+  if (kind === 'deposit') {
+    const summary = proposalSummary(project)
+    if (!summary || summary.depositCents < 50) throw new PaymentError('No deposit to pay')
+    if (existing.docs.some((p) => p.kind === 'deposit' && ['paid', 'processing', 'partially_refunded'].includes(p.status))) {
+      throw new PaymentError('The deposit is already paid')
+    }
+    amount = summary.depositCents
+  } else {
+    if (existing.docs.some((p) => p.status === 'processing')) throw new PaymentError('A payment is still being processed')
+    amount = (await getBilling(payload, project)).dueCents
+    if (amount < 50) throw new PaymentError('Nothing left to pay')
   }
-  // Only one Checkout at a time: close older open ones
+  // Only one Checkout at a time: close older open ones (also of the other kind,
+  // so an old deposit tab cannot be paid on top of the balance)
   for (const old of existing.docs.filter((p) => p.status === 'open' && p.stripeSessionId)) {
     await stripe.checkout.sessions.expire(old.stripeSessionId as string).catch(() => {})
     await payload.update({ collection: 'payments', id: old.id, data: { status: 'expired' }, overrideAccess: true })
   }
 
-  const label = `${locale === 'de' ? 'Anzahlung' : 'Deposit'} — ${project.title}`
+  const label = `${LABEL[kind][locale]} — ${project.title}`
   const payment = await payload.create({
     collection: 'payments',
-    data: { project: project.id, client: client.id, kind: 'deposit', label, amount: summary.depositCents, currency: 'eur', status: 'open' },
+    data: { project: project.id, client: client.id, kind, label, amount, currency: 'eur', status: 'open' },
     overrideAccess: true,
   })
-  const metadata = { app: METADATA_APP, paymentId: String(payment.id), projectId: String(project.id), kind: 'deposit' }
+  const metadata = { app: METADATA_APP, paymentId: String(payment.id), projectId: String(project.id), kind }
+  const back = kind === 'balance' ? `/c/${project.slug}/photos` : `/c/${project.slug}`
 
   const session = await stripe.checkout.sessions.create({
     mode: 'payment',
     customer_email: client.email,
     client_reference_id: String(payment.id),
     locale: locale === 'de' ? 'de' : 'en',
-    line_items: [
-      { quantity: 1, price_data: { currency: 'eur', unit_amount: summary.depositCents, product_data: { name: label } } },
-    ],
+    line_items: [{ quantity: 1, price_data: { currency: 'eur', unit_amount: amount, product_data: { name: label } } }],
     metadata,
     payment_intent_data: { metadata, description: label },
-    success_url: siteUrl(`/c/${project.slug}?payment=success`, locale),
-    cancel_url: siteUrl(`/c/${project.slug}?payment=cancelled`, locale),
+    success_url: siteUrl(`${back}?payment=success`, locale),
+    cancel_url: siteUrl(`${back}?payment=cancelled`, locale),
   })
   await payload.update({
     collection: 'payments',
@@ -190,6 +206,11 @@ async function onPaid(payload: Payload, payment: Payment) {
     overrideAccess: true,
   })
 
+  // Balance in full: the downloads open
+  if (project.delivery?.deliveredAt && !(await getBilling(payload, project)).locked && payment.kind !== 'deposit') {
+    await onBalanceSettled(project)
+  }
+
   await pushAdmins(`💶 ${amount} received`, `${payment.label}${payment.livemode ? '' : ' (test mode)'}`, `/studio/projects/${projectId}`)
   const clientId = relId(payment.client)
   const client = (project.clients ?? []).find((c): c is Client => typeof c === 'object' && c?.id === clientId)
@@ -206,4 +227,18 @@ async function onPaid(payload: Payload, payment: Payment) {
         url: siteUrl(`/c/${project.slug}`, client.locale === 'de' ? 'de' : 'en'),
       }),
   ]).then((r) => r.forEach((x) => x.status === 'rejected' && console.error('[payments] email failed:', x.reason)))
+}
+
+/** Tells the clients that the downloads are open (balance paid online or marked by hand). */
+export async function onBalanceSettled(project: Project) {
+  if (!project.delivery?.deliveredAt) return
+  await pushProjectClients(
+    project,
+    {
+      en: { title: 'Downloads are open', body: `${project.title}: thank you — your photos are ready to download.` },
+      de: { title: 'Downloads sind frei', body: `${project.title}: danke — deine Fotos stehen zum Download bereit.` },
+    },
+    '/photos',
+    `balance-${project.id}`,
+  )
 }

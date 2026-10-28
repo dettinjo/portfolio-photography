@@ -1,4 +1,4 @@
-// Quick project actions: { id, action: 'stage' | 'invite' | 'sync', stage? }.
+// Quick project actions: { id, action: 'stage' | 'invite' | 'sync' | 'balance', stage?, paid? }.
 // They go through the normal Projects hooks (activity, emails, sync).
 import { NextRequest, NextResponse } from 'next/server'
 import { requireAdminApi } from '@/lib/studio'
@@ -10,6 +10,20 @@ export async function POST(req: NextRequest) {
   if (user instanceof NextResponse) return user
   const body = await req.json().catch(() => ({}))
   if (!Number.isInteger(body.id)) return NextResponse.json({ error: 'Invalid project' }, { status: 400 })
+  const payload = await getPayloadClient()
+  // Balance paid by hand (bank transfer, cash) — or undone
+  if (body.action === 'balance' && typeof body.paid === 'boolean') {
+    const project = await payload.findByID({ collection: 'projects', id: body.id, depth: 0, overrideAccess: true }).catch(() => null)
+    if (!project) return NextResponse.json({ error: 'Invalid project' }, { status: 400 })
+    await payload.update({
+      collection: 'projects',
+      id: project.id,
+      data: { billing: { ...project.billing, balancePaidAt: body.paid ? new Date().toISOString() : null } },
+      user,
+      overrideAccess: true,
+    })
+    return NextResponse.json({ ok: true })
+  }
   const data =
     body.action === 'stage' && isStage(body.stage)
       ? { stage: body.stage }
@@ -19,7 +33,6 @@ export async function POST(req: NextRequest) {
           ? { syncPreviews: true }
           : null
   if (!data) return NextResponse.json({ error: 'Unknown action' }, { status: 400 })
-  const payload = await getPayloadClient()
   try {
     const doc = await payload.update({ collection: 'projects', id: body.id, data, user, overrideAccess: true })
     return NextResponse.json({ ok: true, stage: doc.stage })

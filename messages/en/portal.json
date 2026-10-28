@@ -358,6 +358,25 @@
       "denied": "Notifications are blocked in your browser settings.",
       "error": "That didn't work — please try again.",
       "help": "I'll tell you when previews, photos or messages are waiting."
+    },
+    "balance": {
+      "label": "Balance",
+      "title": "what's left",
+      "total": "Proposal",
+      "extras": "{count} extra photos × {price}",
+      "paid": "Paid so far",
+      "pending": "On its way",
+      "due": "Still open",
+      "locked": "You can already look at everything — the downloads open as soon as the balance is paid.",
+      "before": "The rest is due before the photos are delivered.",
+      "pay": "Pay {amount}",
+      "manual": "I'll send you the payment details — once the money has arrived, I'll open the downloads.",
+      "processing": "Your payment is on its way — bank transfers can take a few days. The downloads open as soon as it has arrived.",
+      "settled": "All paid — thank you!",
+      "working": "One moment…",
+      "error": "That didn't work — please try again in a moment.",
+      "success": "Thank you! Your payment is being confirmed — the downloads open in a moment.",
+      "cancelled": "Payment cancelled — no problem, you can pay whenever you're ready."
     }
   }
 }

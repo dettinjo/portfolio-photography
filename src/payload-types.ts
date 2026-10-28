@@ -382,6 +382,19 @@ export interface Project {
     acceptedAt?: string | null;
     acceptedBy?: (number | null) | Client;
   };
+  /**
+   * The rest after the deposit: proposal total + extra photos − payments. Clients pay it in the portal.
+   */
+  billing?: {
+    /**
+     * Clients can view the finals, but download them only once the balance is paid
+     */
+    gateDownloads?: boolean | null;
+    /**
+     * Paid by bank transfer or cash: set a date to open the downloads. Clear it to undo.
+     */
+    balancePaidAt?: string | null;
+  };
   payments?: {
     docs?: (number | Payment)[];
     hasNextPage?: boolean;
@@ -449,6 +462,10 @@ export interface Project {
      * € per extra photo. Empty: from the offering
      */
     extraPrice?: number | null;
+    /**
+     * Extra photos added to the balance. Set when the selection is sent; lower it to waive them.
+     */
+    extras?: number | null;
     /**
      * Clients were told on this date
      */
@@ -1403,6 +1420,12 @@ export interface ProjectsSelect<T extends boolean = true> {
         acceptedAt?: T;
         acceptedBy?: T;
       };
+  billing?:
+    | T
+    | {
+        gateDownloads?: T;
+        balancePaidAt?: T;
+      };
   payments?: T;
   plan?:
     | T
@@ -1438,6 +1461,7 @@ export interface ProjectsSelect<T extends boolean = true> {
     | {
         quota?: T;
         extraPrice?: T;
+        extras?: T;
         previewsReadyAt?: T;
         submittedAt?: T;
       };

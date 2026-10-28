@@ -1,7 +1,9 @@
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { StudioHeader } from "@/components/studio/StudioHeader";
-import { ProjectButton, ReplyBox, StageSelect } from "@/components/studio/StudioActions";
+import { BalanceToggle, ProjectButton, ReplyBox, StageSelect } from "@/components/studio/StudioActions";
+import { getBilling } from "@/lib/billing";
+import { formatCents } from "@/lib/proposal";
 import { requireAdminPage } from "@/lib/studio";
 import { getPayloadClient } from "@/lib/payload";
 import { isStage } from "@/lib/stages";
@@ -44,6 +46,8 @@ export default async function StudioProject({ params }: { params: Promise<{ id: 
     ["Gallery until", project.delivery?.expiresAt?.slice(0, 10)],
   ];
   const thread = [...messages.docs].reverse();
+  const billing = await getBilling(payload, project);
+  const eur = (c: number) => formatCents(c, "en");
 
   return (
     <>
@@ -65,6 +69,32 @@ export default async function StudioProject({ params }: { params: Promise<{ id: 
           </div>
         ))}
       </dl>
+
+      {billing.totalCents > 0 && (
+        <section className="mt-8">
+          <p className="readout text-muted-foreground">Money</p>
+          <dl className="mt-3 grid grid-cols-2 gap-x-6 gap-y-3 sm:grid-cols-4">
+            {([
+              ["Total", eur(billing.totalCents + billing.extrasCents)],
+              ["Paid", eur(billing.paidCents)],
+              ...(billing.pendingCents ? [["On its way", eur(billing.pendingCents)]] : []),
+              ["Open", billing.settledAt ? `settled ${billing.settledAt.slice(0, 10)}` : eur(billing.dueCents)],
+            ] as [string, string][]).map(([k, v]) => (
+              <div key={k}>
+                <dt className="readout text-muted-foreground">{k}</dt>
+                <dd className="mt-1 font-mono text-sm">{v}</dd>
+              </div>
+            ))}
+          </dl>
+          {billing.extras > 0 && <p className="mt-2 text-sm text-muted-foreground">Includes {billing.extras} extra photos × {eur(billing.extraUnitCents)}</p>}
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            {(billing.dueCents > 0 || billing.settledAt) && <BalanceToggle projectId={project.id} paid={Boolean(billing.settledAt)} />}
+            <span className="readout text-muted-foreground">
+              {project.billing?.gateDownloads === false ? "Downloads always open" : billing.locked ? "Downloads wait for the balance" : "Downloads open"}
+            </span>
+          </div>
+        </section>
+      )}
 
       {clients.length > 0 && (
         <section className="mt-10">

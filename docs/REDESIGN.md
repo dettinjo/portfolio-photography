@@ -612,6 +612,18 @@ open request of a round is done, the clients get an email. They approve or say "
 right" (a new draft for the next round, while rounds are left); with nothing open the
 project returns to *Delivery*.
 
+**4c ✅ done 2026-10-28** — Balance before downloads. `lib/billing` computes, on the server,
+accepted proposal total + extra photos (`proofing.extras`, set from the selection on
+submission, editable to waive) − payments net of refunds; nothing is owed before the proposal
+is accepted. With `billing.gateDownloads` (on by default) and an open balance, clients can view
+the finals — capped at 960 px and not cached — but single and ZIP downloads answer 402 and the
+gallery shows the balance card instead of download links. The balance is paid by Stripe
+Checkout (`/api/portal/pay`, kind `balance`; a new Checkout closes all open ones of the
+project) or marked as paid by hand (`billing.balancePaidAt`; studio button *Mark balance paid*
+/ undo). Settling it logs a client-visible activity and pushes "Downloads are open"; the
+delivery email and push mention the balance while it is open. The overview shows the balance
+card from *Editing* on. *Deferred:* client-chosen add-ons (they can be added as proposal lines).
+
 **4d ✅ done 2026-10-27** — Private `feedback` (five faces + comment) asked once at a time on the
 project overview: after booking (Booked…Shoot) and after the sneak peek (Sneak peek…Editing);
 emailed to the photographer, never published. Review after delivery (`/c/<project>/review`,
@@ -649,7 +661,7 @@ Payload's CSRF check needs. *Needs* write access on `Lightroom/Portfolio` for po
 
 - Versions and revision approvals; final mirroring, signed downloads, async ZIP.
 - 12-month expiry with 30/7-day reminders, admin extend, purge job.
-- Stripe: balance (with delivery gating), extra images above quota, add-ons, refunds sync.
+- Stripe: balance (with delivery gating), extra images above quota, add-ons, refunds sync. ✅ (add-ons as proposal lines)
 - Staged feedback and review flow with per-photo consent.
 - Web Push; `/studio` with share target and phone upload to Nextcloud.
 
