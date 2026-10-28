@@ -3,7 +3,7 @@ import React from "react";
 import Script from "next/script";
 import { notFound } from "next/navigation";
 import { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Instrument_Serif, JetBrains_Mono } from "next/font/google";
+import { mono, sans, serif } from "../fonts";
 import { NextIntlClientProvider } from "next-intl";
 import {
   getMessages,
@@ -20,21 +20,6 @@ import { ThemeProvider } from "@/components/Theme-Provider";
 import { SiteHeader } from "@/components/site/SiteHeader";
 import { SiteFooter } from "@/components/site/SiteFooter";
 import { AppTabBar } from "@/components/site/AppTabBar";
-
-// Characterful grotesque (with width/optical-size axes) for text and display,
-// an italic serif for accent words, a mono for camera-style readouts.
-const sans = Bricolage_Grotesque({
-  subsets: ["latin"],
-  variable: "--font-sans",
-  axes: ["opsz", "wdth"],
-});
-const serif = Instrument_Serif({
-  subsets: ["latin"],
-  weight: "400",
-  style: ["italic"],
-  variable: "--font-serif",
-});
-const mono = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono" });
 
 export function generateStaticParams() {
   return routing.locales.map((locale) => ({ locale }));

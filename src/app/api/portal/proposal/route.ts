@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
       deposit: formatCents(summary.depositCents, 'en'),
       manual,
     }).catch((err) => console.error('[proposal] email failed:', err))
-    await pushAdmins('🤝 Proposal accepted', `${client.name}: ${project.title}`, `/admin/collections/projects/${project.id}`)
+    await pushAdmins('🤝 Proposal accepted', `${client.name}: ${project.title}`, `/studio/projects/${project.id}`)
   }
 
   if (manual) return json({ ok: true, manual: true })

@@ -72,6 +72,6 @@ export async function POST(req: NextRequest) {
     folder: project.ncFolder ?? null,
     writeError,
   }).catch((err) => console.error('[revisions] email failed:', err))
-  await pushAdmins(`✏️ Changes, round ${round}`, `${project.title}: ${items.length} changes`, `/admin/collections/projects/${project.id}`)
+  await pushAdmins(`✏️ Changes, round ${round}`, `${project.title}: ${items.length} changes`, `/studio/projects/${project.id}`)
   return json({ ok: true, round, count: items.length })
 }

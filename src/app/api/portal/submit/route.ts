@@ -94,6 +94,6 @@ export async function POST(req: NextRequest) {
     }),
   ]).then((results) => results.forEach((res) => res.status === 'rejected' && console.error('[submit] email failed:', res.reason)))
 
-  await pushAdmins('✅ Selection sent', `${project.title}: ${files.count} photos${files.extra ? ` (${files.extra} extra)` : ''}`, `/admin/collections/projects/${project.id}`)
+  await pushAdmins('✅ Selection sent', `${project.title}: ${files.count} photos${files.extra ? ` (${files.extra} extra)` : ''}`, `/studio/projects/${project.id}`)
   return json({ ok: true, count: files.count, extra: files.extra })
 }

@@ -30,8 +30,8 @@ export async function POST(req: NextRequest) {
     projectTitle: project.title,
     subject: `Feedback ${moment === 'booking' ? 'after booking' : 'on the sneak peek'}: ${'★'.repeat(rating)}${'☆'.repeat(5 - rating)}`,
     body: comment || '(no comment)',
-    adminUrl: siteUrl('/admin/collections/feedback', 'en'),
+    adminUrl: siteUrl('/studio', 'en'),
   }).catch((err) => console.error('[feedback] email failed:', err))
-  await pushAdmins(`${'★'.repeat(rating)}${'☆'.repeat(5 - rating)} ${client.name.split(' ')[0]}`, comment.slice(0, 140) || project.title, '/admin/collections/feedback')
+  await pushAdmins(`${'★'.repeat(rating)}${'☆'.repeat(5 - rating)} ${client.name.split(' ')[0]}`, comment.slice(0, 140) || project.title, '/studio')
   return json({ ok: true })
 }

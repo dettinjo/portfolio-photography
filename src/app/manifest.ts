@@ -14,6 +14,17 @@ export default function manifest(): MetadataRoute.Manifest {
     background_color: "#18181b",
     theme_color: "#18181b",
     categories: ["photo", "lifestyle"],
+    // Photographer shortcuts and "Share → Photos by …" from the phone's gallery (Android)
+    shortcuts: [
+      { name: "Studio inbox", short_name: "Inbox", url: "/studio", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+      { name: "Upload photos", short_name: "Upload", url: "/studio/upload", icons: [{ src: "/icons/icon-192.png", sizes: "192x192" }] },
+    ],
+    share_target: {
+      action: "/studio/share",
+      method: "POST",
+      enctype: "multipart/form-data",
+      params: { files: [{ name: "photos", accept: ["image/jpeg", "image/png", "image/webp", "image/*"] }] },
+    },
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png", purpose: "any" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },

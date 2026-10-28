@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     adminUrl: siteUrl(`/admin/collections/messages/create`, 'en'),
   }).catch((err) => console.error('[messages] email failed:', err))
 
-  await pushAdmins(`💬 ${client.name.split(' ')[0]}`, text.slice(0, 140), `/admin/collections/projects/${project.id}`, `messages-${project.id}`)
+  await pushAdmins(`💬 ${client.name.split(' ')[0]}`, text.slice(0, 140), `/studio/projects/${project.id}`, `messages-${project.id}`)
   return json({
     message: { id: created.id, body: text, mine: true, author: client.name.split(' ')[0], fromPhotographer: false, createdAt: created.createdAt },
   })

@@ -32,7 +32,7 @@ export async function POST(req: NextRequest) {
   const domain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN ?? "";
 
   try {
-    void pushAdmins("✉️ New message", `${name}: ${message.slice(0, 100)}`, "/admin", "contact");
+    void pushAdmins("✉️ New message", `${name}: ${message.slice(0, 100)}`, "/studio", "contact");
     await transporter.sendMail({
       from: `"Joel Dettinger Photography" <${MAIL_FROM}>`,
       to: ADMIN_TO,
