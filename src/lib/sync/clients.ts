@@ -18,6 +18,7 @@ import { siteUrl } from '@/lib/client-tokens'
 import { sendPreviewsReadyEmail } from '@/lib/email-client'
 import { hasProcessedFiles, processPhoto, removeAllVersions, removeOtherVersions } from './process'
 import { debounce } from './queue'
+import { pushProjectClients } from '@/lib/push'
 
 const IMAGE_TYPES = new Set(['image/jpeg', 'image/png', 'image/webp', 'image/tiff'])
 const DEBOUNCE_MS = Number(process.env.SYNC_DEBOUNCE_MS ?? 60_000)
@@ -345,6 +346,15 @@ async function announceDelivery(payload: Payload, project: Project) {
     data: { project: project.id, actor: 'system', verb: 'note', clientVisible: true, message: `${ready.totalDocs} final photos delivered` },
     overrideAccess: true,
   })
+  await pushProjectClients(
+    project,
+    {
+      en: { title: 'Your photos are here', body: `${ready.totalDocs} final photos are ready to download.` },
+      de: { title: 'Deine Fotos sind da', body: `${ready.totalDocs} fertige Fotos stehen zum Download bereit.` },
+    },
+    '/photos',
+    'delivery',
+  )
   const { sendDeliveryEmail } = await import('@/lib/email-client')
   for (const client of await projectClients(payload, project)) {
     const locale = client.locale === 'de' ? 'de' : 'en'
@@ -386,6 +396,15 @@ async function announcePreviews(payload: Payload, project: Project, clients: Cli
     overrideAccess: true,
   })
 
+  await pushProjectClients(
+    project,
+    {
+      en: { title: 'Your previews are ready', body: `${ready.totalDocs} previews — pick your favourites.` },
+      de: { title: 'Deine Vorschauen sind da', body: `${ready.totalDocs} Vorschauen — wähle deine Favoriten.` },
+    },
+    '/proofing',
+    'previews',
+  )
   for (const client of clients) {
     const locale = client.locale === 'de' ? 'de' : 'en'
     try {

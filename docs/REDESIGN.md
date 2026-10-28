@@ -623,6 +623,16 @@ Reviews stay private until approved in *Inbox → Reviews*; approved ones show o
 and, with a series chosen, on that series page. Housekeeping sends one review invitation 7
 days after delivery if nobody has reviewed yet.
 
+**4e ✅ done 2026-10-28** — Web Push (VAPID, `web-push@3.6.7`; keys in Infisical as
+`PORTFOLIO_VAPID_*` and in the Coolify env). `push-subscriptions` per device (client or
+photographer, with its language); `/api/push/subscribe` (GET key, POST, DELETE own); service
+worker shows notifications and opens/focuses the page. "Notify me on this device" on the
+project overview (on iPhone it explains Home Screen first). Clients: proposal, previews,
+delivery, changes done, reply from the photographer. Photographer: inquiry, contact message,
+client message, selection, change requests, proposal accepted, payment, feedback, review.
+Best effort next to the emails; expired subscriptions (404/410) are removed. Photographer
+notifications open the admin until `/studio` exists (4f).
+
 - Versions and revision approvals; final mirroring, signed downloads, async ZIP.
 - 12-month expiry with 30/7-day reminders, admin extend, purge job.
 - Stripe: balance (with delivery gating), extra images above quota, add-ons, refunds sync.

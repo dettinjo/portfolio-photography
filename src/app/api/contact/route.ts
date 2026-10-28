@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { transporter, MAIL_FROM, ADMIN_TO } from "@/lib/mailer";
+import { pushAdmins } from "@/lib/push";
 import { clientIp, escapeHtml, isEmail, rateLimit, singleLine } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
@@ -31,6 +32,7 @@ export async function POST(req: NextRequest) {
   const domain = process.env.NEXT_PUBLIC_PHOTOGRAPHY_DOMAIN ?? "";
 
   try {
+    void pushAdmins("✉️ New message", `${name}: ${message.slice(0, 100)}`, "/admin", "contact");
     await transporter.sendMail({
       from: `"Joel Dettinger Photography" <${MAIL_FROM}>`,
       to: ADMIN_TO,

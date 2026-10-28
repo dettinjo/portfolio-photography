@@ -24,6 +24,16 @@ export async function notifyRevisionsReady(payload: Payload, projectId: number, 
     data: { project: projectId, actor: 'system', verb: 'note', clientVisible: true, message: `Round ${round}: ${done.totalDocs} changes done` },
     overrideAccess: true,
   })
+  const { pushProjectClients } = await import('./push')
+  await pushProjectClients(
+    project,
+    {
+      en: { title: 'Your changes are done', body: `${done.totalDocs} photos revised — have a look.` },
+      de: { title: 'Deine Änderungen sind fertig', body: `${done.totalDocs} Fotos überarbeitet — schau sie dir an.` },
+    },
+    '/photos',
+    'revisions',
+  )
   for (const c of (project.clients ?? []).filter((x): x is Client => typeof x === 'object' && x !== null)) {
     const locale = c.locale === 'de' ? 'de' : 'en'
     await sendRevisionsReady({

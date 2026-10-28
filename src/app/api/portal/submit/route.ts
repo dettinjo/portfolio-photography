@@ -10,6 +10,7 @@ import { createFolder, uploadFile } from '@/lib/nextcloud'
 import { isStage, stageIndex } from '@/lib/stages'
 import { siteUrl } from '@/lib/client-tokens'
 import { sendSelectionConfirmation, sendSelectionNotification } from '@/lib/email-client'
+import { pushAdmins } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   const r = await portalRequest(req, 10)
@@ -93,5 +94,6 @@ export async function POST(req: NextRequest) {
     }),
   ]).then((results) => results.forEach((res) => res.status === 'rejected' && console.error('[submit] email failed:', res.reason)))
 
+  await pushAdmins('✅ Selection sent', `${project.title}: ${files.count} photos${files.extra ? ` (${files.extra} extra)` : ''}`, `/admin/collections/projects/${project.id}`)
   return json({ ok: true, count: files.count, extra: files.extra })
 }

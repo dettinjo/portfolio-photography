@@ -8,6 +8,9 @@ const relId = (v: unknown) => (typeof v === 'object' && v !== null ? (v as { id:
 
 export async function notifyClientsOfReply(payload: Payload, message: Message) {
   const project = await payload.findByID({ collection: 'projects', id: relId(message.project), depth: 1, overrideAccess: true })
+  const { pushProjectClients } = await import('./push')
+  const excerpt = message.body.length > 120 ? `${message.body.slice(0, 117)}…` : message.body
+  await pushProjectClients(project, { en: { title: 'Message from Joel', body: excerpt }, de: { title: 'Nachricht von Joel', body: excerpt } }, '/messages', 'messages')
   for (const c of project.clients ?? []) {
     if (typeof c !== 'object' || !c) continue
     const locale = c.locale === 'de' ? 'de' : 'en'

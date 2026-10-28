@@ -6,6 +6,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getPayloadClient } from '@/lib/payload'
 import { clientIp, isEmail, rateLimit, singleLine } from '@/lib/security'
 import { sendInquiryConfirmation, sendInquiryNotification } from '@/lib/email-inquiry'
+import { pushAdmins } from '@/lib/push'
 
 const SIZES = ['small', 'medium', 'large'] as const
 const BUDGETS = ['lt200', '200-500', '500-1000', 'gt1000', 'unsure'] as const
@@ -100,6 +101,7 @@ export async function POST(req: NextRequest) {
     await Promise.all([
       sendInquiryNotification(mail).catch((err) => console.error('[inquiries] notification failed:', err)),
       sendInquiryConfirmation(mail).catch((err) => console.error('[inquiries] confirmation failed:', err)),
+      pushAdmins('📷 New shoot request', [name, mail.offering ?? mail.kind].filter(Boolean).join(' — '), `/admin/collections/inquiries/${inquiry.id}`, 'inquiry'),
     ])
 
     return NextResponse.json({ ok: true })

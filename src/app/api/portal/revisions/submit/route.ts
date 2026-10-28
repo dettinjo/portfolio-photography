@@ -5,6 +5,7 @@ import { json, portalRequest } from '@/lib/portal-api'
 import { canRequest, revisionsFile, roundsOf } from '@/lib/revisions'
 import { createFolder, uploadFile } from '@/lib/nextcloud'
 import { sendRevisionsRequested } from '@/lib/email-client'
+import { pushAdmins } from '@/lib/push'
 
 export async function POST(req: NextRequest) {
   const r = await portalRequest(req, 10)
@@ -71,5 +72,6 @@ export async function POST(req: NextRequest) {
     folder: project.ncFolder ?? null,
     writeError,
   }).catch((err) => console.error('[revisions] email failed:', err))
+  await pushAdmins(`✏️ Changes, round ${round}`, `${project.title}: ${items.length} changes`, `/admin/collections/projects/${project.id}`)
   return json({ ok: true, round, count: items.length })
 }

@@ -84,6 +84,7 @@ export interface Config {
     messages: Message;
     revisions: Revision;
     feedback: Feedback;
+    'push-subscriptions': PushSubscription;
     activity: Activity;
     media: Media;
     users: User;
@@ -126,6 +127,7 @@ export interface Config {
     messages: MessagesSelect<false> | MessagesSelect<true>;
     revisions: RevisionsSelect<false> | RevisionsSelect<true>;
     feedback: FeedbackSelect<false> | FeedbackSelect<true>;
+    'push-subscriptions': PushSubscriptionsSelect<false> | PushSubscriptionsSelect<true>;
     activity: ActivitySelect<false> | ActivitySelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
@@ -947,20 +949,24 @@ export interface StripeEvent {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "activity".
+ * via the `definition` "push-subscriptions".
  */
-export interface Activity {
+export interface PushSubscription {
   id: number;
-  project?: (number | null) | Project;
-  actor: 'admin' | 'client' | 'system';
+  endpoint: string;
+  p256dh: string;
+  auth: string;
   client?: (number | null) | Client;
-  verb: 'project.created' | 'stage.changed' | 'client.invited' | 'client.login' | 'folder' | 'note';
-  message: string;
   /**
-   * New stage, for stage changes
+   * The photographer
    */
-  stage?: string | null;
-  clientVisible?: boolean | null;
+  user?: (number | null) | User;
+  /**
+   * Browser / system
+   */
+  device?: string | null;
+  locale?: string | null;
+  lastUsedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -989,6 +995,25 @@ export interface User {
     | null;
   password?: string | null;
   collection: 'users';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "activity".
+ */
+export interface Activity {
+  id: number;
+  project?: (number | null) | Project;
+  actor: 'admin' | 'client' | 'system';
+  client?: (number | null) | Client;
+  verb: 'project.created' | 'stage.changed' | 'client.invited' | 'client.login' | 'folder' | 'note';
+  message: string;
+  /**
+   * New stage, for stage changes
+   */
+  stage?: string | null;
+  clientVisible?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
@@ -1081,6 +1106,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'feedback';
         value: number | Feedback;
+      } | null)
+    | ({
+        relationTo: 'push-subscriptions';
+        value: number | PushSubscription;
       } | null)
     | ({
         relationTo: 'activity';
@@ -1577,6 +1606,22 @@ export interface FeedbackSelect<T extends boolean = true> {
   moment?: T;
   rating?: T;
   comment?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "push-subscriptions_select".
+ */
+export interface PushSubscriptionsSelect<T extends boolean = true> {
+  endpoint?: T;
+  p256dh?: T;
+  auth?: T;
+  client?: T;
+  user?: T;
+  device?: T;
+  locale?: T;
+  lastUsedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }

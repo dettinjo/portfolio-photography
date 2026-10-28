@@ -349,6 +349,15 @@
       "open": "Bewertung schreiben",
       "may": "Darf ich zeigen",
       "private": "Privat"
+    },
+    "push": {
+      "on": "Benachrichtigungen an",
+      "off": "Auf diesem Gerät benachrichtigen",
+      "turnOff": "Ausschalten",
+      "ios": "Auf dem iPhone: Füge diese Seite zuerst zum Home-Bildschirm hinzu (Teilen → Zum Home-Bildschirm), dann schalte dort die Benachrichtigungen ein.",
+      "denied": "Benachrichtigungen sind in deinen Browser-Einstellungen blockiert.",
+      "error": "Das hat nicht geklappt — bitte versuch es noch einmal.",
+      "help": "Ich sage dir Bescheid, wenn Vorschauen, Fotos oder Nachrichten auf dich warten."
     }
   }
 }
