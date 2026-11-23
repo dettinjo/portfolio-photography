@@ -1,22 +1,54 @@
-[English](README.md) · [Deutsch](README.de.md)
-
+<!-- portfolio:date=2025-09-07 -->
 # Photography Portfolio & Client Portal
 
-A production-grade photography portfolio built with Next.js and an embedded Payload CMS, with photos synced from Nextcloud and token-based client proofing — fully i18n (EN/DE).
+**[English](README.md) · [Deutsch](README.de.md)**
+
+<p align="center"><img src="docs/screenshots/home.jpg" alt="Home page with a full-bleed photo and the headline" width="100%" /></p>
+
+A photography portfolio and client portal in one Next.js app: Lightroom exports dropped into Nextcloud become the public site and private client galleries, managed through an embedded Payload CMS and synced by webhooks.
+
+## Highlights
+
+- **Nextcloud → website ingest pipeline** — WebDAV webhooks with a per-folder debounce plus a 15-minute reconcile turn exports into AVIF/WebP sizes (sharp), blur placeholders, dominant colours and GPS-free EXIF metadata; Nextcloud file IDs keep re-exports as versions.
+- **The whole client workflow in one portal** — passwordless email-link sign-in with an HMAC-signed session cookie, proposals with a deposit, proofing on watermarked previews with picks and pinned notes, revision rounds with a before/after slider, and finals online for 12 months with streamed ZIP downloads.
+- **Payments with Stripe** — Checkout for deposit and balance, signature-verified webhooks processed once per event, payment states that only move forward, and final downloads held back until the balance is settled.
+- **Installable PWA** — Serwist service worker, Web Push (VAPID), an Android share target into the photographer's phone studio, galleries saved for offline viewing and picks that sync when the connection returns.
+- **Sharing and consent** — token-based guest links with optional web-size downloads, per-photo publication consent, and client reviews that go public only after approval.
+- **Bilingual and self-hosted** — English and German via next-intl; an availability calendar from project dates and an optional iCal feed; Payload migrations run on startup in a Docker image built by GitHub Actions.
+
+## Screenshots
 
 <p align="center">
-  <img src="docs/nextjs.svg" alt="Nextjs" width="170" />
+  <img src="docs/screenshots/series.jpg" alt="A photo series in a justified grid" width="49%" />
+  <img src="docs/screenshots/sessions.jpg" alt="Sessions page with offerings" width="49%" />
 </p>
 
-### Key Features
+## Architecture
 
-- **Nextcloud as the photo source**: Lightroom exports dropped into a Nextcloud folder appear on the site automatically; photos are proxied, resized and cached as WebP so credentials never reach the browser.
-- **Embedded Payload CMS**: Payload 3 runs inside the Next.js app (admin at `/admin`) on PostgreSQL and manages client albums, approvals and reviews.
-- **Client Proofing**: Clients get a private approval link, select and comment on photos and grant publication consent — no account needed.
-- **Reviews**: Clients can leave a rated testimonial; it appears on the site once approved in the admin panel.
-- **Internationalization (i18n)**: English and German via `next-intl`.
-- **Dockerized Deployment**: One container plus PostgreSQL, built on GitHub Actions and deployed via Coolify; database migrations run automatically on startup.
+```
+Lightroom ──export──▶ Nextcloud ──webhook / 15-min reconcile──▶ sync queue
+                                                                   │ sharp: AVIF/WebP sizes, watermark, metadata
+                                                                   ▼
+                       PostgreSQL ◀── Payload CMS (Local API) ◀── Next.js 15 app ──▶ media storage
+                                                                   │
+                     public site · client portal · /studio · /admin · Stripe · SMTP · Web Push
+```
 
-### Technical Highlights
+- **Public site:** Photo stream with genre filters, series pages, shareable single-photo fullscreen viewer, FAQ, interactive shoot planner, and contact flow.
+- **Client portal (`/c`) & Studio (`/studio`):** Stage-driven client workspaces (planning, proofing, revisions, finals) paired with a phone-first studio inbox, Nextcloud uploads, and 12-month analytics.
+- **Single-process persistence:** Payload CMS 3 runs in-process inside Next.js via its Local API backed by PostgreSQL, with separate image roots for portfolio photos, watermarked proofs, and final exports.
 
-All CMS access happens server-side through Payload's Local API. Album data is admin-only; clients reach their album solely through token-scoped endpoints that return the fields the approval UI needs. Public forms are protected by input validation, a honeypot and per-IP rate limiting, and the image proxy only serves images below the portfolio folder.
+## Tech Stack
+
+Next.js 15 · React 19 · TypeScript · Node.js 22 · Payload CMS 3 · PostgreSQL · Tailwind CSS · next-intl · sharp · PWA (Serwist) · Stripe · Web Push · Nextcloud (WebDAV) · Docker · GitHub Actions
+
+## Getting Started
+
+```bash
+cp .env.example .env.local            # Configure PostgreSQL, Payload, Nextcloud & optional Stripe/SMTP
+docker compose up -d pg-photography   # Start PostgreSQL on port 5433
+npm install
+npm run dev                           # http://localhost:3000 (Payload Admin at /admin)
+```
+
+Set `SYNC_DISABLED=true` to run locally without a live Nextcloud instance; schema migrations run automatically on server startup (create migrations via `npm run migrate:create <name>`).
