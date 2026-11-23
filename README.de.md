@@ -1,5 +1,5 @@
 <!-- portfolio:date=2025-09-07 -->
-# Fotografie-Portfolio & Kundenportal
+# Photography Portfolio & Client Portal
 
 **[English](README.md) · [Deutsch](README.de.md)**
 
