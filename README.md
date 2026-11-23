@@ -16,17 +16,12 @@ A photography portfolio and client portal in one Next.js app: Lightroom exports 
 - **Sharing and consent** — token-based guest links with optional web-size downloads, per-photo publication consent, and client reviews that go public only after approval.
 - **Bilingual and self-hosted** — English and German via next-intl; an availability calendar from project dates and an optional iCal feed; Payload migrations run on startup in a Docker image built by GitHub Actions.
 
+## Screenshots
+
 <p align="center">
-  <img src="docs/screenshots/series.jpg" alt="A photo series in a justified grid" width="49%" /> <img src="docs/screenshots/sessions.jpg" alt="Sessions page with offerings" width="49%" />
+  <img src="docs/screenshots/series.jpg" alt="A photo series in a justified grid" width="49%" />
+  <img src="docs/screenshots/sessions.jpg" alt="Sessions page with offerings" width="49%" />
 </p>
-
-## What is inside
-
-**Public site** — home with a photo stream and genre filter, series pages, one shareable page per photo with a fullscreen viewer, an about page with FAQ, a sessions page with a step-by-step shoot planner and contact.
-
-**Client portal (`/c`)** — one page per project with the current stage and next step, planning (questions, schedule, shot list, moodboard), selection, delivered photos, change requests, messages, review and per-photo consent.
-
-**Studio (`/studio`)** — a phone-friendly admin view: inbox for messages, inquiries, change requests and reviews; projects by stage; uploads into Nextcloud; statistics for the last 12 months.
 
 ## Architecture
 
@@ -39,24 +34,21 @@ Lightroom ──export──▶ Nextcloud ──webhook / 15-min reconcile──
                      public site · client portal · /studio · /admin · Stripe · SMTP · Web Push
 ```
 
-- **Single process.** Payload 3 runs inside the Next.js app; pages and API routes use its Local API, so there is no separate CMS service.
-- **Three image roots.** Portfolio photos, watermarked client previews and finals are stored apart; private images are only served to the project's clients or to admins.
-- **Storage as the source of truth.** Photos live in Nextcloud; the site keeps regenerable derivatives, so a lost cache is rebuilt by the next sync.
-- **Background work in the app.** A serial sync queue and a housekeeping loop handle gallery expiry reminders, purges, review invitations and payment reconciliation.
+- **Public site:** Photo stream with genre filters, series pages, shareable single-photo fullscreen viewer, FAQ, interactive shoot planner, and contact flow.
+- **Client portal (`/c`) & Studio (`/studio`):** Stage-driven client workspaces (planning, proofing, revisions, finals) paired with a phone-first studio inbox, Nextcloud uploads, and 12-month analytics.
+- **Single-process persistence:** Payload CMS 3 runs in-process inside Next.js via its Local API backed by PostgreSQL, with separate image roots for portfolio photos, watermarked proofs, and final exports.
 
-## Tech stack
+## Tech Stack
 
-Next.js 15 · React 19 · TypeScript · Payload CMS 3 · PostgreSQL · Tailwind CSS · next-intl · sharp · Serwist (PWA) · Stripe · Web Push · Nextcloud (WebDAV) · Docker · GitHub Actions
+Next.js 15 · React 19 · TypeScript · Node.js 22 · Payload CMS 3 · PostgreSQL · Tailwind CSS · next-intl · sharp · PWA (Serwist) · Stripe · Web Push · Nextcloud (WebDAV) · Docker · GitHub Actions
 
-## Run locally
-
-Requirements: Node.js 22 and Docker.
+## Getting Started
 
 ```bash
-cp .env.example .env.local            # fill in the values you need
-docker compose up -d pg-photography   # PostgreSQL on port 5433
+cp .env.example .env.local            # Configure PostgreSQL, Payload, Nextcloud & optional Stripe/SMTP
+docker compose up -d pg-photography   # Start PostgreSQL on port 5433
 npm install
-npm run dev                           # http://localhost:3000, admin at /admin
+npm run dev                           # http://localhost:3000 (Payload Admin at /admin)
 ```
 
-Set `POSTGRES_URL` to the local database and `PAYLOAD_SECRET` to a long random string. Point the Nextcloud settings at your own instance, or set `SYNC_DISABLED=true` to run without photo sync; emails need the SMTP settings. Stripe and Web Push stay off until their keys are set. Schema changes go through `npm run migrate:create <name>`; migrations are applied when the server starts.
+Set `SYNC_DISABLED=true` to run locally without a live Nextcloud instance; schema migrations run automatically on server startup (create migrations via `npm run migrate:create <name>`).
